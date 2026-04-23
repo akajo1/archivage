@@ -43,6 +43,7 @@ model Badge {
   name      BadgeName  @unique
   color     String
   documents Document[]
+  rolePermissions RolePermission[]
 
   @@map("badges")
 }
@@ -51,8 +52,18 @@ model Confidentiality {
   id        String               @id @default(uuid())
   level     ConfidentialityLevel @unique
   documents Document[]
+  rolePermissions RolePermission[]
 
   @@map("confidentialities")
+}
+
+model RolePermission {
+  id                String            @id @default(uuid())
+  role              Role              @unique
+  badges            Badge[]
+  confidentialities Confidentiality[]
+
+  @@map("role_permissions")
 }
 
 model Document {

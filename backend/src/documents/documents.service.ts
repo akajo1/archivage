@@ -15,6 +15,12 @@ const ROLE_ALLOWED_LEVELS: Record<Role, string[]> = {
   user: ['public'],
 };
 
+type AccessRules = {
+  allowedLevels: string[];
+  allowedBadgeIds?: string[];
+  allowedConfidentialityIds?: string[];
+};
+
 const include = {
   badge: true,
   confidentiality: true,
@@ -25,6 +31,28 @@ const include = {
 export class DocumentsService {
   constructor(private prisma: PrismaService) {}
 
+  private async getAccessRules(role: Role): Promise<AccessRules> {
+    const permission = await this.prisma.rolePermission.findUnique({
+      where: { role },
+      include: {
+        badges: { select: { id: true } },
+        confidentialities: { select: { id: true, level: true } },
+      },
+    });
+
+    if (!permission) {
+      return {
+        allowedLevels: ROLE_ALLOWED_LEVELS[role],
+      };
+    }
+
+    return {
+      allowedLevels: permission.confidentialities.map((c) => c.level),
+      allowedBadgeIds: permission.badges.map((b) => b.id),
+      allowedConfidentialityIds: permission.confidentialities.map((c) => c.id),
+    };
+  }
+
   async findAll(
     userId: string,
     role: Role,
@@ -34,11 +62,17 @@ export class DocumentsService {
       search?: string;
     },
   ) {
-    const allowedLevels = ROLE_ALLOWED_LEVELS[role];
+    const accessRules = await this.getAccessRules(role);
 
     return this.prisma.document.findMany({
       where: {
-        confidentiality: { level: { in: allowedLevels as any } },
+        confidentiality: { level: { in: accessRules.allowedLevels as any } },
+        ...(accessRules.allowedBadgeIds
+          ? { badgeId: { in: accessRules.allowedBadgeIds } }
+          : {}),
+        ...(accessRules.allowedConfidentialityIds
+          ? { confidentialityId: { in: accessRules.allowedConfidentialityIds } }
+          : {}),
         ...(filters.badge_id ? { badgeId: filters.badge_id } : {}),
         ...(filters.confidentiality_id
           ? { confidentialityId: filters.confidentiality_id }
@@ -59,14 +93,54 @@ export class DocumentsService {
     });
     if (!doc) throw new NotFoundException('Document introuvable.');
 
-    const allowedLevels = ROLE_ALLOWED_LEVELS[role];
-    if (!allowedLevels.includes(doc.confidentiality.level)) {
+    const accessRules = await this.getAccessRules(role);
+
+    if (!accessRules.allowedLevels.includes(doc.confidentiality.level)) {
       throw new ForbiddenException('Accès refusé à ce document.');
     }
+
+    if (
+      accessRules.allowedBadgeIds &&
+      !accessRules.allowedBadgeIds.includes(doc.badgeId)
+    ) {
+      throw new ForbiddenException('Accès refusé à ce document.');
+    }
+
+    if (
+      accessRules.allowedConfidentialityIds &&
+      !accessRules.allowedConfidentialityIds.includes(doc.confidentialityId)
+    ) {
+      throw new ForbiddenException('Accès refusé à ce document.');
+    }
+
     return doc;
   }
 
-  async create(userId: string, dto: CreateDocumentDto, fileUrl?: string) {
+  async create(
+    userId: string,
+    role: Role,
+    dto: CreateDocumentDto,
+    fileUrl?: string,
+  ) {
+    const accessRules = await this.getAccessRules(role);
+    if (
+      accessRules.allowedBadgeIds &&
+      !accessRules.allowedBadgeIds.includes(dto.badge_id)
+    ) {
+      throw new ForbiddenException(
+        'Ce role ne peut pas attribuer ce badge au document.',
+      );
+    }
+
+    if (
+      accessRules.allowedConfidentialityIds &&
+      !accessRules.allowedConfidentialityIds.includes(dto.confidentiality_id)
+    ) {
+      throw new ForbiddenException(
+        'Ce role ne peut pas utiliser ce niveau de confidentialite.',
+      );
+    }
+
     return this.prisma.document.create({
       data: {
         title: dto.title,
@@ -86,11 +160,32 @@ export class DocumentsService {
     dto: UpdateDocumentDto,
     fileUrl?: string,
   ) {
+    const accessRules = await this.getAccessRules(role);
     const doc = await this.prisma.document.findUnique({ where: { id } });
     if (!doc) throw new NotFoundException('Document introuvable.');
     if (role !== 'admin' && doc.createdById !== userId) {
       throw new ForbiddenException(
         'Vous ne pouvez modifier que vos propres documents.',
+      );
+    }
+
+    if (
+      dto.badge_id &&
+      accessRules.allowedBadgeIds &&
+      !accessRules.allowedBadgeIds.includes(dto.badge_id)
+    ) {
+      throw new ForbiddenException(
+        'Ce role ne peut pas attribuer ce badge au document.',
+      );
+    }
+
+    if (
+      dto.confidentiality_id &&
+      accessRules.allowedConfidentialityIds &&
+      !accessRules.allowedConfidentialityIds.includes(dto.confidentiality_id)
+    ) {
+      throw new ForbiddenException(
+        'Ce role ne peut pas utiliser ce niveau de confidentialite.',
       );
     }
 

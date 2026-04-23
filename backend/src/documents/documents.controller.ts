@@ -59,12 +59,12 @@ export class DocumentsController {
     }),
   )
   create(
-    @CurrentUser() user: { id: string },
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
     @Body() dto: CreateDocumentDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     const fileUrl = file ? `/uploads/${file.filename}` : undefined;
-    return this.documentsService.create(user.id, dto, fileUrl);
+    return this.documentsService.create(user.id, user.role, dto, fileUrl);
   }
 
   @Put(':id')

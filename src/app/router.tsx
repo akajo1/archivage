@@ -6,6 +6,7 @@ import { DocumentListPage } from '../features/documents/pages/DocumentListPage';
 import { DocumentFormPage } from '../features/documents/pages/DocumentFormPage';
 import { DocumentDetailPage } from '../features/documents/pages/DocumentDetailPage';
 import { UserManagementPage } from '../features/users/pages/UserManagementPage';
+import { RolePermissionsPage } from '../features/users/pages/RolePermissionsPage';
 import { Layout } from './Layout';
 
 export const router = createBrowserRouter([
@@ -25,6 +26,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRole="admin">
             <UserManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'roles',
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <RolePermissionsPage />
           </ProtectedRoute>
         ),
       },

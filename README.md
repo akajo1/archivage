@@ -52,6 +52,8 @@ archivage/
 - endpoints badges et confidentialité
 - endpoint de healthcheck backend (`GET /health`)
 - indicateur d'etat backend visible dans la navbar frontend
+- gestion des utilisateurs (`/users`) avec controle RBAC
+- gestion des permissions par role (`/role-permissions`) pour badges et confidentialite
 - RBAC par rôle côté backend
 - upload local des fichiers dans `backend/uploads/`
 

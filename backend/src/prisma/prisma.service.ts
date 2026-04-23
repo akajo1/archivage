@@ -23,6 +23,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get document() {
     return this.client.document;
   }
+  get rolePermission() {
+    return this.client.rolePermission;
+  }
 
   async ping() {
     await this.client.$queryRawUnsafe('SELECT 1');
