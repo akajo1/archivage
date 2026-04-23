@@ -14,6 +14,7 @@ export const DocumentTable = ({ documents, onDelete }: DocumentTableProps) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
+  const canEdit = user?.documentAccesses?.includes('edit') ?? false;
 
   if (documents.length === 0) {
     return (
@@ -59,7 +60,7 @@ export const DocumentTable = ({ documents, onDelete }: DocumentTableProps) => {
                   <Button size="sm" variant="ghost" onClick={() => navigate(`/documents/${doc.id}`)}>
                     Voir
                   </Button>
-                  {(isAdmin || doc.createdBy.id === user?.id) && (
+                  {canEdit && (isAdmin || doc.createdBy.id === user?.id) && (
                     <>
                       <Button size="sm" variant="secondary" onClick={() => navigate(`/documents/${doc.id}/edit`)}>
                         Modifier

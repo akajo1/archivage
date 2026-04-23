@@ -1,10 +1,11 @@
-export type Role = 'admin' | 'manager' | 'user';
+export type Role = string;
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: Role;
+  documentAccesses: Array<'read' | 'create' | 'edit'>;
 }
 
 export interface AuthState {

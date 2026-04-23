@@ -11,6 +11,26 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  private async getDocumentAccesses(role: string) {
+    const permission = await this.prisma.rolePermission.findUnique({
+      where: { role },
+      select: { canRead: true, canCreate: true, canEdit: true },
+    });
+
+    if (!permission) {
+      if (role === 'admin' || role === 'manager') {
+        return ['read', 'create', 'edit'];
+      }
+      return ['read'];
+    }
+
+    const accesses: Array<'read' | 'create' | 'edit'> = [];
+    if (permission.canRead) accesses.push('read');
+    if (permission.canCreate) accesses.push('create');
+    if (permission.canEdit) accesses.push('edit');
+    return accesses;
+  }
+
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
@@ -47,16 +67,22 @@ export class AuthService {
       where: { id: userId },
       select: { id: true, name: true, email: true, role: true },
     });
-    return user;
+    const documentAccesses = await this.getDocumentAccesses(user.role);
+    return {
+      ...user,
+      documentAccesses,
+    };
   }
 
-  private signToken(user: {
+  private async signToken(user: {
     id: string;
     email: string;
     role: string;
     name: string;
   }) {
     const payload = { sub: user.id, email: user.email, role: user.role };
+    const documentAccesses = await this.getDocumentAccesses(user.role);
+
     return {
       access_token: this.jwt.sign(payload),
       user: {
@@ -64,6 +90,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        documentAccesses,
       },
     };
   }

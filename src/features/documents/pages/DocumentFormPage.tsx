@@ -12,6 +12,7 @@ import { Input } from '../../../shared/components/atoms/Input';
 import { FormField } from '../../../shared/components/molecules/FormField';
 import { FileUpload } from '../../../shared/components/molecules/FileUpload';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
+import { useAuthStore } from '../../auth/store/authStore';
 
 interface FormValues {
   title: string;
@@ -22,6 +23,7 @@ interface FormValues {
 export const DocumentFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const isEdit = Boolean(id);
 
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -29,6 +31,9 @@ export const DocumentFormPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(isEdit);
   const [apiError, setApiError] = useState('');
+
+  const canCreate = user?.documentAccesses?.includes('create') ?? false;
+  const canEdit = user?.documentAccesses?.includes('edit') ?? false;
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>();
 
@@ -62,6 +67,21 @@ export const DocumentFormPage = () => {
   };
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
+
+  if ((!isEdit && !canCreate) || (isEdit && !canEdit)) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Vous n'avez pas les permissions necessaires pour {isEdit ? 'editer' : 'creer'} un document.
+        </div>
+        <div className="mt-4">
+          <Button variant="secondary" onClick={() => navigate('/documents')}>
+            Retour a la liste
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">

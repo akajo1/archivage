@@ -1,5 +1,6 @@
 import apiClient from '../../../shared/utils/apiClient';
 import type { LoginPayload, RegisterPayload, AuthResponse } from '../types/auth.types';
+import type { User } from '../types/auth.types';
 
 export const authService = {
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
@@ -10,8 +11,8 @@ export const authService = {
     const { data } = await apiClient.post<AuthResponse>('/auth/register', payload);
     return data;
   },
-  me: async () => {
-    const { data } = await apiClient.get('/auth/me');
+  me: async (): Promise<User> => {
+    const { data } = await apiClient.get<User>('/auth/me');
     return data;
   },
 };

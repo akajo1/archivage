@@ -15,8 +15,8 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 
   if (requiredRole) {
     const roleOrder: Role[] = ['user', 'manager', 'admin'];
-    const userRoleIndex = roleOrder.indexOf(user!.role);
-    const requiredRoleIndex = roleOrder.indexOf(requiredRole);
+    const userRoleIndex = Math.max(roleOrder.indexOf(user!.role), 0);
+    const requiredRoleIndex = Math.max(roleOrder.indexOf(requiredRole), 0);
     if (userRoleIndex < requiredRoleIndex) {
       return <Navigate to="/documents" replace />;
     }

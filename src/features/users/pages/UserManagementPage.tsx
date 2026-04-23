@@ -3,13 +3,13 @@ import { useForm } from 'react-hook-form';
 import type { Role } from '../../auth/types/auth.types';
 import type { ManagedUser, CreateManagedUserPayload } from '../types/userManagement.types';
 import { userManagementService } from '../services/userManagementService';
+import { rolesService } from '../services/rolesService';
 import { Button } from '../../../shared/components/atoms/Button';
 import { Input } from '../../../shared/components/atoms/Input';
 
-const roles: Role[] = ['user', 'manager', 'admin'];
-
 export const UserManagementPage = () => {
   const [users, setUsers] = useState<ManagedUser[]>([]);
+  const [roles, setRoles] = useState<Role[]>(['user']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -27,9 +27,13 @@ export const UserManagementPage = () => {
 
     const load = async () => {
       try {
-        const data = await userManagementService.getAll();
+        const [data, roleData] = await Promise.all([
+          userManagementService.getAll(),
+          rolesService.getAll(),
+        ]);
         if (active) {
           setUsers(data);
+          setRoles(roleData.map((role) => role.key));
           setLoading(false);
         }
       } catch {

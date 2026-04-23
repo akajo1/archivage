@@ -10,6 +10,7 @@ export interface AppRole {
   updatedAt: string;
   badges: Badge[];
   confidentialities: Confidentiality[];
+  documentAccesses: Array<'read' | 'create' | 'edit'>;
 }
 
 export interface CreateRolePayload {
@@ -18,6 +19,7 @@ export interface CreateRolePayload {
   description?: string;
   badgeIds: string[];
   confidentialityIds: string[];
+  documentAccesses: Array<'read' | 'create' | 'edit'>;
 }
 
 export interface UpdateRolePayload {
@@ -26,5 +28,6 @@ export interface UpdateRolePayload {
   description?: string;
   badgeIds?: string[];
   confidentialityIds?: string[];
+  documentAccesses?: Array<'read' | 'create' | 'edit'>;
 }
 

@@ -54,6 +54,9 @@ archivage/
 - indicateur d'etat backend visible dans la navbar frontend
 - gestion des utilisateurs (`/users`) avec controle RBAC
 - gestion des permissions par role (`/role-permissions`) pour badges et confidentialite
+- gestion dynamique des roles (`/roles`) : creation, recherche, mise a jour, suppression
+- pour chaque role: attribution des acces document (read/create/edit)
+- enforcement des acces document (read/create/edit) dans les endpoints et l'interface
 - RBAC par rôle côté backend
 - upload local des fichiers dans `backend/uploads/`
 

@@ -10,10 +10,14 @@ import { DocumentTable } from '../../../shared/components/organisms/DocumentTabl
 import { FilterBar } from '../../../shared/components/molecules/FilterBar';
 import { Button } from '../../../shared/components/atoms/Button';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
+import { useAuthStore } from '../../auth/store/authStore';
 
 export const DocumentListPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [documents, setDocuments] = useState<Document[]>([]);
+      const canCreate = user?.documentAccesses?.includes('create') ?? false;
+
   const [badges, setBadges] = useState<Badge[]>([]);
   const [confidentialities, setConfidentialities] = useState<Confidentiality[]>([]);
   const [filters, setFilters] = useState<DocumentFilters>({});
@@ -47,9 +51,11 @@ export const DocumentListPage = () => {
           <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
           <p className="mt-1 text-sm text-gray-500">{documents.length} document(s) accessible(s)</p>
         </div>
-        <Button onClick={() => navigate('/documents/new')}>
-          + Nouveau document
-        </Button>
+        {canCreate && (
+          <Button onClick={() => navigate('/documents/new')}>
+            + Nouveau document
+          </Button>
+        )}
       </div>
 
       <div className="mb-6">
