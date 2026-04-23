@@ -6,8 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
-
-type Role = 'admin' | 'manager' | 'user';
+import type { Role } from '../common/decorators/roles.decorator';
 
 const ROLE_ALLOWED_LEVELS: Record<Role, string[]> = {
   admin: ['public', 'interne', 'confidentiel', 'secret'],
@@ -19,6 +18,9 @@ type AccessRules = {
   allowedLevels: string[];
   allowedBadgeIds?: string[];
   allowedConfidentialityIds?: string[];
+  canRead: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
 };
 
 const include = {
@@ -41,8 +43,18 @@ export class DocumentsService {
     });
 
     if (!permission) {
+      const fallback: Record<
+        string,
+        { canRead: boolean; canCreate: boolean; canEdit: boolean }
+      > = {
+        admin: { canRead: true, canCreate: true, canEdit: true },
+        manager: { canRead: true, canCreate: true, canEdit: true },
+        user: { canRead: true, canCreate: false, canEdit: false },
+      };
+
       return {
         allowedLevels: ROLE_ALLOWED_LEVELS[role],
+        ...(fallback[role] ?? fallback.user),
       };
     }
 
@@ -50,6 +62,9 @@ export class DocumentsService {
       allowedLevels: permission.confidentialities.map((c) => c.level),
       allowedBadgeIds: permission.badges.map((b) => b.id),
       allowedConfidentialityIds: permission.confidentialities.map((c) => c.id),
+      canRead: permission.canRead,
+      canCreate: permission.canCreate,
+      canEdit: permission.canEdit,
     };
   }
 
@@ -63,6 +78,9 @@ export class DocumentsService {
     },
   ) {
     const accessRules = await this.getAccessRules(role);
+    if (!accessRules.canRead) {
+      throw new ForbiddenException('Ce role ne peut pas lire des documents.');
+    }
 
     return this.prisma.document.findMany({
       where: {
@@ -94,6 +112,9 @@ export class DocumentsService {
     if (!doc) throw new NotFoundException('Document introuvable.');
 
     const accessRules = await this.getAccessRules(role);
+    if (!accessRules.canRead) {
+      throw new ForbiddenException('Ce role ne peut pas lire des documents.');
+    }
 
     if (!accessRules.allowedLevels.includes(doc.confidentiality.level)) {
       throw new ForbiddenException('Accès refusé à ce document.');
@@ -123,6 +144,9 @@ export class DocumentsService {
     fileUrl?: string,
   ) {
     const accessRules = await this.getAccessRules(role);
+    if (!accessRules.canCreate) {
+      throw new ForbiddenException('Ce role ne peut pas creer des documents.');
+    }
     if (
       accessRules.allowedBadgeIds &&
       !accessRules.allowedBadgeIds.includes(dto.badge_id)
@@ -161,6 +185,9 @@ export class DocumentsService {
     fileUrl?: string,
   ) {
     const accessRules = await this.getAccessRules(role);
+    if (!accessRules.canEdit) {
+      throw new ForbiddenException('Ce role ne peut pas editer des documents.');
+    }
     const doc = await this.prisma.document.findUnique({ where: { id } });
     if (!doc) throw new NotFoundException('Document introuvable.');
     if (role !== 'admin' && doc.createdById !== userId) {

@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsIn,
-  IsOptional,
-  IsString,
-  MinLength,
-} from 'class-validator';
-import type { Role } from '../../common/decorators/roles.decorator';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -22,6 +15,6 @@ export class UpdateUserDto {
   password?: string;
 
   @IsOptional()
-  @IsIn(['admin', 'manager', 'user'])
-  role?: Role;
+  @IsString()
+  role?: string;
 }

@@ -14,6 +14,15 @@ import type { Role } from '../common/decorators/roles.decorator';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async assertRoleExists(roleKey: string) {
+    const role = await this.prisma.appRole.findUnique({
+      where: { key: roleKey },
+    });
+    if (!role) {
+      throw new NotFoundException('Role introuvable.');
+    }
+  }
+
   findAll() {
     return this.prisma.user.findMany({
       select: {
@@ -56,6 +65,9 @@ export class UsersService {
       throw new ConflictException('Cet email est deja utilise.');
     }
 
+    const roleKey = dto.role ?? 'user';
+    await this.assertRoleExists(roleKey);
+
     const password = await bcrypt.hash(dto.password, 10);
 
     return this.prisma.user.create({
@@ -63,7 +75,7 @@ export class UsersService {
         name: dto.name,
         email: dto.email,
         password,
-        role: dto.role ?? 'user',
+        role: roleKey,
       },
       select: {
         id: true,
@@ -102,6 +114,10 @@ export class UsersService {
 
     if (dto.role && currentUserRole !== 'admin') {
       throw new ForbiddenException('Seul un admin peut changer les roles.');
+    }
+
+    if (dto.role) {
+      await this.assertRoleExists(dto.role);
     }
 
     const data: {

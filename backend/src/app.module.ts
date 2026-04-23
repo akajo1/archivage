@@ -10,6 +10,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RolePermissionsModule } from './role-permissions/role-permissions.modul
     ConfidentialityModule,
     DocumentsModule,
     UsersModule,
+    RolesModule,
     RolePermissionsModule,
     HealthModule,
   ],

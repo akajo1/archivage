@@ -7,14 +7,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { Role } from '../common/decorators/roles.decorator';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
 
-const roles: Role[] = ['admin', 'manager', 'user'];
-
 @Injectable()
 export class RolePermissionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll() {
-    const [permissions, badges, confidentialities] = await Promise.all([
+    const [roles, permissions, badges, confidentialities] = await Promise.all([
+      this.prisma.appRole.findMany({
+        select: { key: true },
+        orderBy: { createdAt: 'asc' },
+      }),
       this.prisma.rolePermission.findMany({
         include: {
           badges: { select: { id: true, name: true, color: true } },
@@ -29,10 +31,10 @@ export class RolePermissionsService {
       }),
     ]);
 
-    return roles.map((role) => {
-      const permission = permissions.find((p) => p.role === role);
+    return roles.map((roleEntry) => {
+      const permission = permissions.find((p) => p.role === roleEntry.key);
       return {
-        role,
+        role: roleEntry.key,
         badges: permission?.badges ?? badges,
         confidentialities: permission?.confidentialities ?? confidentialities,
       };
@@ -40,6 +42,13 @@ export class RolePermissionsService {
   }
 
   async update(role: Role, dto: UpdateRolePermissionsDto) {
+    const roleExists = await this.prisma.appRole.findUnique({
+      where: { key: role },
+    });
+    if (!roleExists) {
+      throw new NotFoundException('Role introuvable.');
+    }
+
     const [badgeCount, confidentialityCount] = await Promise.all([
       this.prisma.badge.count({ where: { id: { in: dto.badgeIds } } }),
       this.prisma.confidentiality.count({

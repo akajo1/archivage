@@ -6,12 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  admin
-  manager
-  user
-}
-
 enum ConfidentialityLevel {
   public
   interne
@@ -30,7 +24,7 @@ model User {
   name      String
   email     String     @unique
   password  String
-  role      Role       @default(user)
+  role      String     @default("user")
   documents Document[]
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
@@ -59,11 +53,25 @@ model Confidentiality {
 
 model RolePermission {
   id                String            @id @default(uuid())
-  role              Role              @unique
+  role              String            @unique
   badges            Badge[]
   confidentialities Confidentiality[]
+  canRead           Boolean           @default(true) @map("can_read")
+  canCreate         Boolean           @default(false) @map("can_create")
+  canEdit           Boolean           @default(false) @map("can_edit")
 
   @@map("role_permissions")
+}
+
+model AppRole {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  name      String
+  description String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_roles")
 }
 
 model Document {

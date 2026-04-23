@@ -26,9 +26,9 @@ export class RolesGuard implements CanActivate {
       .getRequest<{ user?: { role?: Role } }>();
     const userRole = request.user?.role;
     const roleOrder: Role[] = ['user', 'manager', 'admin'];
-    const userLevel = userRole ? roleOrder.indexOf(userRole) : -1;
+    const userLevel = userRole ? Math.max(roleOrder.indexOf(userRole), 0) : -1;
     const minRequired = Math.min(
-      ...requiredRoles.map((role) => roleOrder.indexOf(role)),
+      ...requiredRoles.map((role) => Math.max(roleOrder.indexOf(role), 0)),
     );
 
     if (userLevel < minRequired) {
