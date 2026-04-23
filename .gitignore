@@ -22,4 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-backend/
+
+# Backend artifacts
+backend/node_modules/
+backend/dist/
+backend/uploads/
+backend/.env

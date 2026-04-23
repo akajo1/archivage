@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  manager
+  user
+}
+
+enum ConfidentialityLevel {
+  public
+  interne
+  confidentiel
+  secret
+}
+
+enum BadgeName {
+  critique
+  normal
+  faible
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      Role       @default(user)
+  documents Document[]
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Badge {
+  id        String     @id @default(uuid())
+  name      BadgeName  @unique
+  color     String
+  documents Document[]
+
+  @@map("badges")
+}
+
+model Confidentiality {
+  id        String               @id @default(uuid())
+  level     ConfidentialityLevel @unique
+  documents Document[]
+
+  @@map("confidentialities")
+}
+
+model Document {
+  id                String          @id @default(uuid())
+  title             String
+  fileUrl           String?         @map("file_url")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  createdBy         User            @relation(fields: [createdById], references: [id])
+  createdById       String          @map("created_by")
+  badge             Badge           @relation(fields: [badgeId], references: [id])
+  badgeId           String          @map("badge_id")
+  confidentiality   Confidentiality @relation(fields: [confidentialityId], references: [id])
+  confidentialityId String          @map("confidentiality_id")
+
+  @@map("documents")
+}

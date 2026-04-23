@@ -50,6 +50,8 @@ archivage/
 - suppression de document
 - détail d'un document
 - endpoints badges et confidentialité
+- endpoint de healthcheck backend (`GET /health`)
+- indicateur d'etat backend visible dans la navbar frontend
 - RBAC par rôle côté backend
 - upload local des fichiers dans `backend/uploads/`
 
@@ -99,6 +101,12 @@ cd /Users/akajodev/Documents/projects/archivage/backend
 npm run start:dev
 ```
 
+### Vérifier la santé du backend
+
+```bash
+curl http://localhost:3000/health
+```
+
 ### 4. Lancer le frontend
 
 ```bash
@@ -127,6 +135,17 @@ npm run lint
 npm run build
 npx prisma generate
 npx tsc --noEmit
+```
+
+## Scripts backend utiles
+
+```bash
+cd /Users/akajodev/Documents/projects/archivage/backend
+npm run db:generate
+npm run db:push
+npm run db:migrate
+npm run db:deploy
+npm run db:studio
 ```
 
 ## Notes techniques

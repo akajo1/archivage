@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { Button } from '../atoms/Button';
+import { healthService, type BackendHealth } from '../../services/healthService';
 
 const roleColors: Record<string, string> = {
   admin: 'bg-purple-100 text-purple-700',
@@ -11,6 +13,28 @@ const roleColors: Record<string, string> = {
 export const Navbar = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [backendHealth, setBackendHealth] = useState<BackendHealth>('down');
+
+  useEffect(() => {
+    let active = true;
+
+    const runCheck = async () => {
+      const status = await healthService.check();
+      if (active) {
+        setBackendHealth(status);
+      }
+    };
+
+    void runCheck();
+    const id = window.setInterval(() => {
+      void runCheck();
+    }, 30000);
+
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -27,11 +51,22 @@ export const Navbar = () => {
           </Link>
 
           <div className="flex items-center gap-4">
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${backendHealth === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
+              title="Etat de la connexion backend/database"
+            >
+              {backendHealth === 'up' ? 'Backend OK' : 'Backend down'}
+            </span>
             {user && (
               <>
                 <Link to="/documents" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors">
                   Documents
                 </Link>
+                {user.role === 'admin' && (
+                  <Link to="/users" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors">
+                    Utilisateurs
+                  </Link>
+                )}
                 <div className="flex items-center gap-2">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${roleColors[user.role]}`}>
                     {user.role}
