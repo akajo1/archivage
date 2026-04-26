@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import Swal from 'sweetalert2';
 import { RiUserAddLine, RiDeleteBinLine, RiTeamLine } from 'react-icons/ri';
 import type { Role } from '../../auth/types/auth.types';
 import type { ManagedUser, CreateManagedUserPayload } from '../types/userManagement.types';
 import { userManagementService } from '../services/userManagementService';
 import { rolesService } from '../services/rolesService';
 import { Button } from '../../../shared/components/atoms/Button';
+import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Input } from '../../../shared/components/atoms/Input';
 
 export const UserManagementPage = () => {
@@ -73,11 +75,22 @@ export const UserManagementPage = () => {
   };
 
   const onDelete = async (id: string) => {
-    if (!confirm('Supprimer cet utilisateur ?')) return;
+    const result = await Swal.fire({
+      title: 'Supprimer cet utilisateur ?',
+      text: 'Cette action est irréversible.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#a44b3f',
+      cancelButtonColor: '#806444',
+    });
+    if (!result.isConfirmed) return;
 
     try {
       await userManagementService.remove(id);
       setUsers((prev) => prev.filter((u) => u.id !== id));
+      void Swal.fire({ title: 'Supprimé !', icon: 'success', timer: 1500, showConfirmButton: false });
     } catch {
       setError('Suppression impossible.');
     }
@@ -163,9 +176,12 @@ export const UserManagementPage = () => {
                     ))}
                   </select>
 
-                  <Button size="sm" variant="ghost" onClick={() => void onDelete(user.id)} className="text-[#a44b3f] hover:bg-[#f1d5d0] hover:text-[#8f3e34]">
-                    <RiDeleteBinLine className="h-3.5 w-3.5" /> Supprimer
-                  </Button>
+                  <IconButton
+                    icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
+                    label="Supprimer l'utilisateur"
+                    variant="danger"
+                    onClick={() => void onDelete(user.id)}
+                  />
                 </li>
               );
             })}

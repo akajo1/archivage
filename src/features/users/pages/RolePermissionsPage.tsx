@@ -5,11 +5,13 @@ import {
   RiPencilLine,
   RiSearchLine,
   RiShieldCheckLine,
+  RiCloseLine,
 } from 'react-icons/ri';
 import Swal from 'sweetalert2';
 import type { Badge } from '../../badges/types/badge.types';
 import type { Confidentiality } from '../../confidentiality/types/confidentiality.types';
 import { Button } from '../../../shared/components/atoms/Button';
+import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Input } from '../../../shared/components/atoms/Input';
 import { badgeService } from '../../badges/services/badgeService';
 import { confidentialityService } from '../../confidentiality/services/confidentialityService';
@@ -472,23 +474,23 @@ export const RolePermissionsPage = () => {
                 </span>
               </div>
 
-              <div className="col-span-3 flex justify-end gap-2">
-                <Button
+              <div className="col-span-3 flex justify-end gap-1.5">
+                <IconButton
+                  icon={<RiPencilLine className="h-3.5 w-3.5" />}
+                  label="Modifier le role"
+                  variant="default"
                   size="sm"
-                  variant="secondary"
                   onClick={() => openRoleModal(role)}
                   isLoading={savingRoleId === role.id}
-                >
-                  <RiPencilLine className="h-3.5 w-3.5" /> Modifier
-                </Button>
-                <Button
-                  size="sm"
+                />
+                <IconButton
+                  icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
+                  label="Supprimer le role"
                   variant="danger"
+                  size="sm"
                   onClick={() => void deleteRole(role)}
                   isLoading={savingRoleId === role.id}
-                >
-                  <RiDeleteBinLine className="h-3.5 w-3.5" /> Supprimer
-                </Button>
+                />
               </div>
             </div>
           ))}
@@ -511,14 +513,14 @@ export const RolePermissionsPage = () => {
                   Modifiez les informations et permissions du role selectionne.
                 </p>
               </div>
-              <button
-                type="button"
+              <IconButton
+                icon={<RiCloseLine className="h-4 w-4" />}
+                label="Fermer"
+                variant="default"
+                size="md"
                 onClick={closeRoleModal}
                 disabled={isSavingModalRole}
-                className="rounded-lg border border-[#d8cab3] px-2 py-1 text-sm text-[#6f614e] hover:bg-[#f2e7d6] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Fermer
-              </button>
+              />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">

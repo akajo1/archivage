@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { RiPencilLine, RiDeleteBinLine, RiAttachment2, RiEyeLine } from 'react-icons/ri';
+import { RiPencilLine, RiDeleteBinLine, RiEyeLine, RiAttachment2 } from 'react-icons/ri';
 import type { Document } from '../../../features/documents/types/document.types';
 import type { ConfidentialityLevel } from '../../../features/confidentiality/types/confidentiality.types';
 
@@ -157,30 +157,36 @@ export const DocumentCard = ({ document, canManage = false, onDelete }: Document
         </div>
 
         {/* ── Hover action overlay ── */}
-        <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-b-lg bg-[#2f2118]/60 opacity-0 backdrop-blur-[2px] transition-all duration-200 group-hover:opacity-100">
+        <div className="absolute inset-0 flex items-center justify-center gap-2.5 rounded-b-lg bg-[#2f2118]/60 opacity-0 backdrop-blur-[2px] transition-all duration-200 group-hover:opacity-100">
           <button
             type="button"
+            title="Consulter"
+            aria-label="Consulter"
             onClick={(e) => { e.stopPropagation(); navigate(`/documents/${document.id}`); }}
-            className="flex items-center gap-1.5 rounded-full bg-[#fffaf2] px-3.5 py-2 text-xs font-semibold text-[#2f2118] shadow-lg hover:bg-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fffaf2] text-[#2f2118] shadow-lg transition-colors hover:bg-white"
           >
-            <RiEyeLine className="h-3.5 w-3.5" /> Consulter
+            <RiEyeLine className="h-4 w-4" />
           </button>
           {canManage && (
             <button
               type="button"
+              title="Modifier"
+              aria-label="Modifier"
               onClick={(e) => { e.stopPropagation(); navigate(`/documents/${document.id}/edit`); }}
-              className="flex items-center gap-1.5 rounded-full bg-[#806444] px-3.5 py-2 text-xs font-semibold text-amber-50 shadow-lg hover:bg-[#684f35]"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#806444] text-amber-50 shadow-lg transition-colors hover:bg-[#684f35]"
             >
-              <RiPencilLine className="h-3.5 w-3.5" /> Modifier
+              <RiPencilLine className="h-4 w-4" />
             </button>
           )}
           {canManage && onDelete && (
             <button
               type="button"
+              title="Supprimer"
+              aria-label="Supprimer"
               onClick={handleDelete}
-              className="flex items-center gap-1.5 rounded-full bg-[#a44b3f] px-3.5 py-2 text-xs font-semibold text-white shadow-lg hover:bg-[#8f3e34]"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#a44b3f] text-white shadow-lg transition-colors hover:bg-[#8f3e34]"
             >
-              <RiDeleteBinLine className="h-3.5 w-3.5" />
+              <RiDeleteBinLine className="h-4 w-4" />
             </button>
           )}
         </div>

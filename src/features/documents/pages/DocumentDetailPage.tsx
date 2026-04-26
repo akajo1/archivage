@@ -22,6 +22,7 @@ import type { Document } from '../types/document.types';
 import { BadgePill } from '../../../shared/components/atoms/BadgePill';
 import { ConfidentialityTag } from '../../../shared/components/atoms/ConfidentialityTag';
 import { Button } from '../../../shared/components/atoms/Button';
+import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
 import { useAuthStore } from '../../auth/store/authStore';
 
@@ -244,14 +245,22 @@ export const DocumentDetailPage = () => {
             </span>
             <div className="flex gap-2">
               {canEdit && (
-                <Button variant="secondary" size="sm" onClick={() => navigate(`/documents/${document.id}/edit`)}>
-                  <RiPencilLine className="h-3.5 w-3.5" /> Modifier
-                </Button>
+                <IconButton
+                  icon={<RiPencilLine className="h-4 w-4" />}
+                  label="Modifier"
+                  variant="default"
+                  size="md"
+                  onClick={() => navigate(`/documents/${document.id}/edit`)}
+                />
               )}
               {isAdmin && (
-                <Button variant="danger" size="sm" onClick={() => void handleDelete()}>
-                  <RiDeleteBinLine className="h-3.5 w-3.5" /> Supprimer
-                </Button>
+                <IconButton
+                  icon={<RiDeleteBinLine className="h-4 w-4" />}
+                  label="Supprimer"
+                  variant="danger"
+                  size="md"
+                  onClick={() => void handleDelete()}
+                />
               )}
             </div>
           </div>

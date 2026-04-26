@@ -9,6 +9,7 @@ import {
 import type { Document } from '../../../features/documents/types/document.types';
 import { BadgePill } from '../atoms/BadgePill';
 import { ConfidentialityTag } from '../atoms/ConfidentialityTag';
+import { IconButton } from '../atoms/IconButton';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -92,33 +93,26 @@ export const DocumentListView = ({ documents, onDelete }: DocumentListViewProps)
 
               {/* Actions */}
               <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                <button
-                  type="button"
+                <IconButton
+                  icon={<RiEyeLine className="h-3.5 w-3.5" />}
+                  label="Voir"
                   onClick={() => navigate(`/documents/${doc.id}`)}
-                  title="Voir"
-                  className="rounded-lg p-1.5 text-[#806444] transition-colors hover:bg-[#edddd1]"
-                >
-                  <RiEyeLine className="h-3.5 w-3.5" />
-                </button>
+                />
                 {canManage && (
-                  <button
-                    type="button"
+                  <IconButton
+                    icon={<RiPencilLine className="h-3.5 w-3.5" />}
+                    label="Modifier"
+                    variant="success"
                     onClick={() => navigate(`/documents/${doc.id}/edit`)}
-                    title="Modifier"
-                    className="rounded-lg p-1.5 text-[#5a7848] transition-colors hover:bg-[#d9e6d0]"
-                  >
-                    <RiPencilLine className="h-3.5 w-3.5" />
-                  </button>
+                  />
                 )}
                 {isAdmin && onDelete && (
-                  <button
-                    type="button"
+                  <IconButton
+                    icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
+                    label="Supprimer"
+                    variant="danger"
                     onClick={() => onDelete(doc.id)}
-                    title="Supprimer"
-                    className="rounded-lg p-1.5 text-[#a44b3f] transition-colors hover:bg-[#f3d8d2]"
-                  >
-                    <RiDeleteBinLine className="h-3.5 w-3.5" />
-                  </button>
+                  />
                 )}
               </div>
             </div>

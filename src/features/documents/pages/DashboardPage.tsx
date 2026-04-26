@@ -22,27 +22,54 @@ import { ConfidentialityTag } from '../../../shared/components/atoms/Confidentia
 
 type BadgeName = 'critique' | 'normal' | 'faible';
 
-const badgeGroupMeta: Record<BadgeName, { label: string; icon: string; bg: string; border: string; accent: string }> = {
+/* ── Folder colour theme per badge ── */
+const folderTheme: Record<BadgeName, {
+  tab: string;       // folder tab bg
+  body: string;      // main folder body bg
+  spine: string;     // left spine strip
+  bodyBorder: string;
+  label: string;     // human label
+  labelBg: string;   // sticker label bg
+  labelText: string;
+  dotsColor: string; // decorative holes
+  countBg: string;
+  countText: string;
+}> = {
   critique: {
-    label: 'Critique',
-    icon: '🔴',
-    bg: 'bg-[#f8efed]',
-    border: 'border-[#d7a59c]',
-    accent: 'bg-[#f3d8d2] text-[#8b3e34]',
+    tab:        'bg-[#c94e3f]',
+    body:       'bg-[#f5ebe8]',
+    spine:      'bg-[#d8645a]',
+    bodyBorder: 'border-[#d9a49e]',
+    label:      'Critique',
+    labelBg:    'bg-[#fdf1ef]',
+    labelText:  'text-[#c94e3f]',
+    dotsColor:  'bg-[#d9a49e]',
+    countBg:    'bg-[#c94e3f]',
+    countText:  'text-white',
   },
   normal: {
-    label: 'Normal',
-    icon: '📋',
-    bg: 'bg-[#eff5f1]',
-    border: 'border-[#aec6ba]',
-    accent: 'bg-[#d9e6de] text-[#355246]',
+    tab:        'bg-[#3e7a5c]',
+    body:       'bg-[#eef5f1]',
+    spine:      'bg-[#56916f]',
+    bodyBorder: 'border-[#9dc0b0]',
+    label:      'Normal',
+    labelBg:    'bg-[#f0f8f4]',
+    labelText:  'text-[#3e7a5c]',
+    dotsColor:  'bg-[#9dc0b0]',
+    countBg:    'bg-[#3e7a5c]',
+    countText:  'text-white',
   },
   faible: {
-    label: 'Faible',
-    icon: '📁',
-    bg: 'bg-[#f6f1ea]',
-    border: 'border-[#d2bf9f]',
-    accent: 'bg-[#eadfcd] text-[#6f5839]',
+    tab:        'bg-[#8a6a3a]',
+    body:       'bg-[#f6f0e6]',
+    spine:      'bg-[#a07d4b]',
+    bodyBorder: 'border-[#c8b48c]',
+    label:      'Faible',
+    labelBg:    'bg-[#fdf8f0]',
+    labelText:  'text-[#8a6a3a]',
+    dotsColor:  'bg-[#c8b48c]',
+    countBg:    'bg-[#8a6a3a]',
+    countText:  'text-white',
   },
 };
 
@@ -126,20 +153,19 @@ export const DashboardPage = () => {
         </div>
       ) : (
         <>
-          {/* Archive Groups */}
+          {/* Archive Groups — folder design */}
           <section>
-            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#4a3b2b]">
+            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-[#4a3b2b]">
               <RiFolder3Line className="h-5 w-5 text-[#806444]" />
               Groupes d'archivage
             </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {badges.map((badge) => {
-                const meta = badgeGroupMeta[badge.name as BadgeName] ?? {
-                  label: badge.name,
-                  icon: '📂',
-                  bg: 'bg-[#f5edd8]',
-                  border: 'border-[#ccb46a]',
-                  accent: 'bg-[#eddeb6] text-[#704e22]',
+                const theme = folderTheme[badge.name as BadgeName] ?? {
+                  tab: 'bg-[#806444]', body: 'bg-[#f5ead6]', spine: 'bg-[#a07d4b]',
+                  bodyBorder: 'border-[#c8b08a]', label: badge.name,
+                  labelBg: 'bg-[#fdf8f0]', labelText: 'text-[#806444]',
+                  dotsColor: 'bg-[#c8b08a]', countBg: 'bg-[#806444]', countText: 'text-white',
                 };
                 const count = docsByBadge[badge.id]?.length ?? 0;
                 const isSelected = selectedBadgeId === badge.id;
@@ -149,23 +175,87 @@ export const DashboardPage = () => {
                     key={badge.id}
                     type="button"
                     onClick={() => setSelectedBadgeId(badge.id)}
-                    className={`group relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 ${meta.bg} ${meta.border} ${
-                      isSelected
-                        ? 'ring-2 ring-[#806444] ring-offset-1 shadow-md'
-                        : 'hover:shadow-sm hover:ring-1 hover:ring-[#c4a67c]'
-                    }`}
+                    className="group relative cursor-pointer text-left transition-all duration-200 hover:-translate-y-1.5"
+                    style={{ filter: isSelected ? 'drop-shadow(0 6px 14px rgba(80,55,20,0.22))' : 'drop-shadow(0 3px 8px rgba(80,55,20,0.13))' }}
                   >
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-2xl">{meta.icon}</span>
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${meta.accent}`}>
-                        {count} doc{count !== 1 ? 's' : ''}
-                      </span>
+                    {/* Back panel (stacked paper illusion) */}
+                    <div className={`absolute inset-x-2 bottom-[-4px] h-full rounded-sm border ${theme.bodyBorder} opacity-50`}
+                         style={{ background: 'rgba(200,176,140,0.35)' }} />
+
+                    {/* Folder shape */}
+                    <div className={`relative overflow-visible rounded-sm border ${theme.bodyBorder} ${theme.body}`}
+                         style={{ boxShadow: isSelected ? `0 0 0 2.5px #806444, 0 2px 0 #b9a07a` : '0 2px 0 #b9a07a' }}>
+
+                      {/* ── Folder tab (top left) ── */}
+                      <div className="flex h-0 items-end overflow-visible">
+                        <div
+                          className={`relative -top-[22px] h-[22px] w-32 ${theme.tab} flex items-center justify-center rounded-t-md`}
+                          style={{ clipPath: 'polygon(0 100%, 0 25%, 6% 0, 94% 0, 100% 25%, 100% 100%)' }}
+                        >
+                          <span className="text-[10px] font-bold uppercase tracking-[2px] text-white/90">
+                            {theme.label}
+                          </span>
+                        </div>
+                        {/* Tab shadow line to body */}
+                        <div className={`h-[1px] flex-1 ${theme.bodyBorder} border-t`} />
+                      </div>
+
+                      {/* ── Folder body ── */}
+                      <div className="flex">
+                        {/* Left spine */}
+                        <div className={`flex w-2.5 shrink-0 flex-col items-center gap-3 py-4 ${theme.spine} opacity-60`}>
+                          {/* Hole punches */}
+                          <div className={`h-2.5 w-2.5 rounded-full border border-white/40 ${theme.dotsColor} shadow-inner`} />
+                          <div className={`h-2.5 w-2.5 rounded-full border border-white/40 ${theme.dotsColor} shadow-inner`} />
+                        </div>
+
+                        {/* Main content area */}
+                        <div className="flex-1 p-4">
+                          {/* Ruled lines (paper texture) */}
+                          <div
+                            className="pointer-events-none absolute inset-0 opacity-[0.05]"
+                            style={{
+                              backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 19px, #6b5033 19px, #6b5033 20px)',
+                              backgroundPositionY: '40px',
+                            }}
+                          />
+
+                          {/* Header row */}
+                          <div className="relative flex items-start justify-between gap-2">
+                            <div>
+                              <p className="font-['Georgia',_serif] text-base font-bold text-[#2a2018]">
+                                {theme.label}
+                              </p>
+                              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-[#9a8060]">
+                                dossier · {badge.name}
+                              </p>
+                            </div>
+                            {/* Document count badge */}
+                            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow ${theme.countBg} ${theme.countText}`}>
+                              {count}
+                            </div>
+                          </div>
+
+                          {/* Sticker label */}
+                          <div className={`relative mt-4 rounded border border-dashed ${theme.bodyBorder} ${theme.labelBg} px-3 py-2`}>
+                            <p className={`text-[11px] font-semibold uppercase tracking-wide ${theme.labelText}`}>
+                              {count} document{count !== 1 ? 's' : ''} archivé{count !== 1 ? 's' : ''}
+                            </p>
+                            <p className="mt-0.5 text-[10px] text-[#9a8060]">
+                              Cliquer pour consulter
+                            </p>
+                          </div>
+
+                          {/* Selected indicator */}
+                          {isSelected && (
+                            <div className="mt-3 flex items-center gap-1.5">
+                              <div className="h-1.5 w-1.5 rounded-full bg-[#806444]" />
+                              <span className="text-[10px] font-semibold text-[#806444]">Sélectionné</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <p className="font-semibold text-[#2f2a24]">{meta.label}</p>
-                    <p className="mt-0.5 text-xs text-[#7a6a55]">Niveau de priorité : {badge.name}</p>
-                    {isSelected && (
-                      <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#806444]" />
-                    )}
                   </button>
                 );
               })}
