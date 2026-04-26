@@ -20,7 +20,7 @@ export const RegisterPage = () => {
       setApiError('');
       const res = await authService.register(data);
       setAuth(res.user, res.access_token, res.refresh_token);
-      navigate('/documents');
+      navigate('/dashboard');
     } catch {
       setApiError('Une erreur est survenue. Verifiez vos informations.');
     }

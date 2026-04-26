@@ -20,7 +20,7 @@ export const LoginPage = () => {
       setApiError('');
       const res = await authService.login(data);
       setAuth(res.user, res.access_token, res.refresh_token);
-      navigate('/documents');
+      navigate('/dashboard');
     } catch {
       setApiError('Email ou mot de passe incorrect.');
     }

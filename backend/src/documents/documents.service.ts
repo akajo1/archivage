@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
@@ -122,6 +123,15 @@ export class DocumentsService {
     dto: CreateDocumentDto,
     fileUrl?: string,
   ) {
+    const hasFile = Boolean(fileUrl);
+    const hasContent = Boolean(dto.content?.trim());
+
+    if ((hasFile && hasContent) || (!hasFile && !hasContent)) {
+      throw new BadRequestException(
+        'Vous devez choisir un seul mode: uploader un fichier ou saisir le contenu.',
+      );
+    }
+
     const accessRules = await this.getAccessRules(role);
     if (
       accessRules.allowedBadgeIds &&
@@ -146,8 +156,8 @@ export class DocumentsService {
         title: dto.title,
         reference: dto.reference ?? null,
         description: dto.description ?? null,
-        content: dto.content ?? null,
-        fileUrl: fileUrl ?? null,
+        content: hasContent ? dto.content! : null,
+        fileUrl: hasFile ? fileUrl! : null,
         createdById: userId,
         badgeId: dto.badge_id,
         confidentialityId: dto.confidentiality_id,
@@ -169,6 +179,16 @@ export class DocumentsService {
     if (role !== 'admin' && doc.createdById !== userId) {
       throw new ForbiddenException(
         'Vous ne pouvez modifier que vos propres documents.',
+      );
+    }
+
+    const hasNewFile = Boolean(fileUrl);
+    const hasContentField = dto.content !== undefined;
+    const hasNewContent = Boolean(dto.content?.trim());
+
+    if (hasNewFile && hasNewContent) {
+      throw new BadRequestException(
+        'Vous ne pouvez pas envoyer un fichier principal et un contenu texte en meme temps.',
       );
     }
 
@@ -198,12 +218,14 @@ export class DocumentsService {
         ...(dto.title ? { title: dto.title } : {}),
         ...(dto.reference !== undefined ? { reference: dto.reference } : {}),
         ...(dto.description !== undefined ? { description: dto.description } : {}),
-        ...(dto.content !== undefined ? { content: dto.content } : {}),
+        ...(hasContentField ? { content: hasNewContent ? dto.content : null } : {}),
         ...(dto.badge_id ? { badgeId: dto.badge_id } : {}),
         ...(dto.confidentiality_id
           ? { confidentialityId: dto.confidentiality_id }
           : {}),
-        ...(fileUrl ? { fileUrl } : {}),
+        ...(hasNewFile ? { fileUrl } : {}),
+        ...(hasNewFile ? { content: null } : {}),
+        ...(hasNewContent ? { fileUrl: null } : {}),
       },
       include,
     });
