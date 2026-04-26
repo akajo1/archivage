@@ -15,24 +15,23 @@ export const DocumentTable = ({ documents, onDelete }: DocumentTableProps) => {
     return (
       <div className="arch-card flex flex-col items-center justify-center rounded-3xl border-dashed py-24 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eadbc4] text-3xl shadow-sm">
-          📂
+          🗂️
         </div>
-        <p className="mt-5 text-base font-semibold text-[#4f3f2f]">Aucun document trouve</p>
-        <p className="mt-1 text-sm text-[#8f7f6a]">Modifiez vos filtres ou creez un nouveau document</p>
+        <p className="mt-5 text-base font-semibold text-[#4f3f2f]">Aucun document trouvé</p>
+        <p className="mt-1 text-sm text-[#8f7f6a]">Modifiez vos filtres ou créez un nouveau document</p>
       </div>
     );
   }
 
   return (
-    <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
+    <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {documents.map((doc) => (
-        <div key={doc.id} className="mb-4 break-inside-avoid">
-          <DocumentCard
-            document={doc}
-            canManage={isAdmin || doc.createdBy.id === user?.id}
-            onDelete={isAdmin ? onDelete : undefined}
-          />
-        </div>
+        <DocumentCard
+          key={doc.id}
+          document={doc}
+          canManage={isAdmin || doc.createdBy?.id === user?.id}
+          onDelete={isAdmin ? onDelete : undefined}
+        />
       ))}
     </div>
   );
