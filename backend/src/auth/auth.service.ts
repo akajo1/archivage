@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
@@ -11,6 +12,14 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
+
+  /* ── helpers ── */
+
   private async getDocumentAccesses(role: string) {
     const permission = await this.prisma.rolePermission.findUnique({
       where: { role },
@@ -18,9 +27,8 @@ export class AuthService {
     });
 
     if (!permission) {
-      if (role === 'admin' || role === 'manager') {
+      if (role === 'admin' || role === 'manager')
         return ['read', 'create', 'edit'];
-      }
       return ['read'];
     }
 
@@ -31,10 +39,51 @@ export class AuthService {
     return accesses;
   }
 
-  constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-  ) {}
+  private signAccessToken(payload: {
+    sub: string;
+    email: string;
+    role: string;
+  }) {
+    return this.jwt.sign(payload, {
+      secret: this.config.get<string>('JWT_SECRET'),
+      expiresIn: (this.config.get<string>('JWT_EXPIRES_IN') ?? '15m') as unknown as number,
+    });
+  }
+
+  private signRefreshToken(payload: {
+    sub: string;
+    email: string;
+    role: string;
+  }) {
+    return this.jwt.sign(payload, {
+      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d') as unknown as number,
+    });
+  }
+
+  private async buildAuthResponse(user: {
+    id: string;
+    email: string;
+    role: string;
+    name: string;
+  }) {
+    const tokenPayload = { sub: user.id, email: user.email, role: user.role };
+    const documentAccesses = await this.getDocumentAccesses(user.role);
+
+    return {
+      access_token: this.signAccessToken(tokenPayload),
+      refresh_token: this.signRefreshToken(tokenPayload),
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        documentAccesses,
+      },
+    };
+  }
+
+  /* ── public methods ── */
 
   async register(dto: RegisterDto) {
     const exists = await this.prisma.user.findUnique({
@@ -46,8 +95,7 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: { name: dto.name, email: dto.email, password: hashed },
     });
-
-    return this.signToken(user);
+    return this.buildAuthResponse(user);
   }
 
   async login(dto: LoginDto) {
@@ -59,7 +107,15 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Identifiants invalides.');
 
-    return this.signToken(user);
+    return this.buildAuthResponse(user);
+  }
+
+  async refresh(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { id: true, name: true, email: true, role: true },
+    });
+    return this.buildAuthResponse(user);
   }
 
   async me(userId: string) {
@@ -71,27 +127,6 @@ export class AuthService {
     return {
       ...user,
       documentAccesses,
-    };
-  }
-
-  private async signToken(user: {
-    id: string;
-    email: string;
-    role: string;
-    name: string;
-  }) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const documentAccesses = await this.getDocumentAccesses(user.role);
-
-    return {
-      access_token: this.jwt.sign(payload),
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        documentAccesses,
-      },
     };
   }
 }

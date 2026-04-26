@@ -1,7 +1,5 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../generated/prisma"
-  moduleFormat = "cjs"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -54,19 +52,35 @@ model Confidentiality {
 }
 
 model Document {
-  id                String          @id @default(uuid())
+  id                String               @id @default(uuid())
   title             String
+  reference         String?
+  description       String?
   content           String?
-  fileUrl           String?         @map("file_url")
-  createdAt         DateTime        @default(now()) @map("created_at")
-  createdBy         User            @relation(fields: [createdById], references: [id])
-  createdById       String          @map("created_by")
-  badge             Badge           @relation(fields: [badgeId], references: [id])
-  badgeId           String          @map("badge_id")
-  confidentiality   Confidentiality @relation(fields: [confidentialityId], references: [id])
-  confidentialityId String          @map("confidentiality_id")
+  fileUrl           String?              @map("file_url")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  createdBy         User                 @relation(fields: [createdById], references: [id])
+  createdById       String               @map("created_by")
+  badge             Badge                @relation(fields: [badgeId], references: [id])
+  badgeId           String               @map("badge_id")
+  confidentiality   Confidentiality      @relation(fields: [confidentialityId], references: [id])
+  confidentialityId String               @map("confidentiality_id")
+  attachments       DocumentAttachment[]
 
   @@map("documents")
+}
+
+model DocumentAttachment {
+  id         String   @id @default(uuid())
+  fileUrl    String   @map("file_url")
+  fileName   String   @map("file_name")
+  fileSize   Int?     @map("file_size")
+  mimeType   String?  @map("mime_type")
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String   @map("document_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("document_attachments")
 }
 
 model AppRole {

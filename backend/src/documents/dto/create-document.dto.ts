@@ -7,6 +7,14 @@ export class CreateDocumentDto {
 
   @IsOptional()
   @IsString()
+  reference?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
   content?: string;
 
   @IsUUID()

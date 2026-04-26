@@ -16,6 +16,9 @@ import {
   RiUserLine,
   RiShieldLine,
   RiPriceTag3Line,
+  RiHashtag,
+  RiAlignLeft,
+  RiFileTextLine,
 } from 'react-icons/ri';
 import { documentService } from '../services/documentService';
 import type { Document } from '../types/document.types';
@@ -200,27 +203,52 @@ export const DocumentDetailPage = () => {
               <p className="mt-0.5 text-sm font-medium capitalize text-[#1B3C53]">{document.confidentiality?.level ?? '—'}</p>
             </div>
           </div>
+          {document.reference && (
+            <div className="flex items-start gap-2 col-span-2 sm:col-span-4">
+              <RiHashtag className="mt-0.5 h-4 w-4 shrink-0 text-[#7aaac4]" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-[#456882]">Référence</p>
+                <p className="mt-0.5 font-mono text-sm font-medium text-[#1B3C53]">{document.reference}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Body */}
         <div className="space-y-5 px-8 py-7">
+
+          {/* Description */}
+          {document.description && (
+            <div className="rounded-2xl border border-[#c4d4df] bg-[#edf4f8] p-5">
+              <div className="mb-2 flex items-center gap-2">
+                <RiAlignLeft className="h-4 w-4 text-[#7aaac4]" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#456882]">Description</p>
+              </div>
+              <p className="text-sm text-[#1B3C53] whitespace-pre-line">{document.description}</p>
+            </div>
+          )}
+
+          {/* Main file */}
           {document.fileUrl && (
             <div className="flex items-center gap-3 rounded-2xl border border-[#c4d4df] bg-[#edf4f8] px-4 py-3">
-              <RiAttachment2 className="shrink-0 text-xl text-[#234C6A]" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#dbeaf3] text-[#234C6A]">
+                <RiFileTextLine className="h-5 w-5" />
+              </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-[#1B3C53]">Fichier joint</p>
+                <p className="text-sm font-medium text-[#1B3C53]">Fichier principal</p>
                 <a
                   href={document.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs text-[#234C6A] hover:underline"
                 >
-                  <RiDownloadLine className="h-3 w-3" /> Télécharger le fichier
+                  <RiDownloadLine className="h-3 w-3" /> Télécharger
                 </a>
               </div>
             </div>
           )}
 
+          {/* Content */}
           {document.content ? (
             <div className="rounded-2xl border border-[#c4d4df] bg-[#f4f7fa] p-6">
               <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#456882]">Contenu du document</p>
@@ -231,8 +259,47 @@ export const DocumentDetailPage = () => {
               />
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-[#c4d4df] bg-[#edf4f8] px-6 py-10 text-center">
+            <div className="rounded-2xl border border-dashed border-[#c4d4df] bg-[#edf4f8] px-6 py-8 text-center">
               <p className="text-sm text-[#456882]">Ce document ne contient pas de contenu texte.</p>
+            </div>
+          )}
+
+          {/* Annexes */}
+          {document.attachments && document.attachments.length > 0 && (
+            <div className="rounded-2xl border border-[#c4d4df] bg-white">
+              <div className="flex items-center gap-2 border-b border-[#dde8f0] px-5 py-3">
+                <RiAttachment2 className="h-4 w-4 text-[#234C6A]" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#456882]">
+                  Fichiers annexes ({document.attachments.length})
+                </p>
+              </div>
+              <div className="divide-y divide-[#dde8f0]">
+                {document.attachments.map((att) => (
+                  <div key={att.id} className="flex items-center gap-3 px-5 py-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#edf4f8] text-[#234C6A]">
+                      <RiAttachment2 className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-[#1B3C53]">{att.fileName}</p>
+                      {att.fileSize && (
+                        <p className="text-xs text-[#456882]">
+                          {att.fileSize < 1024 * 1024
+                            ? `${(att.fileSize / 1024).toFixed(1)} Ko`
+                            : `${(att.fileSize / (1024 * 1024)).toFixed(1)} Mo`}
+                        </p>
+                      )}
+                    </div>
+                    <a
+                      href={att.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg bg-[#edf4f8] px-3 py-1.5 text-xs font-medium text-[#234C6A] hover:bg-[#dbeaf3]"
+                    >
+                      <RiDownloadLine className="h-3.5 w-3.5" /> Télécharger
+                    </a>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

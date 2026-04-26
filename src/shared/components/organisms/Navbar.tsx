@@ -12,6 +12,7 @@ import {
   RiDashboardLine,
 } from 'react-icons/ri';
 import { useAuthStore } from '../../../features/auth/store/authStore';
+import { authService } from '../../../features/auth/services/authService';
 import { Button } from '../atoms/Button';
 import { healthService, type BackendHealth } from '../../services/healthService';
 
@@ -57,7 +58,11 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
     return () => { active = false; window.clearInterval(id); };
   }, []);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    await authService.logout();
+    logout();
+    navigate('/login');
+  };
   const visibleItems = user ? navItems.filter((item) => item.roles.includes(user.role)) : [];
   const rc = user ? (roleColors[user.role] ?? roleColors.user) : roleColors.user;
   const initials = user?.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() ?? '';
@@ -155,8 +160,7 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleLogout}
-              className="mt-3 w-full justify-center gap-1.5 rounded-xl border border-white/8 text-white/50 transition-all hover:border-white/15 hover:bg-white/10 hover:text-white"
+              onClick={handleLogout}              className="mt-3 w-full justify-center gap-1.5 rounded-xl border border-white/8 text-white/50 transition-all hover:border-white/15 hover:bg-white/10 hover:text-white"
             >
               <RiLogoutBoxLine className="h-3.5 w-3.5" /> Déconnexion
             </Button>

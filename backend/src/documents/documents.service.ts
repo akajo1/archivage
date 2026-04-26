@@ -24,6 +24,7 @@ const include = {
   badge: true,
   confidentiality: true,
   createdBy: { select: { id: true, name: true, email: true, role: true } },
+  attachments: true,
 };
 
 @Injectable()
@@ -143,6 +144,8 @@ export class DocumentsService {
     return this.prisma.document.create({
       data: {
         title: dto.title,
+        reference: dto.reference ?? null,
+        description: dto.description ?? null,
         content: dto.content ?? null,
         fileUrl: fileUrl ?? null,
         createdById: userId,
@@ -193,6 +196,8 @@ export class DocumentsService {
       where: { id },
       data: {
         ...(dto.title ? { title: dto.title } : {}),
+        ...(dto.reference !== undefined ? { reference: dto.reference } : {}),
+        ...(dto.description !== undefined ? { description: dto.description } : {}),
         ...(dto.content !== undefined ? { content: dto.content } : {}),
         ...(dto.badge_id ? { badgeId: dto.badge_id } : {}),
         ...(dto.confidentiality_id
@@ -202,6 +207,38 @@ export class DocumentsService {
       },
       include,
     });
+  }
+
+  async addAttachments(
+    documentId: string,
+    role: Role,
+    files: Express.Multer.File[],
+  ) {
+    const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
+    if (!doc) throw new NotFoundException('Document introuvable.');
+
+    const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+
+    await this.prisma.documentAttachment.createMany({
+      data: files.map((f) => ({
+        documentId,
+        fileUrl: `/uploads/${f.filename}`,
+        fileName: f.originalname,
+        fileSize: f.size,
+        mimeType: f.mimetype,
+      })),
+    });
+
+    return this.prisma.document.findUnique({ where: { id: documentId }, include });
+  }
+
+  async removeAttachment(documentId: string, attachmentId: string, _role: Role) {
+    const attachment = await this.prisma.documentAttachment.findFirst({
+      where: { id: attachmentId, documentId },
+    });
+    if (!attachment) throw new NotFoundException('Pièce jointe introuvable.');
+    await this.prisma.documentAttachment.delete({ where: { id: attachmentId } });
+    return { message: 'Pièce jointe supprimée.' };
   }
 
   async remove(id: string, userId: string, role: Role) {

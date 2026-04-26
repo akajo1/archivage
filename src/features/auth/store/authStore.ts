@@ -5,8 +5,10 @@ import type { User } from '../types/auth.types';
 interface AuthStore {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User, token: string, refreshToken: string) => void;
+  setTokens: (token: string, refreshToken: string) => void;
   setUser: (user: User) => void;
   logout: () => void;
 }
@@ -16,20 +18,37 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
-      setAuth: (user, token) => {
+
+      setAuth: (user, token, refreshToken) => {
         localStorage.setItem('token', token);
-        set({ user, token, isAuthenticated: true });
+        localStorage.setItem('refresh_token', refreshToken);
+        set({ user, token, refreshToken, isAuthenticated: true });
       },
-      setUser: (user) => {
-        set((state) => ({ ...state, user }));
+
+      setTokens: (token, refreshToken) => {
+        localStorage.setItem('token', token);
+        localStorage.setItem('refresh_token', refreshToken);
+        set({ token, refreshToken });
       },
+
+      setUser: (user) => set((state) => ({ ...state, user })),
+
       logout: () => {
         localStorage.removeItem('token');
-        set({ user: null, token: null, isAuthenticated: false });
+        localStorage.removeItem('refresh_token');
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
       },
     }),
-    { name: 'auth-storage', partialize: (s) => ({ user: s.user, token: s.token, isAuthenticated: s.isAuthenticated }) }
+    {
+      name: 'auth-storage',
+      partialize: (s) => ({
+        user: s.user,
+        token: s.token,
+        refreshToken: s.refreshToken,
+        isAuthenticated: s.isAuthenticated,
+      }),
+    }
   )
 );
-
