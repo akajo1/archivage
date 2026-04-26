@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
+import { DashboardPage } from '../features/documents/pages/DashboardPage';
 import { DocumentListPage } from '../features/documents/pages/DocumentListPage';
 import { DocumentFormPage } from '../features/documents/pages/DocumentFormPage';
 import { DocumentDetailPage } from '../features/documents/pages/DocumentDetailPage';
@@ -16,7 +17,8 @@ export const router = createBrowserRouter([
     path: '/',
     element: <ProtectedRoute><Layout /></ProtectedRoute>,
     children: [
-      { index: true, element: <Navigate to="/documents" replace /> },
+      { index: true, element: <DashboardPage /> },
+      { path: 'dashboard', element: <DashboardPage /> },
       { path: 'documents', element: <DocumentListPage /> },
       { path: 'documents/new', element: <DocumentFormPage /> },
       { path: 'documents/:id', element: <DocumentDetailPage /> },
@@ -39,6 +41,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '*', element: <Navigate to="/documents" replace /> },
+  { path: '*', element: <Navigate to="/" replace /> },
 ]);
 

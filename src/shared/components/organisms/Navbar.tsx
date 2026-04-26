@@ -9,6 +9,7 @@ import {
   RiLogoutBoxLine,
   RiWifiLine,
   RiWifiOffLine,
+  RiDashboardLine,
 } from 'react-icons/ri';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { Button } from '../atoms/Button';
@@ -33,6 +34,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { to: '/', label: 'Tableau de bord', Icon: RiDashboardLine, roles: ['admin', 'manager', 'user'] },
   { to: '/documents', label: 'Documents', Icon: RiFileList2Line, roles: ['admin', 'manager', 'user'] },
   { to: '/users', label: 'Utilisateurs', Icon: RiTeamLine, roles: ['admin'] },
   { to: '/roles', label: 'Roles', Icon: RiShieldKeyholeLine, roles: ['admin'] },
@@ -74,7 +76,7 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
   return (
     <aside className={`arch-card flex flex-col rounded-3xl p-4 ${className}`}>
       <Link
-        to="/documents"
+        to="/"
         onClick={onNavigate}
         className="mb-6 inline-flex items-center gap-2 self-start rounded-full bg-[#ebdcc5] px-3 py-1.5 text-lg font-bold text-[#6f563a]"
       >
@@ -87,6 +89,7 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
           <NavLink
             key={to}
             to={to}
+            end={to === '/'}
             onClick={onNavigate}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors ${
