@@ -5,9 +5,11 @@ import { DocumentCard } from '../molecules/DocumentCard';
 interface DocumentTableProps {
   documents: Document[];
   onDelete?: (id: string) => void;
+  canDelete?: boolean;
+  canEdit?: boolean;
 }
 
-export const DocumentTable = ({ documents, onDelete }: DocumentTableProps) => {
+export const DocumentTable = ({ documents, onDelete, canDelete, canEdit }: DocumentTableProps) => {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
 
@@ -29,8 +31,8 @@ export const DocumentTable = ({ documents, onDelete }: DocumentTableProps) => {
         <DocumentCard
           key={doc.id}
           document={doc}
-          canManage={isAdmin || doc.createdBy?.id === user?.id}
-          onDelete={isAdmin ? onDelete : undefined}
+          canManage={canEdit || isAdmin || doc.createdBy?.id === user?.id}
+          onDelete={canDelete || isAdmin ? onDelete : undefined}
         />
       ))}
     </div>

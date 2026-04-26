@@ -16,12 +16,14 @@ import { useNavigate } from 'react-router-dom';
 interface DocumentListViewProps {
   documents: Document[];
   onDelete?: (id: string) => void;
+  canDelete?: boolean;
+  canEdit?: boolean;
 }
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 
-export const DocumentListView = ({ documents, onDelete }: DocumentListViewProps) => {
+export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: DocumentListViewProps) => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const isAdmin = user?.role === 'admin';
@@ -91,29 +93,29 @@ export const DocumentListView = ({ documents, onDelete }: DocumentListViewProps)
                 {formatDate(doc.createdAt)}
               </span>
 
-              {/* Actions */}
-              <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                <IconButton
-                  icon={<RiEyeLine className="h-3.5 w-3.5" />}
-                  label="Voir"
-                  onClick={() => navigate(`/documents/${doc.id}`)}
-                />
-                {canManage && (
-                  <IconButton
-                    icon={<RiPencilLine className="h-3.5 w-3.5" />}
-                    label="Modifier"
-                    variant="success"
-                    onClick={() => navigate(`/documents/${doc.id}/edit`)}
-                  />
-                )}
-                {isAdmin && onDelete && (
-                  <IconButton
-                    icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
-                    label="Supprimer"
-                    variant="danger"
-                    onClick={() => onDelete(doc.id)}
-                  />
-                )}
+               {/* Actions */}
+               <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                 <IconButton
+                   icon={<RiEyeLine className="h-3.5 w-3.5" />}
+                   label="Voir"
+                   onClick={() => navigate(`/documents/${doc.id}`)}
+                 />
+                 {(canEdit || canManage) && (
+                   <IconButton
+                     icon={<RiPencilLine className="h-3.5 w-3.5" />}
+                     label="Modifier"
+                     variant="success"
+                     onClick={() => navigate(`/documents/${doc.id}/edit`)}
+                   />
+                 )}
+                 {(canDelete || isAdmin) && onDelete && (
+                   <IconButton
+                     icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
+                     label="Supprimer"
+                     variant="danger"
+                     onClick={() => onDelete(doc.id)}
+                   />
+                 )}
               </div>
             </div>
           );

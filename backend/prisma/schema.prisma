@@ -102,6 +102,25 @@ model RolePermission {
   canEdit           Boolean           @default(false) @map("can_edit")
   badges            Badge[]
   confidentialities Confidentiality[]
+  featurePermissions RoleFeaturePermission[]
 
   @@map("role_permissions")
 }
+
+model RoleFeaturePermission {
+  id               String         @id @default(uuid())
+  feature          String
+  canRead          Boolean        @default(false) @map("can_read")
+  canEdit          Boolean        @default(false) @map("can_edit")
+  canDelete        Boolean        @default(false) @map("can_delete")
+  canSearch        Boolean        @default(false) @map("can_search")
+  rolePermission   RolePermission @relation(fields: [rolePermissionId], references: [id], onDelete: Cascade)
+  rolePermissionId String         @map("role_permission_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  @@unique([rolePermissionId, feature])
+  @@index([feature])
+  @@map("role_feature_permissions")
+}
+

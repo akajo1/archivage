@@ -16,7 +16,113 @@ import { Input } from '../../../shared/components/atoms/Input';
 import { badgeService } from '../../badges/services/badgeService';
 import { confidentialityService } from '../../confidentiality/services/confidentialityService';
 import { rolesService } from '../services/rolesService';
-import type { AppRole } from '../types/roles.types';
+import { usePermissions } from '../../auth/hooks/usePermissions';
+import {
+  ROLE_FEATURE_KEYS,
+  type AppRole,
+  type FeaturePermission,
+  type RoleFeatureKey,
+} from '../types/roles.types';
+
+const FEATURE_LABELS: Record<RoleFeatureKey, string> = {
+  dashboard: 'Tableau de bord',
+  documents: 'Documents',
+  users: 'Utilisateurs',
+  roles: 'Roles',
+  badges: 'Badges',
+  confidentiality: 'Confidentialite',
+};
+
+const OPERATIONS: Array<keyof Omit<FeaturePermission, 'feature'>> = [
+  'canRead',
+  'canEdit',
+  'canDelete',
+  'canSearch',
+];
+
+const OPERATION_LABELS: Record<(typeof OPERATIONS)[number], string> = {
+  canRead: 'Lire',
+  canEdit: 'Editer',
+  canDelete: 'Supprimer',
+  canSearch: 'Rechercher',
+};
+
+const defaultFeaturePermissions = (): FeaturePermission[] =>
+  ROLE_FEATURE_KEYS.map((feature) => ({
+    feature,
+    canRead: false,
+    canEdit: false,
+    canDelete: false,
+    canSearch: false,
+  }));
+
+const mergeFeaturePermissions = (items: FeaturePermission[] | undefined) => {
+  const defaults = defaultFeaturePermissions();
+  const map = new Map((items ?? []).map((item) => [item.feature, item]));
+  return defaults.map((item) => map.get(item.feature) ?? item);
+};
+
+type FeaturePermissionsMatrixProps = {
+  value: FeaturePermission[];
+  onToggle: (feature: RoleFeatureKey, operation: keyof Omit<FeaturePermission, 'feature'>) => void;
+  disabled?: boolean;
+};
+
+const FeaturePermissionsMatrix = ({
+  value,
+  onToggle,
+  disabled = false,
+}: FeaturePermissionsMatrixProps) => {
+  const valueByFeature = new Map(value.map((item) => [item.feature, item]));
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-[#dde8f0]">
+      <table className="min-w-full divide-y divide-[#dde8f0] text-sm">
+        <thead className="bg-[#edf4f8]">
+          <tr>
+            <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-[#456882]">
+              Fonctionnalite
+            </th>
+            {OPERATIONS.map((operation) => (
+              <th
+                key={operation}
+                className="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-[#456882]"
+              >
+                {OPERATION_LABELS[operation]}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#dde8f0] bg-white">
+          {ROLE_FEATURE_KEYS.map((feature) => {
+            const permission = valueByFeature.get(feature);
+
+            return (
+              <tr key={feature}>
+                <td className="px-3 py-2 font-medium text-[#1B3C53]">{FEATURE_LABELS[feature]}</td>
+                {OPERATIONS.map((operation) => {
+                  const checked = permission?.[operation] ?? false;
+
+                  return (
+                    <td key={`${feature}-${operation}`} className="px-3 py-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={() => onToggle(feature, operation)}
+                        className="h-4 w-4 rounded border-[#c4d4df] text-[#234C6A] focus:ring-[#234C6A]"
+                      />
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 type RoleDraft = {
   id: string;
@@ -25,6 +131,7 @@ type RoleDraft = {
   description: string;
   badgeIds: string[];
   confidentialityIds: string[];
+  featurePermissions: FeaturePermission[];
 };
 
 const toDraft = (role: AppRole): RoleDraft => ({
@@ -34,9 +141,11 @@ const toDraft = (role: AppRole): RoleDraft => ({
   description: role.description ?? '',
   badgeIds: (role.badges ?? []).map((badge) => badge.id),
   confidentialityIds: (role.confidentialities ?? []).map((item) => item.id),
+  featurePermissions: mergeFeaturePermissions(role.featurePermissions),
 });
 
 export const RolePermissionsPage = () => {
+  const { canEditFeature, canDeleteFeature } = usePermissions();
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [allConfidentialities, setAllConfidentialities] = useState<Confidentiality[]>([]);
@@ -52,6 +161,7 @@ export const RolePermissionsPage = () => {
     description: '',
     badgeIds: [] as string[],
     confidentialityIds: [] as string[],
+    featurePermissions: defaultFeaturePermissions(),
   });
 
   const selectedRole = useMemo(
@@ -135,15 +245,34 @@ export const RolePermissionsPage = () => {
     }));
   };
 
+  const toggleNewRoleFeatureOperation = (
+    feature: RoleFeatureKey,
+    operation: keyof Omit<FeaturePermission, 'feature'>,
+  ) => {
+    setNewRole((prev) => ({
+      ...prev,
+      featurePermissions: prev.featurePermissions.map((item) =>
+        item.feature === feature
+          ? { ...item, [operation]: !item[operation] }
+          : item,
+      ),
+    }));
+  };
+
   const createRole = async () => {
+    const hasFeatureAccess = newRole.featurePermissions.some(
+      (item) => item.canRead || item.canEdit || item.canDelete || item.canSearch,
+    );
+
     if (
       !newRole.key.trim() ||
       !newRole.name.trim() ||
       newRole.badgeIds.length === 0 ||
-      newRole.confidentialityIds.length === 0
+      newRole.confidentialityIds.length === 0 ||
+      !hasFeatureAccess
     ) {
       setError(
-        'Renseignez key/nom et selectionnez au moins un badge et une confidentialite.',
+        'Renseignez key/nom, selectionnez badge/confidentialite et au moins une operation sur une fonctionnalite.',
       );
       return;
     }
@@ -156,6 +285,7 @@ export const RolePermissionsPage = () => {
         description: newRole.description.trim() || undefined,
         badgeIds: newRole.badgeIds,
         confidentialityIds: newRole.confidentialityIds,
+        featurePermissions: newRole.featurePermissions,
       });
 
       setRoles((prev) => [created, ...prev]);
@@ -165,6 +295,7 @@ export const RolePermissionsPage = () => {
         description: '',
         badgeIds: [],
         confidentialityIds: [],
+        featurePermissions: defaultFeaturePermissions(),
       });
 
       await Swal.fire({
@@ -211,17 +342,40 @@ export const RolePermissionsPage = () => {
     });
   };
 
+  const toggleDraftFeatureOperation = (
+    feature: RoleFeatureKey,
+    operation: keyof Omit<FeaturePermission, 'feature'>,
+  ) => {
+    setRoleDraft((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        featurePermissions: prev.featurePermissions.map((item) =>
+          item.feature === feature
+            ? { ...item, [operation]: !item[operation] }
+            : item,
+        ),
+      };
+    });
+  };
+
   const saveRoleDetails = async () => {
     if (!roleDraft) return;
+
+    const hasFeatureAccess = roleDraft.featurePermissions.some(
+      (item) => item.canRead || item.canEdit || item.canDelete || item.canSearch,
+    );
 
     if (
       !roleDraft.key.trim() ||
       !roleDraft.name.trim() ||
       roleDraft.badgeIds.length === 0 ||
-      roleDraft.confidentialityIds.length === 0
+      roleDraft.confidentialityIds.length === 0 ||
+      !hasFeatureAccess
     ) {
       setError(
-        'Un role doit avoir une key, un nom, au moins un badge et une confidentialite.',
+        'Un role doit avoir key/nom, badge/confidentialite et au moins une operation active.',
       );
       return;
     }
@@ -236,6 +390,7 @@ export const RolePermissionsPage = () => {
         description: roleDraft.description.trim() || undefined,
         badgeIds: roleDraft.badgeIds,
         confidentialityIds: roleDraft.confidentialityIds,
+        featurePermissions: roleDraft.featurePermissions,
       });
 
       setRoles((prev) => prev.map((role) => (role.id === updated.id ? updated : role)));
@@ -331,19 +486,20 @@ export const RolePermissionsPage = () => {
         </div>
       </div>
 
-      {error && (
-        <div className="rounded-2xl border border-[#f4a8bf] bg-[#fce8ef] px-4 py-3 text-sm text-[#BD114A]">
-          {error}
-        </div>
-      )}
+       {error && (
+         <div className="rounded-2xl border border-[#f4a8bf] bg-[#fce8ef] px-4 py-3 text-sm text-[#BD114A]">
+           {error}
+         </div>
+       )}
 
-      <div className="arch-card rounded-3xl p-6">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-[#1B3C53]">Creer un role</h2>
-          <span className="rounded-full bg-[#dbeaf3] px-3 py-1 text-xs font-medium text-[#234C6A]">
-            {roles.length} role(s)
-          </span>
-        </div>
+       {canEditFeature('roles') && (
+         <div className="arch-card rounded-3xl p-6">
+           <div className="mb-5 flex items-center justify-between gap-3">
+             <h2 className="text-base font-semibold text-[#1B3C53]">Creer un role</h2>
+             <span className="rounded-full bg-[#dbeaf3] px-3 py-1 text-xs font-medium text-[#234C6A]">
+               {roles.length} role(s)
+             </span>
+           </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <Input
@@ -420,11 +576,22 @@ export const RolePermissionsPage = () => {
         </div>
 
         <div className="mt-5">
-          <Button onClick={() => void createRole()}>
-            <RiAddLine className="h-4 w-4" /> Creer le role
-          </Button>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
+            Permissions par fonctionnalite
+          </p>
+          <FeaturePermissionsMatrix
+            value={newRole.featurePermissions}
+            onToggle={toggleNewRoleFeatureOperation}
+          />
         </div>
-      </div>
+
+         <div className="mt-5">
+           <Button onClick={() => void createRole()}>
+             <RiAddLine className="h-4 w-4" /> Creer le role
+           </Button>
+         </div>
+       </div>
+       )}
 
       {loading ? (
         <div className="arch-card rounded-3xl py-16">
@@ -475,23 +642,27 @@ export const RolePermissionsPage = () => {
                 </span>
               </div>
 
-              <div className="col-span-3 flex justify-end gap-1.5">
-                <IconButton
-                  icon={<RiPencilLine className="h-3.5 w-3.5" />}
-                  label="Modifier le role"
-                  variant="default"
-                  size="sm"
-                  onClick={() => openRoleModal(role)}
-                  isLoading={savingRoleId === role.id}
-                />
-                <IconButton
-                  icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
-                  label="Supprimer le role"
-                  variant="danger"
-                  size="sm"
-                  onClick={() => void deleteRole(role)}
-                  isLoading={savingRoleId === role.id}
-                />
+               <div className="col-span-3 flex justify-end gap-1.5">
+                 {canEditFeature('roles') && (
+                   <IconButton
+                     icon={<RiPencilLine className="h-3.5 w-3.5" />}
+                     label="Modifier le role"
+                     variant="default"
+                     size="sm"
+                     onClick={() => openRoleModal(role)}
+                     isLoading={savingRoleId === role.id}
+                   />
+                 )}
+                 {canDeleteFeature('roles') && (
+                   <IconButton
+                     icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
+                     label="Supprimer le role"
+                     variant="danger"
+                     size="sm"
+                     onClick={() => void deleteRole(role)}
+                     isLoading={savingRoleId === role.id}
+                   />
+                 )}
               </div>
             </div>
           ))}
@@ -607,6 +778,17 @@ export const RolePermissionsPage = () => {
                   })}
                 </div>
               </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
+                Permissions par fonctionnalite
+              </p>
+              <FeaturePermissionsMatrix
+                value={roleDraft.featurePermissions}
+                onToggle={toggleDraftFeatureOperation}
+                disabled={isSavingModalRole}
+              />
             </div>
 
             {selectedRole?.description && (

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User } from '../types/auth.types';
+import type { User, UserPermissions } from '../types/auth.types';
 
 interface AuthStore {
   user: User | null;
@@ -10,6 +10,7 @@ interface AuthStore {
   setAuth: (user: User, token: string, refreshToken: string) => void;
   setTokens: (token: string, refreshToken: string) => void;
   setUser: (user: User) => void;
+  setUserPermissions: (permissions: UserPermissions) => void;
   logout: () => void;
 }
 
@@ -34,6 +35,11 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       setUser: (user) => set((state) => ({ ...state, user })),
+
+      setUserPermissions: (permissions) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, userPermissions: permissions } : null,
+        })),
 
       logout: () => {
         localStorage.removeItem('token');

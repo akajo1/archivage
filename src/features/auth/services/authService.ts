@@ -29,4 +29,8 @@ export const authService = {
     const { data } = await apiClient.get<User>('/auth/me');
     return data;
   },
+  refreshPermissions: async (): Promise<User> => {
+    const { data } = await apiClient.post<User>('/auth/refresh-permissions');
+    return data;
+  },
 };

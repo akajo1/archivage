@@ -8,10 +8,47 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { SearchRolesDto } from './dto/search-roles.dto';
+import type { FeaturePermissionDto } from './dto/feature-permission.dto';
 
 @Injectable()
 export class RolesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private normalizeFeaturePermissions(
+    featurePermissions: FeaturePermissionDto[] | undefined,
+  ) {
+    const byFeature = new Map<string, FeaturePermissionDto>();
+    for (const item of featurePermissions ?? []) {
+      byFeature.set(item.feature, item);
+    }
+
+    const normalized = Array.from(byFeature.values());
+    const hasAnyOperation = normalized.some(
+      (item) => item.canRead || item.canEdit || item.canDelete || item.canSearch,
+    );
+
+    if (!hasAnyOperation) {
+      throw new BadRequestException(
+        'Selectionnez au moins une fonctionnalite avec une operation autorisee.',
+      );
+    }
+
+    return normalized;
+  }
+
+  private extractDocumentLegacyAccess(featurePermissions: FeaturePermissionDto[]) {
+    const documentsPermission = featurePermissions.find(
+      (item) => item.feature === 'documents',
+    );
+
+    if (!documentsPermission) return null;
+
+    return {
+      canRead: documentsPermission.canRead,
+      canCreate: documentsPermission.canEdit,
+      canEdit: documentsPermission.canEdit,
+    };
+  }
 
   findAll(query: SearchRolesDto) {
     const search = query.q?.trim();
@@ -34,6 +71,16 @@ export class RolesService {
           include: {
             badges: { select: { id: true, name: true, color: true } },
             confidentialities: { select: { id: true, level: true } },
+            featurePermissions: {
+              select: {
+                feature: true,
+                canRead: true,
+                canEdit: true,
+                canDelete: true,
+                canSearch: true,
+              },
+              orderBy: { feature: 'asc' },
+            },
           },
         });
 
@@ -43,6 +90,7 @@ export class RolesService {
             ...role,
             badges: permission?.badges ?? [],
             confidentialities: permission?.confidentialities ?? [],
+            featurePermissions: permission?.featurePermissions ?? [],
           };
         });
       });
@@ -56,6 +104,10 @@ export class RolesService {
       throw new ConflictException('Ce role existe deja.');
     }
 
+    const normalizedFeaturePermissions = this.normalizeFeaturePermissions(
+      dto.featurePermissions,
+    );
+
     if (
       (dto.badgeIds?.length ?? 0) === 0 ||
       (dto.confidentialityIds?.length ?? 0) === 0
@@ -64,6 +116,10 @@ export class RolesService {
         'Vous devez attribuer au moins un badge et une confidentialite au role.',
       );
     }
+
+    const documentLegacyAccess = this.extractDocumentLegacyAccess(
+      normalizedFeaturePermissions,
+    );
 
     const role = await this.prisma.appRole.create({
       data: {
@@ -76,9 +132,13 @@ export class RolesService {
     await this.prisma.rolePermission.create({
       data: {
         role: role.key,
+        ...(documentLegacyAccess ?? {}),
         badges: { connect: dto.badgeIds!.map((id) => ({ id })) },
         confidentialities: {
           connect: dto.confidentialityIds!.map((id) => ({ id })),
+        },
+        featurePermissions: {
+          create: normalizedFeaturePermissions,
         },
       },
     });
@@ -99,6 +159,16 @@ export class RolesService {
       include: {
         badges: { select: { id: true, name: true, color: true } },
         confidentialities: { select: { id: true, level: true } },
+        featurePermissions: {
+          select: {
+            feature: true,
+            canRead: true,
+            canEdit: true,
+            canDelete: true,
+            canSearch: true,
+          },
+          orderBy: { feature: 'asc' },
+        },
       },
     });
 
@@ -106,6 +176,7 @@ export class RolesService {
       ...role,
       badges: permissions?.badges ?? [],
       confidentialities: permissions?.confidentialities ?? [],
+      featurePermissions: permissions?.featurePermissions ?? [],
     };
   }
 
@@ -141,11 +212,20 @@ export class RolesService {
 
     const permissionRoleKey = dto.key ?? role.key;
 
+    const normalizedFeaturePermissions = dto.featurePermissions
+      ? this.normalizeFeaturePermissions(dto.featurePermissions)
+      : undefined;
+
+    const documentLegacyAccess = normalizedFeaturePermissions
+      ? this.extractDocumentLegacyAccess(normalizedFeaturePermissions)
+      : null;
+
     if (permission) {
       await this.prisma.rolePermission.update({
         where: { role: role.key },
         data: {
           ...(dto.key ? { role: dto.key } : {}),
+          ...(documentLegacyAccess ?? {}),
           ...(dto.badgeIds
             ? {
                 badges: {
@@ -162,17 +242,33 @@ export class RolesService {
                 },
               }
             : {}),
+          ...(normalizedFeaturePermissions
+            ? {
+                featurePermissions: {
+                  deleteMany: {},
+                  create: normalizedFeaturePermissions,
+                },
+              }
+            : {}),
         },
       });
-    } else if (dto.badgeIds && dto.confidentialityIds) {
+    } else if (
+      dto.badgeIds &&
+      dto.confidentialityIds &&
+      normalizedFeaturePermissions
+    ) {
       await this.prisma.rolePermission.create({
         data: {
           role: permissionRoleKey,
+          ...(documentLegacyAccess ?? {}),
           badges: { connect: dto.badgeIds.map((badgeId) => ({ id: badgeId })) },
           confidentialities: {
             connect: dto.confidentialityIds.map((confidentialityId) => ({
               id: confidentialityId,
             })),
+          },
+          featurePermissions: {
+            create: normalizedFeaturePermissions,
           },
         },
       });

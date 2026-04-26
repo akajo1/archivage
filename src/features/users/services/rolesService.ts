@@ -9,6 +9,7 @@ const normalizeRole = (role: AppRole): AppRole => ({
   ...role,
   badges: role.badges ?? [],
   confidentialities: role.confidentialities ?? [],
+  featurePermissions: role.featurePermissions ?? [],
 });
 
 export const rolesService = {

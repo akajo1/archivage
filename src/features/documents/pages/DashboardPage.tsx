@@ -16,6 +16,7 @@ import { badgeService } from '../../badges/services/badgeService';
 import type { Document } from '../types/document.types';
 import type { Badge } from '../../badges/types/badge.types';
 import { useAuthStore } from '../../auth/store/authStore';
+import { usePermissions } from '../../auth/hooks/usePermissions';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
 import { Button } from '../../../shared/components/atoms/Button';
 import { BadgePill } from '../../../shared/components/atoms/BadgePill';
@@ -60,6 +61,7 @@ const formatDate = (iso: string) => {
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { canEditFeature, canReadFeature } = usePermissions();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,19 +87,26 @@ export const DashboardPage = () => {
   const selectedBadge = badges.find((b) => b.id === selectedBadgeId);
 
   const isAdmin = user?.role === 'admin';
-  const canCreate = user?.documentAccesses?.includes('create') || isAdmin;
+  const canCreate = canEditFeature('documents');
+  const canReadUsers = canReadFeature('users');
+  const canReadRoles = canReadFeature('roles');
 
   const shortcuts = [
     ...(canCreate
       ? [{ label: 'Nouveau document', icon: RiAddLine, to: '/documents/new', color: 'bg-[#234C6A] text-white hover:bg-[#1B3C53]' }]
       : []),
     { label: 'Tous les documents', icon: RiFileList2Line, to: '/documents', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
-    ...(isAdmin
+    ...(canReadUsers || isAdmin
       ? [
           { label: 'Utilisateurs', icon: RiTeamLine, to: '/users', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
+        ]
+      : []),
+    ...(canReadRoles || isAdmin
+      ? [
           { label: 'Roles & permissions', icon: RiShieldKeyholeLine, to: '/roles', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
         ]
       : []),
+
   ];
 
   const recentDocs = [...documents]

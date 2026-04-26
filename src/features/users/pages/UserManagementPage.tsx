@@ -6,6 +6,7 @@ import type { Role } from '../../auth/types/auth.types';
 import type { ManagedUser, CreateManagedUserPayload } from '../types/userManagement.types';
 import { userManagementService } from '../services/userManagementService';
 import { rolesService } from '../services/rolesService';
+import { usePermissions } from '../../auth/hooks/usePermissions';
 import { Button } from '../../../shared/components/atoms/Button';
 import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Input } from '../../../shared/components/atoms/Input';
@@ -15,6 +16,7 @@ export const UserManagementPage = () => {
   const [roles, setRoles] = useState<Role[]>(['user']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { canEditFeature, canDeleteFeature } = usePermissions();
 
   const {
     register,
@@ -74,27 +76,30 @@ export const UserManagementPage = () => {
     }
   };
 
-  const onDelete = async (id: string) => {
-    const result = await Swal.fire({
-      title: 'Supprimer cet utilisateur ?',
-      text: 'Cette action est irréversible.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler',
-      confirmButtonColor: '#BD114A',
-      cancelButtonColor: '#456882',
-    });
-    if (!result.isConfirmed) return;
+   const onDelete = async (id: string) => {
+     const result = await Swal.fire({
+       title: 'Supprimer cet utilisateur ?',
+       text: 'Cette action est irréversible.',
+       icon: 'warning',
+       showCancelButton: true,
+       confirmButtonText: 'Oui, supprimer',
+       cancelButtonText: 'Annuler',
+       confirmButtonColor: '#BD114A',
+       cancelButtonColor: '#456882',
+     });
+     if (!result.isConfirmed) return;
 
-    try {
-      await userManagementService.remove(id);
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      void Swal.fire({ title: 'Supprimé !', icon: 'success', timer: 1500, showConfirmButton: false });
-    } catch {
-      setError('Suppression impossible.');
-    }
-  };
+     try {
+       await userManagementService.remove(id);
+       setUsers((prev) => prev.filter((u) => u.id !== id));
+       void Swal.fire({ title: 'Supprimé !', icon: 'success', timer: 1500, showConfirmButton: false });
+     } catch {
+       setError('Suppression impossible.');
+     }
+   };
+
+   const canCreate = canEditFeature('users');
+   const canDelete = canDeleteFeature('users');
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -103,33 +108,35 @@ export const UserManagementPage = () => {
         <p className="mt-1 text-sm text-[#a8c8de]">Administrez les comptes et les niveaux d'acces.</p>
       </div>
 
-      {error && (
-        <div className="rounded-2xl border border-[#f4a8bf] bg-[#fce8ef] px-4 py-3 text-sm text-[#BD114A]">
-          {error}
-        </div>
-      )}
+       {error && (
+         <div className="rounded-2xl border border-[#f4a8bf] bg-[#fce8ef] px-4 py-3 text-sm text-[#BD114A]">
+           {error}
+         </div>
+       )}
 
-      <div className="arch-card rounded-3xl p-6">
-        <h2 className="mb-5 text-base font-semibold text-[#1B3C53]">Creer un utilisateur</h2>
-        <form onSubmit={handleSubmit(onCreate)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Input placeholder="Nom complet" {...register('name', { required: true })} />
-          <Input placeholder="Email" type="email" {...register('email', { required: true })} />
-          <Input placeholder="Mot de passe" type="password" {...register('password', { required: true, minLength: 6 })} />
-          <select
-            {...register('role', { required: true })}
-            className="arch-select rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
-          >
-            {roles.map((role) => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
-          <div className="sm:col-span-2 lg:col-span-4">
-            <Button type="submit" isLoading={isSubmitting}>
-              <RiUserAddLine className="h-4 w-4" /> Ajouter l'utilisateur
-            </Button>
-          </div>
-        </form>
-      </div>
+       {canCreate && (
+         <div className="arch-card rounded-3xl p-6">
+           <h2 className="mb-5 text-base font-semibold text-[#1B3C53]">Creer un utilisateur</h2>
+           <form onSubmit={handleSubmit(onCreate)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+             <Input placeholder="Nom complet" {...register('name', { required: true })} />
+             <Input placeholder="Email" type="email" {...register('email', { required: true })} />
+             <Input placeholder="Mot de passe" type="password" {...register('password', { required: true, minLength: 6 })} />
+             <select
+               {...register('role', { required: true })}
+               className="arch-select rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
+             >
+               {roles.map((role) => (
+                 <option key={role} value={role}>{role}</option>
+               ))}
+             </select>
+             <div className="sm:col-span-2 lg:col-span-4">
+               <Button type="submit" isLoading={isSubmitting}>
+                 <RiUserAddLine className="h-4 w-4" /> Ajouter l'utilisateur
+               </Button>
+             </div>
+           </form>
+         </div>
+       )}
 
       <div className="arch-card overflow-hidden rounded-3xl">
         <div className="border-b border-[#dde8f0] px-6 py-4">
@@ -166,22 +173,24 @@ export const UserManagementPage = () => {
                     {new Date(user.createdAt).toLocaleDateString('fr-FR')}
                   </span>
 
-                  <select
-                    value={user.role}
-                    onChange={(e) => void onRoleChange(user.id, e.target.value as Role)}
-                    className="arch-select rounded-full px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
-                  >
-                    {roles.map((role) => (
-                      <option key={role} value={role}>{role}</option>
-                    ))}
-                  </select>
+                   <select
+                     value={user.role}
+                     onChange={(e) => void onRoleChange(user.id, e.target.value as Role)}
+                     className="arch-select rounded-full px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
+                   >
+                     {roles.map((role) => (
+                       <option key={role} value={role}>{role}</option>
+                     ))}
+                   </select>
 
-                  <IconButton
-                    icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
-                    label="Supprimer l'utilisateur"
-                    variant="danger"
-                    onClick={() => void onDelete(user.id)}
-                  />
+                   {canDelete && (
+                     <IconButton
+                       icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
+                       label="Supprimer l'utilisateur"
+                       variant="danger"
+                       onClick={() => void onDelete(user.id)}
+                     />
+                   )}
                 </li>
               );
             })}

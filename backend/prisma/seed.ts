@@ -68,6 +68,33 @@ async function main() {
   });
   console.log('✅ Confidentiality levels created');
 
+  const adminFeatures = [
+    { feature: 'dashboard', canRead: true, canEdit: true, canDelete: false, canSearch: true },
+    { feature: 'documents', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+    { feature: 'users', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+    { feature: 'roles', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+    { feature: 'badges', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+    { feature: 'confidentiality', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+  ];
+
+  const managerFeatures = [
+    { feature: 'dashboard', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+    { feature: 'documents', canRead: true, canEdit: true, canDelete: false, canSearch: true },
+    { feature: 'users', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+    { feature: 'roles', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+    { feature: 'badges', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+    { feature: 'confidentiality', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+  ];
+
+  const userFeatures = [
+    { feature: 'dashboard', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+    { feature: 'documents', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+    { feature: 'users', canRead: false, canEdit: false, canDelete: false, canSearch: false },
+    { feature: 'roles', canRead: false, canEdit: false, canDelete: false, canSearch: false },
+    { feature: 'badges', canRead: false, canEdit: false, canDelete: false, canSearch: false },
+    { feature: 'confidentiality', canRead: false, canEdit: false, canDelete: false, canSearch: false },
+  ];
+
   // Default role permissions
   await prisma.rolePermission.upsert({
     where: { role: 'admin' },
@@ -81,6 +108,10 @@ async function main() {
       canRead: true,
       canCreate: true,
       canEdit: true,
+      featurePermissions: {
+        deleteMany: {},
+        create: adminFeatures,
+      },
     },
     create: {
       role: 'admin',
@@ -93,6 +124,9 @@ async function main() {
       canRead: true,
       canCreate: true,
       canEdit: true,
+      featurePermissions: {
+        create: adminFeatures,
+      },
     },
   });
 
@@ -108,6 +142,10 @@ async function main() {
       canRead: true,
       canCreate: true,
       canEdit: true,
+      featurePermissions: {
+        deleteMany: {},
+        create: managerFeatures,
+      },
     },
     create: {
       role: 'manager',
@@ -120,6 +158,9 @@ async function main() {
       canRead: true,
       canCreate: true,
       canEdit: true,
+      featurePermissions: {
+        create: managerFeatures,
+      },
     },
   });
 
@@ -135,6 +176,10 @@ async function main() {
       canRead: true,
       canCreate: false,
       canEdit: false,
+      featurePermissions: {
+        deleteMany: {},
+        create: userFeatures,
+      },
     },
     create: {
       role: 'user',
@@ -147,6 +192,9 @@ async function main() {
       canRead: true,
       canCreate: false,
       canEdit: false,
+      featurePermissions: {
+        create: userFeatures,
+      },
     },
   });
   console.log('✅ Default role permissions created');

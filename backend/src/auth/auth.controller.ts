@@ -42,4 +42,11 @@ export class AuthController {
   me(@CurrentUser() user: { id: string }) {
     return this.authService.me(user.id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh-permissions')
+  refreshPermissions(@CurrentUser() user: { id: string }) {
+    return this.authService.me(user.id);
+  }
 }

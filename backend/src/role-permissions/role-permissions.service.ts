@@ -7,6 +7,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { Role } from '../common/decorators/roles.decorator';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
 
+const toDocumentLegacyAccess = (
+  featurePermissions: UpdateRolePermissionsDto['featurePermissions'],
+) => {
+  const documents = featurePermissions?.find((item) => item.feature === 'documents');
+  if (!documents) return null;
+
+  return {
+    canRead: documents.canRead,
+    canCreate: documents.canEdit,
+    canEdit: documents.canEdit,
+  };
+};
+
 @Injectable()
 export class RolePermissionsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -21,6 +34,16 @@ export class RolePermissionsService {
         include: {
           badges: { select: { id: true, name: true, color: true } },
           confidentialities: { select: { id: true, level: true } },
+          featurePermissions: {
+            select: {
+              feature: true,
+              canRead: true,
+              canEdit: true,
+              canDelete: true,
+              canSearch: true,
+            },
+            orderBy: { feature: 'asc' },
+          },
         },
       }),
       this.prisma.badge.findMany({
@@ -37,6 +60,7 @@ export class RolePermissionsService {
         role: roleEntry.key,
         badges: permission?.badges ?? badges,
         confidentialities: permission?.confidentialities ?? confidentialities,
+          featurePermissions: permission?.featurePermissions ?? [],
       };
     });
   }
@@ -72,6 +96,8 @@ export class RolePermissionsService {
       );
     }
 
+    const legacyAccess = toDocumentLegacyAccess(dto.featurePermissions);
+
     const updated = await this.prisma.rolePermission.upsert({
       where: { role },
       update: {
@@ -79,17 +105,44 @@ export class RolePermissionsService {
         confidentialities: {
           set: dto.confidentialityIds.map((id) => ({ id })),
         },
+        ...(legacyAccess ?? {}),
+        ...(dto.featurePermissions
+          ? {
+              featurePermissions: {
+                deleteMany: {},
+                create: dto.featurePermissions,
+              },
+            }
+          : {}),
       },
       create: {
         role,
+        ...(legacyAccess ?? {}),
         badges: { connect: dto.badgeIds.map((id) => ({ id })) },
         confidentialities: {
           connect: dto.confidentialityIds.map((id) => ({ id })),
         },
+        ...(dto.featurePermissions
+          ? {
+              featurePermissions: {
+                create: dto.featurePermissions,
+              },
+            }
+          : {}),
       },
       include: {
         badges: { select: { id: true, name: true, color: true } },
         confidentialities: { select: { id: true, level: true } },
+        featurePermissions: {
+          select: {
+            feature: true,
+            canRead: true,
+            canEdit: true,
+            canDelete: true,
+            canSearch: true,
+          },
+          orderBy: { feature: 'asc' },
+        },
       },
     });
 
@@ -97,6 +150,7 @@ export class RolePermissionsService {
       role: updated.role,
       badges: updated.badges,
       confidentialities: updated.confidentialities,
+      featurePermissions: updated.featurePermissions,
     };
   }
 }

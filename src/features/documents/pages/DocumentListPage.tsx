@@ -19,7 +19,7 @@ import { DocumentListView } from '../../../shared/components/organisms/DocumentL
 import { FilterBar } from '../../../shared/components/molecules/FilterBar';
 import { Button } from '../../../shared/components/atoms/Button';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
-import { useAuthStore } from '../../auth/store/authStore';
+import { usePermissions } from '../../auth/hooks/usePermissions';
 
 type SortKey = 'date_desc' | 'date_asc' | 'title_asc' | 'title_desc' | 'badge';
 type ViewMode = 'grid' | 'list';
@@ -47,7 +47,7 @@ const sortDocuments = (docs: Document[], key: SortKey): Document[] => {
 export const DocumentListPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuthStore();
+  const { canEditFeature, canDeleteFeature } = usePermissions();
 
   const [allDocuments, setAllDocuments] = useState<Document[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -87,30 +87,31 @@ export const DocumentListPage = () => {
     return () => { active = false; };
   }, [filters]);
 
-  const documents = useMemo(() => sortDocuments(allDocuments, sortKey), [allDocuments, sortKey]);
+   const documents = useMemo(() => sortDocuments(allDocuments, sortKey), [allDocuments, sortKey]);
 
-  const handleDelete = async (id: string) => {
-    const result = await Swal.fire({
-      title: 'Supprimer ce document ?',
-      text: 'Cette action est irréversible.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler',
-      confirmButtonColor: '#BD114A',
-      cancelButtonColor: '#456882',
-    });
-    if (!result.isConfirmed) return;
-    try {
-      await documentService.delete(id);
-      setAllDocuments((prev) => prev.filter((d) => d.id !== id));
-      void Swal.fire({ title: 'Supprimé !', icon: 'success', timer: 1500, showConfirmButton: false });
-    } catch {
-      void Swal.fire({ title: 'Erreur', text: 'Impossible de supprimer ce document.', icon: 'error' });
-    }
-  };
+   const handleDelete = async (id: string) => {
+     const result = await Swal.fire({
+       title: 'Supprimer ce document ?',
+       text: 'Cette action est irréversible.',
+       icon: 'warning',
+       showCancelButton: true,
+       confirmButtonText: 'Oui, supprimer',
+       cancelButtonText: 'Annuler',
+       confirmButtonColor: '#BD114A',
+       cancelButtonColor: '#456882',
+     });
+     if (!result.isConfirmed) return;
+     try {
+       await documentService.delete(id);
+       setAllDocuments((prev) => prev.filter((d) => d.id !== id));
+       void Swal.fire({ title: 'Supprimé !', icon: 'success', timer: 1500, showConfirmButton: false });
+     } catch {
+       void Swal.fire({ title: 'Erreur', text: 'Impossible de supprimer ce document.', icon: 'error' });
+     }
+   };
 
-  const canCreate = user?.documentAccesses?.includes('create') || user?.role === 'admin';
+   const canCreate = canEditFeature('documents');
+   const canDelete = canDeleteFeature('documents');
   const activeBadge = badges.find((b) => b.id === filters.badge_id);
 
   const badgeCounts = useMemo(() => {
@@ -234,17 +235,17 @@ export const DocumentListPage = () => {
 
       {showSortMenu && <div className="fixed inset-0 z-20" onClick={() => setShowSortMenu(false)} />}
 
-      {error && (
-        <div className="rounded-xl border border-[#f4a8bf] bg-[#fce8ef] p-3 text-sm text-[#BD114A]">{error}</div>
-      )}
+       {error && (
+         <div className="rounded-xl border border-[#f4a8bf] bg-[#fce8ef] p-3 text-sm text-[#BD114A]">{error}</div>
+       )}
 
-      {loading ? (
-        <div className="flex justify-center py-24"><Spinner size="lg" /></div>
-      ) : viewMode === 'grid' ? (
-        <DocumentTable documents={documents} onDelete={handleDelete} />
-      ) : (
-        <DocumentListView documents={documents} onDelete={handleDelete} />
-      )}
+       {loading ? (
+         <div className="flex justify-center py-24"><Spinner size="lg" /></div>
+       ) : viewMode === 'grid' ? (
+         <DocumentTable documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canCreate} />
+       ) : (
+         <DocumentListView documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canCreate} />
+       )}
     </div>
   );
 };

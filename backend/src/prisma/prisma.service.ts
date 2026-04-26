@@ -18,6 +18,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get documentAttachment() { return this.client.documentAttachment; }
   get appRole() { return this.client.appRole; }
   get rolePermission() { return this.client.rolePermission; }
+  get roleFeaturePermission() { return this.client.roleFeaturePermission; }
 
   async ping() {
     await this.client.$queryRaw`SELECT 1`;

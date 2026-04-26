@@ -20,6 +20,7 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { FeaturePermissionGuard, FeaturePermission } from '../common/guards/feature-permission.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 const uploadStorage = diskStorage({
@@ -28,12 +29,13 @@ const uploadStorage = diskStorage({
     cb(null, `${Date.now()}${extname(file.originalname)}`),
 });
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, FeaturePermissionGuard)
 @Controller('documents')
 export class DocumentsController {
   constructor(private documentsService: DocumentsService) {}
 
   @Get()
+  @FeaturePermission({ feature: 'documents', operation: 'canRead' })
   findAll(
     @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
     @Query('badge_id') badge_id?: string,
@@ -48,6 +50,7 @@ export class DocumentsController {
   }
 
   @Get(':id')
+  @FeaturePermission({ feature: 'documents', operation: 'canRead' })
   findOne(
     @Param('id') id: string,
     @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
@@ -56,6 +59,7 @@ export class DocumentsController {
   }
 
   @Post()
+  @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
   @UseInterceptors(
     FileInterceptor('file', { storage: uploadStorage }),
   )
@@ -69,6 +73,7 @@ export class DocumentsController {
   }
 
   @Post(':id/attachments')
+  @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
   @UseInterceptors(
     FilesInterceptor('annexes', 20, { storage: uploadStorage }),
   )
@@ -81,6 +86,7 @@ export class DocumentsController {
   }
 
   @Delete(':id/attachments/:attachmentId')
+  @FeaturePermission({ feature: 'documents', operation: 'canDelete' })
   removeAttachment(
     @Param('id') id: string,
     @Param('attachmentId') attachmentId: string,
@@ -90,6 +96,7 @@ export class DocumentsController {
   }
 
   @Put(':id')
+  @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
   @UseInterceptors(
     FileInterceptor('file', { storage: uploadStorage }),
   )
@@ -104,6 +111,7 @@ export class DocumentsController {
   }
 
   @Delete(':id')
+  @FeaturePermission({ feature: 'documents', operation: 'canDelete' })
   remove(
     @Param('id') id: string,
     @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },

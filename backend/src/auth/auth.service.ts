@@ -23,20 +23,112 @@ export class AuthService {
   private async getDocumentAccesses(role: string) {
     const permission = await this.prisma.rolePermission.findUnique({
       where: { role },
-      select: { canRead: true, canCreate: true, canEdit: true },
+      select: {
+        canRead: true,
+        canCreate: true,
+        canEdit: true,
+        featurePermissions: {
+          where: { feature: 'documents' },
+          select: {
+            canRead: true,
+            canEdit: true,
+            canDelete: true,
+            canSearch: true,
+          },
+          take: 1,
+        },
+      },
     });
 
     if (!permission) {
       if (role === 'admin' || role === 'manager')
-        return ['read', 'create', 'edit'];
+        return ['read', 'create', 'edit', 'delete', 'search'];
       return ['read'];
     }
 
-    const accesses: Array<'read' | 'create' | 'edit'> = [];
+    const byFeature = permission.featurePermissions[0];
+    if (byFeature) {
+      const accesses: Array<'read' | 'create' | 'edit' | 'delete' | 'search'> = [];
+      if (byFeature.canRead) accesses.push('read');
+      if (byFeature.canEdit) {
+        accesses.push('edit');
+        // Keep compatibility with existing frontend checks expecting "create".
+        accesses.push('create');
+      }
+      if (byFeature.canDelete) accesses.push('delete');
+      if (byFeature.canSearch) accesses.push('search');
+      return accesses;
+    }
+
+    const accesses: Array<'read' | 'create' | 'edit' | 'delete' | 'search'> = [];
     if (permission.canRead) accesses.push('read');
     if (permission.canCreate) accesses.push('create');
     if (permission.canEdit) accesses.push('edit');
     return accesses;
+  }
+
+  private async getUserPermissions(role: string) {
+    const permission = await this.prisma.rolePermission.findUnique({
+      where: { role },
+      include: {
+        badges: { select: { id: true, name: true, color: true } },
+        confidentialities: { select: { id: true, level: true } },
+        featurePermissions: {
+          select: {
+            feature: true,
+            canRead: true,
+            canEdit: true,
+            canDelete: true,
+            canSearch: true,
+          },
+          orderBy: { feature: 'asc' },
+        },
+      },
+    });
+
+    // Handle default permissions for admin/manager roles
+    if (!permission) {
+      if (role === 'admin' || role === 'manager') {
+        const allBadges = await this.prisma.badge.findMany({
+          select: { id: true, name: true, color: true },
+        });
+        const allConfidentialities = await this.prisma.confidentiality.findMany({
+          select: { id: true, level: true },
+        });
+        return {
+          badges: allBadges,
+          confidentialities: allConfidentialities,
+          featurePermissions: [
+            { feature: 'dashboard', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+            { feature: 'documents', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+            { feature: 'users', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+            { feature: 'roles', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+            { feature: 'badges', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+            { feature: 'confidentiality', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+          ],
+          canRead: true,
+          canCreate: true,
+          canEdit: true,
+        };
+      }
+      return {
+        badges: [],
+        confidentialities: [],
+        featurePermissions: [],
+        canRead: true,
+        canCreate: false,
+        canEdit: false,
+      };
+    }
+
+    return {
+      badges: permission.badges,
+      confidentialities: permission.confidentialities,
+      featurePermissions: permission.featurePermissions,
+      canRead: permission.canRead,
+      canCreate: permission.canCreate,
+      canEdit: permission.canEdit,
+    };
   }
 
   private signAccessToken(payload: {
@@ -69,6 +161,7 @@ export class AuthService {
   }) {
     const tokenPayload = { sub: user.id, email: user.email, role: user.role };
     const documentAccesses = await this.getDocumentAccesses(user.role);
+    const userPermissions = await this.getUserPermissions(user.role);
 
     return {
       access_token: this.signAccessToken(tokenPayload),
@@ -79,6 +172,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         documentAccesses,
+        userPermissions,
       },
     };
   }
@@ -124,9 +218,11 @@ export class AuthService {
       select: { id: true, name: true, email: true, role: true },
     });
     const documentAccesses = await this.getDocumentAccesses(user.role);
+    const userPermissions = await this.getUserPermissions(user.role);
     return {
       ...user,
       documentAccesses,
+      userPermissions,
     };
   }
 }
