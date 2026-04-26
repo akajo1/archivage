@@ -53,8 +53,8 @@ export const DocumentDetailPage = () => {
       showCancelButton: true,
       confirmButtonText: 'Oui, supprimer',
       cancelButtonText: 'Annuler',
-      confirmButtonColor: '#a44b3f',
-      cancelButtonColor: '#806444',
+      confirmButtonColor: '#BD114A',
+      cancelButtonColor: '#456882',
     });
     if (!result.isConfirmed) return;
     try {
@@ -99,7 +99,7 @@ export const DocumentDetailPage = () => {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <span className="text-5xl">⚠️</span>
-        <p className="mt-4 text-lg font-medium text-[#8b3e34]">Document introuvable.</p>
+        <p className="mt-4 text-lg font-medium text-[#BD114A]">Document introuvable.</p>
         <Button className="mt-4" onClick={() => navigate('/documents')}>Retour</Button>
       </div>
     );
@@ -111,7 +111,7 @@ export const DocumentDetailPage = () => {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <span className="text-5xl">⚠️</span>
-        <p className="mt-4 text-lg font-medium text-[#8b3e34]">{error || 'Document introuvable'}</p>
+        <p className="mt-4 text-lg font-medium text-[#BD114A]">{error || 'Document introuvable'}</p>
         <Button className="mt-4" onClick={() => navigate('/documents')}>Retour</Button>
       </div>
     );
@@ -123,27 +123,27 @@ export const DocumentDetailPage = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Breadcrumb + back */}
-      <div className="mb-5 flex items-center gap-2 text-sm text-[#7a6a55]">
-        <Link to="/" className="hover:text-[#5e3e27]">Accueil</Link>
+      <div className="mb-5 flex items-center gap-2 text-sm text-[#456882]">
+        <Link to="/" className="hover:text-[#234C6A]">Accueil</Link>
         <span>/</span>
-        <Link to="/documents" className="hover:text-[#5e3e27]">Documents</Link>
+        <Link to="/documents" className="hover:text-[#234C6A]">Documents</Link>
         <span>/</span>
-        <span className="max-w-[200px] truncate font-medium text-[#2f2a24]">{document.title}</span>
+        <span className="max-w-[200px] truncate font-medium text-[#1B3C53]">{document.title}</span>
       </div>
 
       <button
         onClick={() => navigate(-1)}
-        className="mb-5 flex items-center gap-1.5 rounded-full border border-[#d8cab3] bg-[#f8f0e3] px-4 py-2 text-sm font-medium text-[#6b5a45] shadow-sm transition hover:bg-[#eedfc8]"
+        className="mb-5 flex items-center gap-1.5 rounded-full border border-[#c4d4df] bg-[#edf4f8] px-4 py-2 text-sm font-medium text-[#456882] shadow-sm transition hover:bg-[#dbeaf3]"
       >
         <RiArrowLeftLine className="h-4 w-4" /> Retour
       </button>
 
       <div className="arch-card overflow-hidden rounded-3xl">
         {/* Hero banner */}
-        <div className="bg-linear-to-br from-[#efe2cb] via-[#eadac1] to-[#e2cfb2] px-8 py-8 border-b border-[#d8cab3]">
+        <div className="arch-hero px-8 py-8 border-b border-[#1a3850]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold leading-snug text-[#2f2a24] sm:text-3xl">{document.title}</h1>
+              <h1 className="text-2xl font-bold leading-snug text-white sm:text-3xl">{document.title}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <BadgePill name={document.badge?.name as 'critique' | 'normal' | 'faible'} />
                 <ConfidentialityTag level={document.confidentiality?.level ?? 'public'} />
@@ -169,35 +169,35 @@ export const DocumentDetailPage = () => {
         </div>
 
         {/* Metadata grid */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-b border-[#e2d5c0] bg-[#fdf7ee] px-8 py-5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-b border-[#dde8f0] bg-[#f4f7fa] px-8 py-5 sm:grid-cols-4">
           <div className="flex items-start gap-2">
-            <RiUserLine className="mt-0.5 h-4 w-4 shrink-0 text-[#9a8a77]" />
+            <RiUserLine className="mt-0.5 h-4 w-4 shrink-0 text-[#7aaac4]" />
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9a8a77]">Auteur</p>
-              <p className="mt-0.5 text-sm font-medium text-[#5a4b38]">{document.createdBy?.name ?? '—'}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#456882]">Auteur</p>
+              <p className="mt-0.5 text-sm font-medium text-[#1B3C53]">{document.createdBy?.name ?? '—'}</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <RiCalendarLine className="mt-0.5 h-4 w-4 shrink-0 text-[#9a8a77]" />
+            <RiCalendarLine className="mt-0.5 h-4 w-4 shrink-0 text-[#7aaac4]" />
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9a8a77]">Créé le</p>
-              <p className="mt-0.5 text-sm font-medium text-[#5a4b38]">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#456882]">Créé le</p>
+              <p className="mt-0.5 text-sm font-medium text-[#1B3C53]">
                 {new Date(document.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
               </p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <RiPriceTag3Line className="mt-0.5 h-4 w-4 shrink-0 text-[#9a8a77]" />
+            <RiPriceTag3Line className="mt-0.5 h-4 w-4 shrink-0 text-[#7aaac4]" />
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9a8a77]">Badge</p>
-              <p className="mt-0.5 text-sm font-medium capitalize text-[#5a4b38]">{document.badge?.name ?? '—'}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#456882]">Badge</p>
+              <p className="mt-0.5 text-sm font-medium capitalize text-[#1B3C53]">{document.badge?.name ?? '—'}</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <RiShieldLine className="mt-0.5 h-4 w-4 shrink-0 text-[#9a8a77]" />
+            <RiShieldLine className="mt-0.5 h-4 w-4 shrink-0 text-[#7aaac4]" />
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9a8a77]">Confidentialité</p>
-              <p className="mt-0.5 text-sm font-medium capitalize text-[#5a4b38]">{document.confidentiality?.level ?? '—'}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#456882]">Confidentialité</p>
+              <p className="mt-0.5 text-sm font-medium capitalize text-[#1B3C53]">{document.confidentiality?.level ?? '—'}</p>
             </div>
           </div>
         </div>
@@ -205,15 +205,15 @@ export const DocumentDetailPage = () => {
         {/* Body */}
         <div className="space-y-5 px-8 py-7">
           {document.fileUrl && (
-            <div className="flex items-center gap-3 rounded-2xl border border-[#d5c3a7] bg-[#f3e8d5] px-4 py-3">
-              <RiAttachment2 className="shrink-0 text-xl text-[#806444]" />
+            <div className="flex items-center gap-3 rounded-2xl border border-[#c4d4df] bg-[#edf4f8] px-4 py-3">
+              <RiAttachment2 className="shrink-0 text-xl text-[#234C6A]" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-[#5a4b38]">Fichier joint</p>
+                <p className="text-sm font-medium text-[#1B3C53]">Fichier joint</p>
                 <a
                   href={document.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-[#77593a] hover:underline"
+                  className="inline-flex items-center gap-1 text-xs text-[#234C6A] hover:underline"
                 >
                   <RiDownloadLine className="h-3 w-3" /> Télécharger le fichier
                 </a>
@@ -222,25 +222,25 @@ export const DocumentDetailPage = () => {
           )}
 
           {document.content ? (
-            <div className="rounded-2xl border border-[#dccdb8] bg-[#f8f0e3]/70 p-6">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#9a8a77]">Contenu du document</p>
+            <div className="rounded-2xl border border-[#c4d4df] bg-[#f4f7fa] p-6">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#456882]">Contenu du document</p>
               <div
                 ref={contentRef}
-                className="prose prose-sm max-w-none text-[#3f352a] [&_img]:rounded-xl [&_a]:text-[#806444]"
+                className="prose prose-sm max-w-none text-[#1B3C53] [&_img]:rounded-xl [&_a]:text-[#234C6A]"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(document.content) }}
               />
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-[#d8cab3] bg-[#f8f3ea] px-6 py-10 text-center">
-              <p className="text-sm text-[#7a6a55]">Ce document ne contient pas de contenu texte.</p>
+            <div className="rounded-2xl border border-dashed border-[#c4d4df] bg-[#edf4f8] px-6 py-10 text-center">
+              <p className="text-sm text-[#456882]">Ce document ne contient pas de contenu texte.</p>
             </div>
           )}
         </div>
 
         {/* Actions footer */}
         {(canEdit || isAdmin) && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e2d5c0] bg-[#f4ecdf] px-8 py-4">
-            <span className="text-xs text-[#9a8a77]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#dde8f0] bg-[#f4f7fa] px-8 py-4">
+            <span className="text-xs text-[#456882]">
               {isAdmin ? 'Accès administrateur' : 'Vous êtes l\'auteur de ce document'}
             </span>
             <div className="flex gap-2">

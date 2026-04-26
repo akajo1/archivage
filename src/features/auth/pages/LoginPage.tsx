@@ -28,18 +28,18 @@ export const LoginPage = () => {
 
   return (
     <div className="flex min-h-screen">
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-linear-to-br from-[#6f563a] via-[#806444] to-[#9a7a53] p-12 text-amber-50">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-linear-to-br from-[#1B3C53] via-[#234C6A] to-[#2d5a7b] p-12 text-white">
         <div className="flex items-center gap-2 text-xl font-bold">
           <span>📁</span>
           <span>Archivage</span>
         </div>
         <div>
           <h2 className="text-4xl font-bold leading-tight">Retrouvez tous vos documents en un seul endroit.</h2>
-          <p className="mt-4 text-base leading-relaxed text-amber-100/85">Organisez, partagez et gerez vos archives documentaires avec controle d'acces par role.</p>
+          <p className="mt-4 text-base leading-relaxed text-[#a8c8de]">Organisez, partagez et gerez vos archives documentaires avec controle d'acces par role.</p>
         </div>
-        <div className="grid grid-cols-3 gap-3 opacity-40">
+        <div className="grid grid-cols-3 gap-3 opacity-30">
           {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className={`rounded-2xl bg-amber-50/20 ${i % 3 === 0 ? 'h-24' : i % 3 === 1 ? 'h-32' : 'h-20'}`} />
+            <div key={i} className={`rounded-2xl bg-white/20 ${i % 3 === 0 ? 'h-24' : i % 3 === 1 ? 'h-32' : 'h-20'}`} />
           ))}
         </div>
       </div>
@@ -48,15 +48,15 @@ export const LoginPage = () => {
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center lg:hidden">
             <span className="text-4xl">📁</span>
-            <h1 className="mt-2 text-2xl font-bold text-[#2f2a24]">Archivage</h1>
+            <h1 className="mt-2 text-2xl font-bold text-[#1B3C53]">Archivage</h1>
           </div>
 
           <div className="arch-card rounded-3xl p-8">
-            <h2 className="mb-1 text-2xl font-bold text-[#2f2a24]">Connexion</h2>
-            <p className="mb-6 text-sm text-[#7a6c59]">Bienvenue ! Entrez vos identifiants.</p>
+            <h2 className="mb-1 text-2xl font-bold text-[#1B3C53]">Connexion</h2>
+            <p className="mb-6 text-sm text-[#456882]">Bienvenue ! Entrez vos identifiants.</p>
 
             {apiError && (
-              <div className="mb-4 rounded-xl border border-[#d7a59c] bg-[#f3d8d2] p-3 text-sm text-[#8b3e34]">
+              <div className="mb-4 rounded-xl border border-[#f4a8bf] bg-[#fce8ef] p-3 text-sm text-[#BD114A]">
                 {apiError}
               </div>
             )}
@@ -87,9 +87,9 @@ export const LoginPage = () => {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-[#7a6c59]">
+            <p className="mt-6 text-center text-sm text-[#456882]">
               Pas encore de compte ?{' '}
-              <Link to="/register" className="font-medium text-[#7a5e3d] hover:underline">
+              <Link to="/register" className="font-medium text-[#234C6A] hover:underline">
                 S'inscrire
               </Link>
             </p>

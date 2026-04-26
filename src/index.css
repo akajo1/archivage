@@ -2,17 +2,17 @@
 
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --arch-bg: #ece5d8;
-  --arch-bg-elev: #f3ecdf;
-  --arch-card: #fffaf2;
-  --arch-border: #d8cab3;
-  --arch-text: #2f2a24;
-  --arch-muted: #70614e;
-  --arch-accent: #806444;
-  --arch-accent-strong: #684f35;
-  --arch-accent-soft: #ebdcc5;
-  --arch-danger: #a44b3f;
-  --arch-success: #3f6657;
+  --arch-bg:           #edf1f5;
+  --arch-bg-elev:      #f4f7fa;
+  --arch-card:         #ffffff;
+  --arch-border:       #c4d4df;
+  --arch-text:         #1B3C53;
+  --arch-muted:        #456882;
+  --arch-accent:       #234C6A;
+  --arch-accent-strong:#1B3C53;
+  --arch-accent-soft:  #d4e5f0;
+  --arch-danger:       #BD114A;
+  --arch-success:      #2FA084;
   color: var(--arch-text);
   background-color: var(--arch-bg);
   font-synthesis: none;
@@ -22,43 +22,29 @@
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html,
-body,
-#root {
-  min-height: 100%;
-}
+html, body, #root { min-height: 100%; }
 
 body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 8%, #f6efe3 0%, transparent 30%),
-    radial-gradient(circle at 82% 12%, #efe2cd 0%, transparent 26%),
-    linear-gradient(180deg, #efe7da 0%, #e5ddcd 100%);
+    radial-gradient(circle at 10% 8%,  #ddeaf3 0%, transparent 30%),
+    radial-gradient(circle at 85% 12%, #d6e6f0 0%, transparent 26%),
+    linear-gradient(180deg, #e8eff5 0%, #dde8f0 100%);
   color: var(--arch-text);
 }
 
-/* Smooth scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #b79f7e; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #8f7656; }
+/* Scrollbar */
+::-webkit-scrollbar         { width: 8px; height: 8px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: #7aaac4; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #456882; }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+a { color: inherit; text-decoration: none; }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
+button, input, select, textarea { font: inherit; }
 
 input[type="checkbox"] {
   accent-color: var(--arch-accent);
@@ -71,37 +57,41 @@ input[type="checkbox"] {
 .arch-card {
   background: var(--arch-card);
   border: 1px solid var(--arch-border);
-  box-shadow: 0 10px 28px rgba(84, 67, 48, 0.08);
+  box-shadow: 0 4px 16px rgba(27, 60, 83, 0.08);
 }
 
 .arch-panel {
   background: var(--arch-bg-elev);
-  border: 1px solid #e1d4be;
+  border: 1px solid var(--arch-border);
 }
 
 .arch-hero {
-  background: linear-gradient(135deg, #f8f0df 0%, #f2e4ce 50%, #ecdac2 100%);
-  border: 1px solid #dcc9aa;
+  background: linear-gradient(135deg, #1B3C53 0%, #234C6A 60%, #2d5a7b 100%);
+  border: 1px solid #1a3850;
+  color: #e8f0f5;
 }
 
 .arch-input {
-  background: #f8f1e5;
-  border: 1px solid #d8cab3;
+  background: #f4f7fa;
+  border: 1px solid #c4d4df;
   color: var(--arch-text);
 }
-
+.arch-input::placeholder { color: #7aaac4; }
 .arch-input:focus {
   outline: none;
-  border-color: #9a7d58;
-  box-shadow: 0 0 0 2px rgba(128, 100, 68, 0.2);
+  border-color: #234C6A;
+  box-shadow: 0 0 0 3px rgba(35, 76, 106, 0.18);
 }
 
 .arch-select {
-  background: #f7f0e3;
-  border: 1px solid #d8cab3;
+  background: #f4f7fa;
+  border: 1px solid #c4d4df;
   color: var(--arch-text);
 }
-
-.arch-muted {
-  color: var(--arch-muted);
+.arch-select:focus {
+  outline: none;
+  border-color: #234C6A;
+  box-shadow: 0 0 0 3px rgba(35, 76, 106, 0.18);
 }
+
+.arch-muted { color: var(--arch-muted); }

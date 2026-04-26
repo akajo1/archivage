@@ -97,8 +97,8 @@ export const DocumentListPage = () => {
       showCancelButton: true,
       confirmButtonText: 'Oui, supprimer',
       cancelButtonText: 'Annuler',
-      confirmButtonColor: '#a44b3f',
-      cancelButtonColor: '#806444',
+      confirmButtonColor: '#BD114A',
+      cancelButtonColor: '#456882',
     });
     if (!result.isConfirmed) return;
     try {
@@ -125,10 +125,10 @@ export const DocumentListPage = () => {
       <div className="arch-hero relative overflow-hidden rounded-3xl px-6 py-7 shadow-sm sm:px-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#2f2a24] sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
               Documents archivés
             </h1>
-            <p className="mt-1 text-sm text-[#6f614e]">
+            <p className="mt-1 text-sm text-[#a8c8de]">
               {loading ? '…' : `${documents.length} document(s)`}
               {activeBadge ? ` · badge ${activeBadge.name}` : ''}
             </p>
@@ -148,8 +148,8 @@ export const DocumentListPage = () => {
               onClick={() => handleFiltersChange({ ...filters, badge_id: undefined })}
               className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
                 !filters.badge_id
-                  ? 'bg-[#806444] text-amber-50 shadow-sm'
-                  : 'bg-[#f0e5d3] text-[#6b5840] hover:bg-[#e5d7c1]'
+                  ? 'bg-white text-[#1B3C53] shadow-sm'
+                  : 'bg-white/20 text-white hover:bg-white/30'
               }`}
             >
               <RiFileTextLine className="h-3.5 w-3.5" /> Tous ({allDocuments.length})
@@ -161,8 +161,8 @@ export const DocumentListPage = () => {
                 onClick={() => handleFiltersChange({ ...filters, badge_id: b.id })}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium capitalize transition-colors ${
                   filters.badge_id === b.id
-                    ? 'bg-[#806444] text-amber-50 shadow-sm'
-                    : 'bg-[#f0e5d3] text-[#6b5840] hover:bg-[#e5d7c1]'
+                    ? 'bg-white text-[#1B3C53] shadow-sm'
+                    : 'bg-white/20 text-white hover:bg-white/30'
                 }`}
               >
                 {b.name} ({badgeCounts[b.id] ?? 0})
@@ -189,19 +189,19 @@ export const DocumentListPage = () => {
             <button
               type="button"
               onClick={() => setShowSortMenu((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#d8cab3] bg-[#f8f0e3] px-3.5 py-2 text-xs font-medium text-[#69553e] transition-colors hover:bg-[#eee0ca]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#c4d4df] bg-[#edf4f8] px-3.5 py-2 text-xs font-medium text-[#456882] transition-colors hover:bg-[#dbeaf3]"
             >
               <RiArrowUpDownLine className="h-3.5 w-3.5" />
               {SORT_LABELS[sortKey]}
             </button>
             {showSortMenu && (
-              <div className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl border border-[#d8cab3] bg-[#fffaf2] shadow-lg">
+              <div className="absolute right-0 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl border border-[#c4d4df] bg-white shadow-lg">
                 {(Object.entries(SORT_LABELS) as [SortKey, string][]).map(([key, label]) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => { setSortKey(key); setShowSortMenu(false); }}
-                    className={`w-full px-4 py-2.5 text-left text-xs transition-colors hover:bg-[#f3e9d8] ${key === sortKey ? 'font-semibold text-[#806444]' : 'text-[#4a3b2b]'}`}
+                    className={`w-full px-4 py-2.5 text-left text-xs transition-colors hover:bg-[#edf4f8] ${key === sortKey ? 'font-semibold text-[#234C6A]' : 'text-[#1B3C53]'}`}
                   >
                     {label}
                   </button>
@@ -211,12 +211,12 @@ export const DocumentListPage = () => {
           </div>
 
           {/* View toggle */}
-          <div className="flex overflow-hidden rounded-full border border-[#d8cab3] bg-[#f8f0e3]">
+          <div className="flex overflow-hidden rounded-full border border-[#c4d4df] bg-[#edf4f8]">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
               title="Vue grille"
-              className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-[#806444] text-amber-50' : 'text-[#69553e] hover:bg-[#eee0ca]'}`}
+              className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-[#234C6A] text-white' : 'text-[#456882] hover:bg-[#dbeaf3]'}`}
             >
               <RiLayoutGridLine className="h-4 w-4" />
             </button>
@@ -224,7 +224,7 @@ export const DocumentListPage = () => {
               type="button"
               onClick={() => setViewMode('list')}
               title="Vue liste"
-              className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-[#806444] text-amber-50' : 'text-[#69553e] hover:bg-[#eee0ca]'}`}
+              className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-[#234C6A] text-white' : 'text-[#456882] hover:bg-[#dbeaf3]'}`}
             >
               <RiListCheck2 className="h-4 w-4" />
             </button>
@@ -235,7 +235,7 @@ export const DocumentListPage = () => {
       {showSortMenu && <div className="fixed inset-0 z-20" onClick={() => setShowSortMenu(false)} />}
 
       {error && (
-        <div className="rounded-xl border border-[#d7a59c] bg-[#f3d8d2] p-3 text-sm text-[#8b3e34]">{error}</div>
+        <div className="rounded-xl border border-[#f4a8bf] bg-[#fce8ef] p-3 text-sm text-[#BD114A]">{error}</div>
       )}
 
       {loading ? (

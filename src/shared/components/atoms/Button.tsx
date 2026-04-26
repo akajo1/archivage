@@ -10,14 +10,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  primary:
-    'bg-[#806444] text-amber-50 shadow-sm hover:bg-[#6f563a] active:bg-[#5d4731] disabled:bg-[#b29a7d]',
-  secondary:
-    'bg-[#f6eee1] text-[#4a3b2b] border border-[#d8cab3] shadow-sm hover:bg-[#efe2cf] active:bg-[#e4d3bb]',
-  danger:
-    'bg-[#a44b3f] text-[#fff3ef] shadow-sm hover:bg-[#8f3e34] active:bg-[#7b342c]',
-  ghost:
-    'text-[#5d4c39] hover:bg-[#efe2cf] active:bg-[#e4d4be]',
+  primary:   'bg-[#234C6A] text-white shadow-sm hover:bg-[#1B3C53] active:bg-[#162e42] disabled:bg-[#7aaac4]',
+  secondary: 'bg-[#edf4f8] text-[#234C6A] border border-[#c4d4df] shadow-sm hover:bg-[#dbeaf3] active:bg-[#cce0ed]',
+  danger:    'bg-[#BD114A] text-white shadow-sm hover:bg-[#a10d3f] active:bg-[#8a0b35]',
+  ghost:     'text-[#456882] hover:bg-[#dbeaf3] active:bg-[#cce0ed]',
 };
 
 const sizes: Record<Size, string> = {
@@ -27,18 +23,12 @@ const sizes: Record<Size, string> = {
 };
 
 export const Button = ({
-  variant = 'primary',
-  size = 'md',
-  isLoading,
-  children,
-  className = '',
-  disabled,
-  ...props
+  variant = 'primary', size = 'md', isLoading, children, className = '', disabled, ...props
 }: ButtonProps) => (
   <button
     {...props}
     disabled={disabled || isLoading}
-    className={`inline-flex items-center justify-center gap-2 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[#9a7d58] focus:ring-offset-2 focus:ring-offset-[#efe7da] disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${sizes[size]} ${className}`}
+    className={`inline-flex items-center justify-center gap-2 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[#234C6A]/50 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${sizes[size]} ${className}`}
   >
     {isLoading && (
       <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">

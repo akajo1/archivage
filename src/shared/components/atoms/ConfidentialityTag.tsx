@@ -1,17 +1,17 @@
 import type { ConfidentialityLevel } from '../../../features/confidentiality/types/confidentiality.types';
 
 const styles: Record<ConfidentialityLevel, string> = {
-  public: 'bg-[#dce8e2] text-[#355246] border border-[#b5cabf]',
-  interne: 'bg-[#efe2cb] text-[#775f3f] border border-[#d8c39d]',
-  confidentiel: 'bg-[#ecd8c8] text-[#8a5f3c] border border-[#d3b392]',
-  secret: 'bg-[#f0d3cf] text-[#8b3e34] border border-[#d7a59c]',
+  public:       'bg-[#d4f0e8] text-[#237a63] border border-[#9fd8c8]',
+  interne:      'bg-[#dbeaf3] text-[#234C6A] border border-[#a8c8de]',
+  confidentiel: 'bg-[#fff0d4] text-[#8a5f1a] border border-[#f0c878]',
+  secret:       'bg-[#fce8ef] text-[#BD114A] border border-[#f4a8bf]',
 };
 
 const icons: Record<ConfidentialityLevel, string> = {
-  public: '🌐',
-  interne: '🏢',
+  public:       '🌐',
+  interne:      '🏢',
   confidentiel: '🔒',
-  secret: '🔴',
+  secret:       '🔴',
 };
 
 export const ConfidentialityTag = ({ level }: { level: ConfidentialityLevel }) => (

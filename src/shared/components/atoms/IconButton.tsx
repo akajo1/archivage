@@ -5,33 +5,26 @@ type Size = 'sm' | 'md';
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: ReactNode;
-  label: string; // required for accessibility (shown as tooltip)
+  label: string;
   variant?: Variant;
   size?: Size;
   isLoading?: boolean;
 }
 
 const variants: Record<Variant, string> = {
-  default:  'bg-[#f2e9da] text-[#5e503f] hover:bg-[#e9dccb] hover:text-[#3f2e1e]',
-  primary:  'bg-[#806444] text-amber-50 hover:bg-[#684f35]',
-  danger:   'bg-[#f3e0de] text-[#a44b3f] hover:bg-[#f1ceca] hover:text-[#8f3e34]',
-  success:  'bg-[#d9e6de] text-[#3e7a5c] hover:bg-[#c5d9d0] hover:text-[#2e5c46]',
+  default:  'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3] hover:text-[#234C6A]',
+  primary:  'bg-[#234C6A] text-white hover:bg-[#1B3C53]',
+  danger:   'bg-[#fce8ef] text-[#BD114A] hover:bg-[#f8c8d8] hover:text-[#a10d3f]',
+  success:  'bg-[#d4f0e8] text-[#2FA084] hover:bg-[#b8e4d6] hover:text-[#237a63]',
 };
 
 const sizes: Record<Size, string> = {
-  sm: 'h-7 w-7 rounded-lg text-[13px]',
-  md: 'h-8 w-8 rounded-xl text-[15px]',
+  sm: 'h-7 w-7 rounded-lg',
+  md: 'h-8 w-8 rounded-xl',
 };
 
 export const IconButton = ({
-  icon,
-  label,
-  variant = 'default',
-  size = 'sm',
-  isLoading = false,
-  className = '',
-  disabled,
-  ...props
+  icon, label, variant = 'default', size = 'sm', isLoading = false, className = '', disabled, ...props
 }: IconButtonProps) => (
   <button
     type="button"
@@ -40,7 +33,7 @@ export const IconButton = ({
     disabled={disabled || isLoading}
     className={`
       inline-flex items-center justify-center transition-colors
-      focus:outline-none focus:ring-2 focus:ring-[#9a7d58]/50 focus:ring-offset-1
+      focus:outline-none focus:ring-2 focus:ring-[#234C6A]/40 focus:ring-offset-1
       disabled:cursor-not-allowed disabled:opacity-50
       ${variants[variant]} ${sizes[size]} ${className}
     `}
@@ -56,4 +49,3 @@ export const IconButton = ({
     )}
   </button>
 );
-

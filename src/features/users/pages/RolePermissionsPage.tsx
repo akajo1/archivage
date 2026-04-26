@@ -264,7 +264,8 @@ export const RolePermissionsPage = () => {
       showCancelButton: true,
       confirmButtonText: 'Oui, supprimer',
       cancelButtonText: 'Annuler',
-      confirmButtonColor: '#dc2626',
+      confirmButtonColor: '#BD114A',
+      cancelButtonColor: '#456882',
     });
 
     if (!result.isConfirmed) return;
@@ -304,8 +305,8 @@ export const RolePermissionsPage = () => {
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <div className="arch-hero overflow-hidden rounded-3xl px-8 py-6 shadow-sm">
-        <h1 className="text-3xl font-bold tracking-tight text-[#2f2a24]">Roles & Permissions</h1>
-        <p className="mt-1 text-sm text-[#6f614e]">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Roles & Permissions</h1>
+        <p className="mt-1 text-sm text-[#a8c8de]">
           Gere la liste des roles puis modifie leurs details dans une fenetre dediee.
         </p>
       </div>
@@ -313,7 +314,7 @@ export const RolePermissionsPage = () => {
       <div className="arch-panel rounded-3xl p-5 shadow-sm backdrop-blur-sm">
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <RiSearchLine className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8f7f6b]" />
+            <RiSearchLine className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7aaac4]" />
             <Input
               placeholder="Rechercher par nom ou cle..."
               value={query}
@@ -331,15 +332,15 @@ export const RolePermissionsPage = () => {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-[#d7a59c] bg-[#f3d8d2] px-4 py-3 text-sm text-[#8b3e34]">
+        <div className="rounded-2xl border border-[#f4a8bf] bg-[#fce8ef] px-4 py-3 text-sm text-[#BD114A]">
           {error}
         </div>
       )}
 
       <div className="arch-card rounded-3xl p-6">
         <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-[#4f3f2f]">Creer un role</h2>
-          <span className="rounded-full bg-[#eadbc4] px-3 py-1 text-xs font-medium text-[#6f563a]">
+          <h2 className="text-base font-semibold text-[#1B3C53]">Creer un role</h2>
+          <span className="rounded-full bg-[#dbeaf3] px-3 py-1 text-xs font-medium text-[#234C6A]">
             {roles.length} role(s)
           </span>
         </div>
@@ -366,7 +367,7 @@ export const RolePermissionsPage = () => {
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#8f7f6a]">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
               Badges autorises
             </p>
             <div className="flex flex-wrap gap-2">
@@ -379,8 +380,8 @@ export const RolePermissionsPage = () => {
                     onClick={() => toggleNewRoleBadge(badge.id)}
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                       checked
-                        ? 'border-[#c8b089] bg-[#eadbc4] text-[#6f563a]'
-                        : 'border-[#dccdb8] bg-[#f7f0e3] text-[#7d6c58] hover:border-[#ccb997] hover:text-[#5d4c39]'
+                        ? 'border-[#a8c8de] bg-[#dbeaf3] text-[#234C6A]'
+                        : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
                     }`}
                   >
                     {checked ? '✓ ' : ''}
@@ -392,7 +393,7 @@ export const RolePermissionsPage = () => {
           </div>
 
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#8f7f6a]">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
               Confidentialites autorisees
             </p>
             <div className="flex flex-wrap gap-2">
@@ -405,8 +406,8 @@ export const RolePermissionsPage = () => {
                     onClick={() => toggleNewRoleConfidentiality(item.id)}
                     className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                       checked
-                        ? 'border-[#b9cbbf] bg-[#dce8e2] text-[#355246]'
-                        : 'border-[#dccdb8] bg-[#f7f0e3] text-[#7d6c58] hover:border-[#ccb997] hover:text-[#5d4c39]'
+                        ? 'border-[#9fd8c8] bg-[#d4f0e8] text-[#237a63]'
+                        : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
                     }`}
                   >
                     {checked ? '✓ ' : ''}
@@ -428,17 +429,17 @@ export const RolePermissionsPage = () => {
       {loading ? (
         <div className="arch-card rounded-3xl py-16">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#806444] border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#234C6A] border-t-transparent" />
           </div>
-          <p className="mt-3 text-center text-sm text-[#8f7f6a]">Chargement des roles...</p>
+          <p className="mt-3 text-center text-sm text-[#456882]">Chargement des roles...</p>
         </div>
       ) : roles.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[#ccb997] bg-[#fdf8ef] px-6 py-14 text-center shadow-sm">
-          <p className="text-sm text-[#8f7f6a]">Aucun role trouve pour cette recherche.</p>
+        <div className="rounded-3xl border border-dashed border-[#c4d4df] bg-[#edf4f8] px-6 py-14 text-center shadow-sm">
+          <p className="text-sm text-[#456882]">Aucun role trouve pour cette recherche.</p>
         </div>
       ) : (
         <div className="arch-card overflow-hidden rounded-3xl">
-          <div className="grid grid-cols-12 border-b border-[#e2d5c0] bg-[#f5eddf] px-5 py-3 text-xs font-semibold uppercase tracking-wide text-[#8f7f6a]">
+          <div className="grid grid-cols-12 border-b border-[#dde8f0] bg-[#edf4f8] px-5 py-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
             <div className="col-span-5">Role</div>
             <div className="col-span-2">Badges</div>
             <div className="col-span-2">Confidentialites</div>
@@ -448,28 +449,28 @@ export const RolePermissionsPage = () => {
           {roles.map((role) => (
             <div
               key={role.id}
-              className="grid grid-cols-12 items-center gap-2 border-b border-[#e2d5c0] px-5 py-4 transition-colors last:border-b-0 hover:bg-[#f2e7d6]/60"
+              className="grid grid-cols-12 items-center gap-2 border-b border-[#dde8f0] px-5 py-4 transition-colors last:border-b-0 hover:bg-[#f4f7fa]"
             >
               <div className="col-span-5 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#e7d8c2] text-sm font-bold text-[#6f563a]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#dbeaf3] text-sm font-bold text-[#234C6A]">
                   {role.name.slice(0, 1).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-[#2f2a24]">{role.name}</p>
-                  <p className="text-xs text-[#8f7f6a]">
-                    cle: <code className="rounded bg-[#f0e5d4] px-1 text-[#6c583f]">{role.key}</code>
+                  <p className="font-semibold text-[#1B3C53]">{role.name}</p>
+                  <p className="text-xs text-[#456882]">
+                    cle: <code className="rounded bg-[#edf4f8] px-1 text-[#456882]">{role.key}</code>
                   </p>
                 </div>
               </div>
 
               <div className="col-span-2">
-                <span className="rounded-full bg-[#eadbc4] px-2.5 py-1 text-xs font-medium text-[#6f563a]">
+                <span className="rounded-full bg-[#dbeaf3] px-2.5 py-1 text-xs font-medium text-[#234C6A]">
                   {(role.badges ?? []).length}
                 </span>
               </div>
 
               <div className="col-span-2">
-                <span className="rounded-full bg-[#dce8e2] px-2.5 py-1 text-xs font-medium text-[#355246]">
+                <span className="rounded-full bg-[#d4f0e8] px-2.5 py-1 text-xs font-medium text-[#237a63]">
                   {(role.confidentialities ?? []).length}
                 </span>
               </div>
@@ -505,11 +506,11 @@ export const RolePermissionsPage = () => {
           }}
           role="presentation"
         >
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-[#fffaf2] p-6 shadow-2xl border border-[#d8cab3]">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-[#dde8f0]">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-[#2f2a24]">Detail du role</h2>
-                <p className="mt-1 text-sm text-[#6f614e]">
+                <h2 className="text-xl font-bold text-[#1B3C53]">Detail du role</h2>
+                <p className="mt-1 text-sm text-[#456882]">
                   Modifiez les informations et permissions du role selectionne.
                 </p>
               </div>
@@ -554,7 +555,7 @@ export const RolePermissionsPage = () => {
 
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
               <div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#8f7f6a]">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
                   Badges autorises
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -568,8 +569,8 @@ export const RolePermissionsPage = () => {
                         disabled={isSavingModalRole}
                         className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
                           checked
-                            ? 'border-[#c8b089] bg-[#eadbc4] text-[#6f563a]'
-                            : 'border-[#dccdb8] bg-[#f7f0e3] text-[#7d6c58] hover:border-[#ccb997] hover:text-[#5d4c39]'
+                            ? 'border-[#a8c8de] bg-[#dbeaf3] text-[#234C6A]'
+                            : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
                         }`}
                       >
                         {checked ? '✓ ' : ''}
@@ -581,7 +582,7 @@ export const RolePermissionsPage = () => {
               </div>
 
               <div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#8f7f6a]">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
                   Confidentialites autorisees
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -595,8 +596,8 @@ export const RolePermissionsPage = () => {
                         disabled={isSavingModalRole}
                         className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
                           checked
-                            ? 'border-[#b9cbbf] bg-[#dce8e2] text-[#355246]'
-                            : 'border-[#dccdb8] bg-[#f7f0e3] text-[#7d6c58] hover:border-[#ccb997] hover:text-[#5d4c39]'
+                            ? 'border-[#9fd8c8] bg-[#d4f0e8] text-[#237a63]'
+                            : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
                         }`}
                       >
                         {checked ? '✓ ' : ''}
@@ -609,7 +610,7 @@ export const RolePermissionsPage = () => {
             </div>
 
             {selectedRole?.description && (
-              <div className="mt-5 rounded-xl border border-[#d5c3a7] bg-[#f3e8d5] px-4 py-3 text-sm text-[#6f563a]">
+              <div className="mt-5 rounded-xl border border-[#c4d4df] bg-[#edf4f8] px-4 py-3 text-sm text-[#456882]">
                 <div className="mb-1 inline-flex items-center gap-2 font-medium">
                   <RiShieldCheckLine className="h-4 w-4" /> Description actuelle
                 </div>

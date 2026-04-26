@@ -24,51 +24,51 @@ type BadgeName = 'critique' | 'normal' | 'faible';
 
 /* ── Folder colour theme per badge ── */
 const folderTheme: Record<BadgeName, {
-  tab: string;       // folder tab bg
-  body: string;      // main folder body bg
-  spine: string;     // left spine strip
+  tab: string;
+  body: string;
+  spine: string;
   bodyBorder: string;
-  label: string;     // human label
-  labelBg: string;   // sticker label bg
+  label: string;
+  labelBg: string;
   labelText: string;
-  dotsColor: string; // decorative holes
+  dotsColor: string;
   countBg: string;
   countText: string;
 }> = {
   critique: {
-    tab:        'bg-[#c94e3f]',
-    body:       'bg-[#f5ebe8]',
-    spine:      'bg-[#d8645a]',
-    bodyBorder: 'border-[#d9a49e]',
+    tab:        'bg-[#BD114A]',
+    body:       'bg-[#fdf2f6]',
+    spine:      'bg-[#d4316a]',
+    bodyBorder: 'border-[#f4a8bf]',
     label:      'Critique',
-    labelBg:    'bg-[#fdf1ef]',
-    labelText:  'text-[#c94e3f]',
-    dotsColor:  'bg-[#d9a49e]',
-    countBg:    'bg-[#c94e3f]',
+    labelBg:    'bg-[#fce8ef]',
+    labelText:  'text-[#BD114A]',
+    dotsColor:  'bg-[#f4a8bf]',
+    countBg:    'bg-[#BD114A]',
     countText:  'text-white',
   },
   normal: {
-    tab:        'bg-[#3e7a5c]',
-    body:       'bg-[#eef5f1]',
-    spine:      'bg-[#56916f]',
-    bodyBorder: 'border-[#9dc0b0]',
+    tab:        'bg-[#2FA084]',
+    body:       'bg-[#f0faf6]',
+    spine:      'bg-[#3db898]',
+    bodyBorder: 'border-[#9fd8c8]',
     label:      'Normal',
-    labelBg:    'bg-[#f0f8f4]',
-    labelText:  'text-[#3e7a5c]',
-    dotsColor:  'bg-[#9dc0b0]',
-    countBg:    'bg-[#3e7a5c]',
+    labelBg:    'bg-[#d4f0e8]',
+    labelText:  'text-[#2FA084]',
+    dotsColor:  'bg-[#9fd8c8]',
+    countBg:    'bg-[#2FA084]',
     countText:  'text-white',
   },
   faible: {
-    tab:        'bg-[#8a6a3a]',
-    body:       'bg-[#f6f0e6]',
-    spine:      'bg-[#a07d4b]',
-    bodyBorder: 'border-[#c8b48c]',
+    tab:        'bg-[#456882]',
+    body:       'bg-[#edf4f8]',
+    spine:      'bg-[#5a7d99]',
+    bodyBorder: 'border-[#a8c8de]',
     label:      'Faible',
-    labelBg:    'bg-[#fdf8f0]',
-    labelText:  'text-[#8a6a3a]',
-    dotsColor:  'bg-[#c8b48c]',
-    countBg:    'bg-[#8a6a3a]',
+    labelBg:    'bg-[#dbeaf3]',
+    labelText:  'text-[#234C6A]',
+    dotsColor:  'bg-[#a8c8de]',
+    countBg:    'bg-[#456882]',
     countText:  'text-white',
   },
 };
@@ -111,13 +111,13 @@ export const DashboardPage = () => {
 
   const shortcuts = [
     ...(canCreate
-      ? [{ label: 'Nouveau document', icon: RiAddLine, to: '/documents/new', color: 'bg-[#806444] text-amber-50 hover:bg-[#684f35]' }]
+      ? [{ label: 'Nouveau document', icon: RiAddLine, to: '/documents/new', color: 'bg-[#234C6A] text-white hover:bg-[#1B3C53]' }]
       : []),
-    { label: 'Tous les documents', icon: RiFileList2Line, to: '/documents', color: 'bg-[#f2e7d6] text-[#5e503f] hover:bg-[#e6d5bf]' },
+    { label: 'Tous les documents', icon: RiFileList2Line, to: '/documents', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
     ...(isAdmin
       ? [
-          { label: 'Utilisateurs', icon: RiTeamLine, to: '/users', color: 'bg-[#f2e7d6] text-[#5e503f] hover:bg-[#e6d5bf]' },
-          { label: 'Roles & permissions', icon: RiShieldKeyholeLine, to: '/roles', color: 'bg-[#f2e7d6] text-[#5e503f] hover:bg-[#e6d5bf]' },
+          { label: 'Utilisateurs', icon: RiTeamLine, to: '/users', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
+          { label: 'Roles & permissions', icon: RiShieldKeyholeLine, to: '/roles', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
         ]
       : []),
   ];
@@ -132,10 +132,10 @@ export const DashboardPage = () => {
       <div className="arch-hero relative overflow-hidden rounded-3xl px-6 py-7 shadow-sm sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#2f2a24] sm:text-3xl">
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">
               Bonjour, {user?.name ?? 'utilisateur'} 👋
             </h1>
-            <p className="mt-1 text-sm text-[#6f614e]">
+            <p className="mt-1 text-sm text-[#a8c8de]">
               Bienvenue sur votre espace d'archivage. {documents.length} document(s) accessible(s).
             </p>
           </div>
@@ -155,17 +155,17 @@ export const DashboardPage = () => {
         <>
           {/* Archive Groups — folder design */}
           <section>
-            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-[#4a3b2b]">
-              <RiFolder3Line className="h-5 w-5 text-[#806444]" />
+            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-[#1B3C53]">
+              <RiFolder3Line className="h-5 w-5 text-[#234C6A]" />
               Groupes d'archivage
             </h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {badges.map((badge) => {
                 const theme = folderTheme[badge.name as BadgeName] ?? {
-                  tab: 'bg-[#806444]', body: 'bg-[#f5ead6]', spine: 'bg-[#a07d4b]',
-                  bodyBorder: 'border-[#c8b08a]', label: badge.name,
-                  labelBg: 'bg-[#fdf8f0]', labelText: 'text-[#806444]',
-                  dotsColor: 'bg-[#c8b08a]', countBg: 'bg-[#806444]', countText: 'text-white',
+                  tab: 'bg-[#234C6A]', body: 'bg-[#edf4f8]', spine: 'bg-[#456882]',
+                  bodyBorder: 'border-[#c4d4df]', label: badge.name,
+                  labelBg: 'bg-[#dbeaf3]', labelText: 'text-[#234C6A]',
+                  dotsColor: 'bg-[#c4d4df]', countBg: 'bg-[#234C6A]', countText: 'text-white',
                 };
                 const count = docsByBadge[badge.id]?.length ?? 0;
                 const isSelected = selectedBadgeId === badge.id;
@@ -176,15 +176,15 @@ export const DashboardPage = () => {
                     type="button"
                     onClick={() => setSelectedBadgeId(badge.id)}
                     className="group relative cursor-pointer text-left transition-all duration-200 hover:-translate-y-1.5"
-                    style={{ filter: isSelected ? 'drop-shadow(0 6px 14px rgba(80,55,20,0.22))' : 'drop-shadow(0 3px 8px rgba(80,55,20,0.13))' }}
+                    style={{ filter: isSelected ? 'drop-shadow(0 6px 14px rgba(27,60,83,0.25))' : 'drop-shadow(0 3px 8px rgba(27,60,83,0.12))' }}
                   >
                     {/* Back panel (stacked paper illusion) */}
                     <div className={`absolute inset-x-2 bottom-[-4px] h-full rounded-sm border ${theme.bodyBorder} opacity-50`}
-                         style={{ background: 'rgba(200,176,140,0.35)' }} />
+                         style={{ background: 'rgba(180,200,220,0.35)' }} />
 
                     {/* Folder shape */}
                     <div className={`relative overflow-visible rounded-sm border ${theme.bodyBorder} ${theme.body}`}
-                         style={{ boxShadow: isSelected ? `0 0 0 2.5px #806444, 0 2px 0 #b9a07a` : '0 2px 0 #b9a07a' }}>
+                         style={{ boxShadow: isSelected ? `0 0 0 2.5px #234C6A, 0 2px 0 #7aaac4` : '0 2px 0 #7aaac4' }}>
 
                       {/* ── Folder tab (top left) ── */}
                       <div className="flex h-0 items-end overflow-visible">
@@ -213,9 +213,9 @@ export const DashboardPage = () => {
                         <div className="flex-1 p-4">
                           {/* Ruled lines (paper texture) */}
                           <div
-                            className="pointer-events-none absolute inset-0 opacity-[0.05]"
+                            className="pointer-events-none absolute inset-0 opacity-[0.04]"
                             style={{
-                              backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 19px, #6b5033 19px, #6b5033 20px)',
+                              backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 19px, #234C6A 19px, #234C6A 20px)',
                               backgroundPositionY: '40px',
                             }}
                           />
@@ -223,10 +223,10 @@ export const DashboardPage = () => {
                           {/* Header row */}
                           <div className="relative flex items-start justify-between gap-2">
                             <div>
-                              <p className="font-['Georgia',_serif] text-base font-bold text-[#2a2018]">
+                              <p className="font-['Georgia',_serif] text-base font-bold text-[#1B3C53]">
                                 {theme.label}
                               </p>
-                              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-[#9a8060]">
+                              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-[#456882]">
                                 dossier · {badge.name}
                               </p>
                             </div>
@@ -241,16 +241,16 @@ export const DashboardPage = () => {
                             <p className={`text-[11px] font-semibold uppercase tracking-wide ${theme.labelText}`}>
                               {count} document{count !== 1 ? 's' : ''} archivé{count !== 1 ? 's' : ''}
                             </p>
-                            <p className="mt-0.5 text-[10px] text-[#9a8060]">
-                              Cliquer pour consulter
-                            </p>
+                            <p className="mt-0.5 text-[10px] text-[#456882]">
+                                Cliquer pour consulter
+                              </p>
                           </div>
 
                           {/* Selected indicator */}
                           {isSelected && (
                             <div className="mt-3 flex items-center gap-1.5">
-                              <div className="h-1.5 w-1.5 rounded-full bg-[#806444]" />
-                              <span className="text-[10px] font-semibold text-[#806444]">Sélectionné</span>
+                              <div className="h-1.5 w-1.5 rounded-full bg-[#234C6A]" />
+                              <span className="text-[10px] font-semibold text-[#234C6A]">Sélectionné</span>
                             </div>
                           )}
                         </div>
@@ -261,7 +261,7 @@ export const DashboardPage = () => {
               })}
 
               {badges.length === 0 && (
-                <div className="col-span-3 rounded-2xl border border-[#d8cab3] bg-[#f8f3ea] p-6 text-center text-sm text-[#7a6a55]">
+                <div className="col-span-3 rounded-2xl border border-[#c4d4df] bg-[#edf4f8] p-6 text-center text-sm text-[#456882]">
                   Aucun groupe accessible.
                 </div>
               )}
@@ -272,23 +272,23 @@ export const DashboardPage = () => {
           {selectedBadge && (
             <section>
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-base font-semibold text-[#4a3b2b]">
-                  <RiFileTextLine className="h-5 w-5 text-[#806444]" />
+                <h2 className="flex items-center gap-2 text-base font-semibold text-[#1B3C53]">
+                  <RiFileTextLine className="h-5 w-5 text-[#234C6A]" />
                   Documents{' '}
                   <BadgePill name={selectedBadge.name as BadgeName} />
                 </h2>
                 <Link
                   to={`/documents?badge_id=${selectedBadge.id}`}
-                  className="flex items-center gap-1 text-xs font-medium text-[#806444] hover:text-[#5e3e27]"
+                  className="flex items-center gap-1 text-xs font-medium text-[#234C6A] hover:text-[#1B3C53]"
                 >
                   Voir tout <RiArrowRightLine className="h-3.5 w-3.5" />
                 </Link>
               </div>
 
               {selectedDocs.length === 0 ? (
-                <div className="rounded-2xl border border-[#d8cab3] bg-[#f8f3ea] px-6 py-10 text-center">
-                  <RiFolder3Line className="mx-auto mb-2 h-8 w-8 text-[#b5a080]" />
-                  <p className="text-sm text-[#7a6a55]">Aucun document dans cette categorie.</p>
+                <div className="rounded-2xl border border-[#c4d4df] bg-[#edf4f8] px-6 py-10 text-center">
+                  <RiFolder3Line className="mx-auto mb-2 h-8 w-8 text-[#7aaac4]" />
+                  <p className="text-sm text-[#456882]">Aucun document dans cette categorie.</p>
                   {canCreate && (
                     <Button
                       size="sm"
@@ -301,35 +301,35 @@ export const DashboardPage = () => {
                   )}
                 </div>
               ) : (
-                <div className="divide-y divide-[#e8dccc] overflow-hidden rounded-2xl border border-[#d8cab3] bg-[#fffaf2]">
+                <div className="divide-y divide-[#dde8f0] overflow-hidden rounded-2xl border border-[#c4d4df] bg-white">
                   {selectedDocs.slice(0, 8).map((doc) => (
                     <Link
                       key={doc.id}
                       to={`/documents/${doc.id}`}
-                      className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-[#f7efe2]"
+                      className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-[#f4f7fa]"
                     >
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#edddd1] text-[#806444]">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#dbeaf3] text-[#234C6A]">
                         <RiFileTextLine className="h-4.5 w-4.5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[#2f2a24] group-hover:text-[#5e3e27]">
+                        <p className="truncate text-sm font-medium text-[#1B3C53] group-hover:text-[#234C6A]">
                           {doc.title}
                         </p>
-                        <p className="mt-0.5 text-xs text-[#7a6a55]">
+                        <p className="mt-0.5 text-xs text-[#456882]">
                           Par {doc.createdBy?.name ?? '—'} · {formatDate(doc.createdAt)}
                         </p>
                       </div>
                       <div className="shrink-0">
                         <ConfidentialityTag level={doc.confidentiality?.level ?? 'public'} />
                       </div>
-                      <RiArrowRightLine className="h-4 w-4 shrink-0 text-[#b5a080] transition-transform group-hover:translate-x-0.5" />
+                      <RiArrowRightLine className="h-4 w-4 shrink-0 text-[#7aaac4] transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   ))}
                   {selectedDocs.length > 8 && (
                     <div className="px-5 py-3 text-center">
                       <Link
                         to={`/documents?badge_id=${selectedBadge.id}`}
-                        className="text-xs font-medium text-[#806444] hover:underline"
+                        className="text-xs font-medium text-[#234C6A] hover:underline"
                       >
                         +{selectedDocs.length - 8} document(s) supplémentaire(s)
                       </Link>
@@ -344,28 +344,28 @@ export const DashboardPage = () => {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Recent documents */}
             <section className="lg:col-span-2">
-              <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#4a3b2b]">
-                <RiTimeLine className="h-5 w-5 text-[#806444]" />
+              <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1B3C53]">
+                <RiTimeLine className="h-5 w-5 text-[#234C6A]" />
                 Documents récents
               </h2>
               {recentDocs.length === 0 ? (
-                <div className="rounded-2xl border border-[#d8cab3] bg-[#f8f3ea] px-6 py-8 text-center text-sm text-[#7a6a55]">
+                <div className="rounded-2xl border border-[#c4d4df] bg-[#edf4f8] px-6 py-8 text-center text-sm text-[#456882]">
                   Aucun document récent.
                 </div>
               ) : (
-                <div className="divide-y divide-[#e8dccc] overflow-hidden rounded-2xl border border-[#d8cab3] bg-[#fffaf2]">
+                <div className="divide-y divide-[#dde8f0] overflow-hidden rounded-2xl border border-[#c4d4df] bg-white">
                   {recentDocs.map((doc) => (
                     <Link
                       key={doc.id}
                       to={`/documents/${doc.id}`}
-                      className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[#f7efe2]"
+                      className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[#f4f7fa]"
                     >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#edddd1] text-[#806444]">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#dbeaf3] text-[#234C6A]">
                         <RiFileTextLine className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[#2f2a24]">{doc.title}</p>
-                        <p className="text-xs text-[#7a6a55]">{formatDate(doc.createdAt)}</p>
+                        <p className="truncate text-sm font-medium text-[#1B3C53]">{doc.title}</p>
+                        <p className="text-xs text-[#456882]">{formatDate(doc.createdAt)}</p>
                       </div>
                       <BadgePill name={doc.badge?.name as BadgeName} />
                     </Link>
@@ -376,7 +376,7 @@ export const DashboardPage = () => {
 
             {/* Shortcuts */}
             <section>
-              <h2 className="mb-3 text-base font-semibold text-[#4a3b2b]">Raccourcis</h2>
+              <h2 className="mb-3 text-base font-semibold text-[#1B3C53]">Raccourcis</h2>
               <div className="space-y-2">
                 {shortcuts.map(({ label, icon: Icon, to, color }) => (
                   <Link
@@ -391,17 +391,17 @@ export const DashboardPage = () => {
               </div>
 
               {/* Stats mini widget */}
-              <div className="mt-5 rounded-2xl border border-[#d8cab3] bg-[#f5ede0] p-4">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#7a6a55]">Résumé</p>
+              <div className="mt-5 rounded-2xl border border-[#c4d4df] bg-[#edf4f8] p-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">Résumé</p>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#5f4e3a]">Total documents</span>
-                    <span className="font-semibold text-[#2f2a24]">{documents.length}</span>
+                    <span className="text-[#456882]">Total documents</span>
+                    <span className="font-semibold text-[#1B3C53]">{documents.length}</span>
                   </div>
                   {badges.map((b) => (
                     <div key={b.id} className="flex items-center justify-between text-sm">
-                      <span className="capitalize text-[#5f4e3a]">{b.name}</span>
-                      <span className="font-semibold text-[#2f2a24]">{docsByBadge[b.id]?.length ?? 0}</span>
+                      <span className="capitalize text-[#456882]">{b.name}</span>
+                      <span className="font-semibold text-[#1B3C53]">{docsByBadge[b.id]?.length ?? 0}</span>
                     </div>
                   ))}
                 </div>
