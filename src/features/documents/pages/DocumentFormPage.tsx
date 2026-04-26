@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { RiArrowLeftLine, RiCheckLine, RiCloseLine, RiSaveLine } from 'react-icons/ri';
 import { documentService } from '../services/documentService';
 import { badgeService } from '../../badges/services/badgeService';
 import { confidentialityService } from '../../confidentiality/services/confidentialityService';
@@ -11,8 +12,8 @@ import { Button } from '../../../shared/components/atoms/Button';
 import { Input } from '../../../shared/components/atoms/Input';
 import { FormField } from '../../../shared/components/molecules/FormField';
 import { FileUpload } from '../../../shared/components/molecules/FileUpload';
+import { RichTextEditor } from '../../../shared/components/molecules/RichTextEditor';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
-import { useAuthStore } from '../../auth/store/authStore';
 
 interface FormValues {
   title: string;
@@ -23,17 +24,14 @@ interface FormValues {
 export const DocumentFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const isEdit = Boolean(id);
 
   const [badges, setBadges] = useState<Badge[]>([]);
   const [confidentialities, setConfidentialities] = useState<Confidentiality[]>([]);
   const [file, setFile] = useState<File | null>(null);
+  const [content, setContent] = useState('<p></p>');
   const [loading, setLoading] = useState(isEdit);
   const [apiError, setApiError] = useState('');
-
-  const canCreate = user?.documentAccesses?.includes('create') ?? false;
-  const canEdit = user?.documentAccesses?.includes('edit') ?? false;
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>();
 
@@ -46,6 +44,7 @@ export const DocumentFormPage = () => {
     if (isEdit && id) {
       documentService.getById(id).then((doc) => {
         reset({ title: doc.title, badge_id: doc.badge.id, confidentiality_id: doc.confidentiality.id });
+        setContent(doc.content || '<p></p>');
         setLoading(false);
       });
     }
@@ -54,7 +53,11 @@ export const DocumentFormPage = () => {
   const onSubmit = async (data: FormValues) => {
     try {
       setApiError('');
-      const payload: CreateDocumentPayload = { ...data, file: file ?? undefined };
+      const payload: CreateDocumentPayload = {
+        ...data,
+        content,
+        file: file ?? undefined,
+      };
       if (isEdit && id) {
         await documentService.update(id, payload);
       } else {
@@ -62,91 +65,94 @@ export const DocumentFormPage = () => {
       }
       navigate('/documents');
     } catch {
-      setApiError('Une erreur est survenue. Veuillez réessayer.');
+      setApiError('Une erreur est survenue. Veuillez reessayer.');
     }
   };
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
-  if ((!isEdit && !canCreate) || (isEdit && !canEdit)) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-16">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          Vous n'avez pas les permissions necessaires pour {isEdit ? 'editer' : 'creer'} un document.
-        </div>
-        <div className="mt-4">
-          <Button variant="secondary" onClick={() => navigate('/documents')}>
-            Retour a la liste
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-6">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-          ← Retour
-        </button>
-        <h1 className="mt-3 text-2xl font-bold text-gray-900">
-          {isEdit ? 'Modifier le document' : 'Nouveau document'}
-        </h1>
-      </div>
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-6 flex items-center gap-1.5 rounded-full border border-[#d8cab3] bg-[#f8f0e3] px-4 py-2 text-sm font-medium text-[#6b5a45] shadow-sm transition hover:bg-[#eedfc8]"
+      >
+        <RiArrowLeftLine className="h-4 w-4" /> Retour
+      </button>
 
-      <div className="rounded-2xl bg-white p-8 border border-gray-200 shadow-sm">
-        {apiError && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">{apiError}</div>
-        )}
+      <div className="arch-card overflow-hidden rounded-3xl">
+        <div className="bg-linear-to-br from-[#efe2cb] via-[#eadac1] to-[#e2cfb2] px-8 py-6 border-b border-[#dccdb8]">
+          <h1 className="text-2xl font-bold text-[#2f2a24]">
+            {isEdit ? 'Modifier le document' : 'Nouveau document'}
+          </h1>
+          <p className="mt-1 text-sm text-[#6f614e]">
+            {isEdit ? 'Mettez a jour les informations du document.' : 'Remplissez les informations pour creer un nouveau document.'}
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <FormField label="Titre du document" htmlFor="title" required error={errors.title?.message}>
-            <Input
-              id="title"
-              placeholder="Rapport annuel 2025..."
-              {...register('title', { required: 'Le titre est requis' })}
-              error={errors.title?.message}
-            />
-          </FormField>
+        <div className="px-8 py-6">
+          {apiError && (
+            <div className="mb-5 rounded-xl border border-[#d7a59c] bg-[#f3d8d2] p-3 text-sm text-[#8b3e34]">{apiError}</div>
+          )}
 
-          <FormField label="Badge d'importance" htmlFor="badge_id" required error={errors.badge_id?.message}>
-            <select
-              id="badge_id"
-              {...register('badge_id', { required: 'Sélectionnez un badge' })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">-- Choisir un badge --</option>
-              {badges.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-            {errors.badge_id && <p className="text-xs text-red-500">{errors.badge_id.message}</p>}
-          </FormField>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <FormField label="Titre du document" htmlFor="title" required error={errors.title?.message}>
+              <Input
+                id="title"
+                placeholder="Rapport annuel 2025..."
+                {...register('title', { required: 'Le titre est requis' })}
+                error={errors.title?.message}
+              />
+            </FormField>
 
-          <FormField label="Niveau de confidentialité" htmlFor="confidentiality_id" required error={errors.confidentiality_id?.message}>
-            <select
-              id="confidentiality_id"
-              {...register('confidentiality_id', { required: 'Sélectionnez un niveau' })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">-- Choisir un niveau --</option>
-              {confidentialities.map((c) => <option key={c.id} value={c.id}>{c.level}</option>)}
-            </select>
-            {errors.confidentiality_id && <p className="text-xs text-red-500">{errors.confidentiality_id.message}</p>}
-          </FormField>
+            <FormField label="Contenu du document" htmlFor="content">
+              <RichTextEditor value={content} onChange={setContent} />
+            </FormField>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="block text-sm font-medium text-gray-700">Fichier (optionnel)</label>
-            <FileUpload onChange={setFile} value={file} />
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Badge d'importance" htmlFor="badge_id" required error={errors.badge_id?.message}>
+                <select
+                  id="badge_id"
+                  {...register('badge_id', { required: 'Selectionnez un badge' })}
+                  className="arch-select w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9a7d58]/40"
+                >
+                  <option value="">-- Choisir un badge --</option>
+                  {badges.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+                {errors.badge_id && <p className="text-xs text-[#a44b3f]">{errors.badge_id.message}</p>}
+              </FormField>
 
-          <div className="flex gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="flex-1">
-              Annuler
-            </Button>
-            <Button type="submit" isLoading={isSubmitting} className="flex-1">
-              {isEdit ? 'Enregistrer' : 'Créer'}
-            </Button>
-          </div>
-        </form>
+              <FormField label="Confidentialite" htmlFor="confidentiality_id" required error={errors.confidentiality_id?.message}>
+                <select
+                  id="confidentiality_id"
+                  {...register('confidentiality_id', { required: 'Selectionnez un niveau' })}
+                  className="arch-select w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9a7d58]/40"
+                >
+                  <option value="">-- Choisir un niveau --</option>
+                  {confidentialities.map((c) => <option key={c.id} value={c.id}>{c.level}</option>)}
+                </select>
+                {errors.confidentiality_id && <p className="text-xs text-[#a44b3f]">{errors.confidentiality_id.message}</p>}
+              </FormField>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="block text-sm font-medium text-[#5e503f]">Fichier (optionnel)</label>
+              <FileUpload onChange={setFile} value={file} />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="flex-1 rounded-xl">
+                <RiCloseLine className="h-4 w-4" /> Annuler
+              </Button>
+              <Button type="submit" isLoading={isSubmitting} className="flex-1 rounded-xl">
+                {isEdit
+                  ? <><RiSaveLine className="h-4 w-4" /> Enregistrer</>
+                  : <><RiCheckLine className="h-4 w-4" /> Creer</>
+                }
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

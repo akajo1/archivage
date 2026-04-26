@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { RiUserAddLine, RiDeleteBinLine, RiTeamLine } from 'react-icons/ri';
 import type { Role } from '../../auth/types/auth.types';
 import type { ManagedUser, CreateManagedUserPayload } from '../types/userManagement.types';
 import { userManagementService } from '../services/userManagementService';
@@ -83,95 +84,93 @@ export const UserManagementPage = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des utilisateurs</h1>
-        <p className="mt-1 text-sm text-gray-500">Administrer les comptes et les niveaux d'acces.</p>
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="arch-hero overflow-hidden rounded-3xl px-8 py-6 shadow-sm">
+        <h1 className="text-3xl font-bold tracking-tight text-[#2f2a24]">Utilisateurs</h1>
+        <p className="mt-1 text-sm text-[#6f614e]">Administrez les comptes et les niveaux d'acces.</p>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+        <div className="rounded-2xl border border-[#d7a59c] bg-[#f3d8d2] px-4 py-3 text-sm text-[#8b3e34]">
           {error}
         </div>
       )}
 
-      <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Creer un utilisateur</h2>
-        <form onSubmit={handleSubmit(onCreate)} className="grid gap-3 md:grid-cols-4">
-          <Input placeholder="Nom" {...register('name', { required: true })} />
+      <div className="arch-card rounded-3xl p-6">
+        <h2 className="mb-5 text-base font-semibold text-[#4f3f2f]">Creer un utilisateur</h2>
+        <form onSubmit={handleSubmit(onCreate)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Input placeholder="Nom complet" {...register('name', { required: true })} />
           <Input placeholder="Email" type="email" {...register('email', { required: true })} />
           <Input placeholder="Mot de passe" type="password" {...register('password', { required: true, minLength: 6 })} />
           <select
             {...register('role', { required: true })}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="arch-select rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9a7d58]/40"
           >
             {roles.map((role) => (
-              <option key={role} value={role}>
-                {role}
-              </option>
+              <option key={role} value={role}>{role}</option>
             ))}
           </select>
-          <div className="md:col-span-4">
-            <Button type="submit" isLoading={isSubmitting}>Ajouter</Button>
+          <div className="sm:col-span-2 lg:col-span-4">
+            <Button type="submit" isLoading={isSubmitting}>
+              <RiUserAddLine className="h-4 w-4" /> Ajouter l'utilisateur
+            </Button>
           </div>
         </form>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-            <tr>
-              <th className="px-4 py-3">Nom</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Cree le</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
-              <tr>
-                <td className="px-4 py-6 text-gray-500" colSpan={5}>
-                  Chargement...
-                </td>
-              </tr>
-            ) : users.length === 0 ? (
-              <tr>
-                <td className="px-4 py-6 text-gray-500" colSpan={5}>
-                  Aucun utilisateur.
-                </td>
-              </tr>
-            ) : (
-              users.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-4 py-3 font-medium text-gray-900">{user.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{user.email}</td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={user.role}
-                      onChange={(e) => void onRoleChange(user.id, e.target.value as Role)}
-                      className="rounded border border-gray-300 px-2 py-1 text-xs"
-                    >
-                      {roles.map((role) => (
-                        <option key={role} value={role}>
-                          {role}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
+      <div className="arch-card overflow-hidden rounded-3xl">
+        <div className="border-b border-[#e2d5c0] px-6 py-4">
+          <p className="text-sm font-semibold text-[#5b4c39]">{users.length} utilisateur(s)</p>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#806444] border-t-transparent" />
+          </div>
+        ) : users.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eadbc4] text-[#8b7458]">
+              <RiTeamLine className="h-7 w-7" />
+            </div>
+            <p className="mt-4 text-sm font-medium text-[#6f614e]">Aucun utilisateur</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-[#e2d5c0]">
+            {users.map((user) => {
+              const initials = user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+              return (
+                <li key={user.id} className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-[#f2e7d6]/60">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e7d8c2] text-xs font-bold text-[#6f563a]">
+                    {initials}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-[#2f2a24]">{user.name}</p>
+                    <p className="truncate text-xs text-[#8f7f6a]">{user.email}</p>
+                  </div>
+
+                  <span className="hidden text-xs text-[#8f7f6a] sm:block">
                     {new Date(user.createdAt).toLocaleDateString('fr-FR')}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button size="sm" variant="danger" onClick={() => void onDelete(user.id)}>
-                      Supprimer
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  </span>
+
+                  <select
+                    value={user.role}
+                    onChange={(e) => void onRoleChange(user.id, e.target.value as Role)}
+                    className="arch-select rounded-full px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#9a7d58]/40"
+                  >
+                    {roles.map((role) => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+
+                  <Button size="sm" variant="ghost" onClick={() => void onDelete(user.id)} className="text-[#a44b3f] hover:bg-[#f1d5d0] hover:text-[#8f3e34]">
+                    <RiDeleteBinLine className="h-3.5 w-3.5" /> Supprimer
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
   );

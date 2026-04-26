@@ -5,6 +5,7 @@ import type { User } from '../../auth/types/auth.types';
 export interface Document {
   id: string;
   title: string;
+  content: string | null;
   fileUrl: string | null;
   createdAt: string;
   createdBy: User;
@@ -14,6 +15,7 @@ export interface Document {
 
 export interface CreateDocumentPayload {
   title: string;
+  content?: string;
   badge_id: string;
   confidentiality_id: string;
   file?: File;

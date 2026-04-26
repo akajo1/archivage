@@ -2,12 +2,24 @@
 
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #111827;
-  background-color: #f9fafb;
+  --arch-bg: #ece5d8;
+  --arch-bg-elev: #f3ecdf;
+  --arch-card: #fffaf2;
+  --arch-border: #d8cab3;
+  --arch-text: #2f2a24;
+  --arch-muted: #70614e;
+  --arch-accent: #806444;
+  --arch-accent-strong: #684f35;
+  --arch-accent-soft: #ebdcc5;
+  --arch-danger: #a44b3f;
+  --arch-success: #3f6657;
+  color: var(--arch-text);
+  background-color: var(--arch-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 * {
@@ -23,8 +35,18 @@ body,
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f9fafb;
+  background:
+    radial-gradient(circle at 12% 8%, #f6efe3 0%, transparent 30%),
+    radial-gradient(circle at 82% 12%, #efe2cd 0%, transparent 26%),
+    linear-gradient(180deg, #efe7da 0%, #e5ddcd 100%);
+  color: var(--arch-text);
 }
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #b79f7e; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #8f7656; }
 
 a {
   color: inherit;
@@ -36,4 +58,50 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--arch-accent);
+  width: 1rem;
+  height: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.arch-card {
+  background: var(--arch-card);
+  border: 1px solid var(--arch-border);
+  box-shadow: 0 10px 28px rgba(84, 67, 48, 0.08);
+}
+
+.arch-panel {
+  background: var(--arch-bg-elev);
+  border: 1px solid #e1d4be;
+}
+
+.arch-hero {
+  background: linear-gradient(135deg, #f8f0df 0%, #f2e4ce 50%, #ecdac2 100%);
+  border: 1px solid #dcc9aa;
+}
+
+.arch-input {
+  background: #f8f1e5;
+  border: 1px solid #d8cab3;
+  color: var(--arch-text);
+}
+
+.arch-input:focus {
+  outline: none;
+  border-color: #9a7d58;
+  box-shadow: 0 0 0 2px rgba(128, 100, 68, 0.2);
+}
+
+.arch-select {
+  background: #f7f0e3;
+  border: 1px solid #d8cab3;
+  color: var(--arch-text);
+}
+
+.arch-muted {
+  color: var(--arch-muted);
 }

@@ -1,5 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -37,7 +39,7 @@ model Badge {
   name      BadgeName  @unique
   color     String
   documents Document[]
-  rolePermissions RolePermission[]
+  permissions RolePermission[]
 
   @@map("badges")
 }
@@ -46,37 +48,15 @@ model Confidentiality {
   id        String               @id @default(uuid())
   level     ConfidentialityLevel @unique
   documents Document[]
-  rolePermissions RolePermission[]
+  permissions RolePermission[]
 
   @@map("confidentialities")
-}
-
-model RolePermission {
-  id                String            @id @default(uuid())
-  role              String            @unique
-  badges            Badge[]
-  confidentialities Confidentiality[]
-  canRead           Boolean           @default(true) @map("can_read")
-  canCreate         Boolean           @default(false) @map("can_create")
-  canEdit           Boolean           @default(false) @map("can_edit")
-
-  @@map("role_permissions")
-}
-
-model AppRole {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  name      String
-  description String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("app_roles")
 }
 
 model Document {
   id                String          @id @default(uuid())
   title             String
+  content           String?
   fileUrl           String?         @map("file_url")
   createdAt         DateTime        @default(now()) @map("created_at")
   createdBy         User            @relation(fields: [createdById], references: [id])
@@ -87,4 +67,27 @@ model Document {
   confidentialityId String          @map("confidentiality_id")
 
   @@map("documents")
+}
+
+model AppRole {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("app_roles")
+}
+
+model RolePermission {
+  id                String            @id @default(uuid())
+  role              String            @unique
+  canRead           Boolean           @default(true) @map("can_read")
+  canCreate         Boolean           @default(false) @map("can_create")
+  canEdit           Boolean           @default(false) @map("can_edit")
+  badges            Badge[]
+  confidentialities Confidentiality[]
+
+  @@map("role_permissions")
 }

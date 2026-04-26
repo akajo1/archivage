@@ -56,7 +56,6 @@ archivage/
 - gestion des permissions par role (`/role-permissions`) pour badges et confidentialite
 - gestion dynamique des roles (`/roles`) : creation, recherche, mise a jour, suppression
 - pour chaque role: attribution des acces document (read/create/edit)
-- enforcement des acces document (read/create/edit) dans les endpoints et l'interface
 - RBAC par rôle côté backend
 - upload local des fichiers dans `backend/uploads/`
 
@@ -90,27 +89,6 @@ cd /Users/akajodev/Documents/projects/archivage
 docker compose up -d
 ```
 
-### 2. Initialiser la base
-
-```bash
-cd /Users/akajodev/Documents/projects/archivage/backend
-npx prisma generate
-npx prisma db push
-npm run seed
-```
-
-### 3. Lancer le backend
-
-```bash
-cd /Users/akajodev/Documents/projects/archivage/backend
-npm run start:dev
-```
-
-### Vérifier la santé du backend
-
-```bash
-curl http://localhost:3000/health
-```
 
 ### 4. Lancer le frontend
 

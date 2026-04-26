@@ -1,16 +1,44 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import type { IconType } from 'react-icons';
+import {
+  RiFolderOpenLine,
+  RiFileList2Line,
+  RiTeamLine,
+  RiShieldKeyholeLine,
+  RiLogoutBoxLine,
+  RiWifiLine,
+  RiWifiOffLine,
+} from 'react-icons/ri';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { Button } from '../atoms/Button';
 import { healthService, type BackendHealth } from '../../services/healthService';
 
 const roleColors: Record<string, string> = {
-  admin: 'bg-purple-100 text-purple-700',
-  manager: 'bg-blue-100 text-blue-700',
-  user: 'bg-gray-100 text-gray-700',
+  admin: 'bg-[#ead7ca] text-[#7a4f34]',
+  manager: 'bg-[#dae7df] text-[#355246]',
+  user: 'bg-[#efe4d2] text-[#6d5638]',
 };
 
-export const Navbar = () => {
+interface NavbarProps {
+  className?: string;
+  onNavigate?: () => void;
+}
+
+interface NavItem {
+  to: string;
+  label: string;
+  Icon: IconType;
+  roles: string[];
+}
+
+const navItems: NavItem[] = [
+  { to: '/documents', label: 'Documents', Icon: RiFileList2Line, roles: ['admin', 'manager', 'user'] },
+  { to: '/users', label: 'Utilisateurs', Icon: RiTeamLine, roles: ['admin'] },
+  { to: '/roles', label: 'Roles', Icon: RiShieldKeyholeLine, roles: ['admin'] },
+];
+
+export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [backendHealth, setBackendHealth] = useState<BackendHealth>('down');
@@ -41,52 +69,75 @@ export const Navbar = () => {
     navigate('/login');
   };
 
-  return (
-    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <Link to="/documents" className="flex items-center gap-2 text-xl font-bold text-indigo-600">
-            <span>📁</span>
-            <span>Archivage</span>
-          </Link>
+  const visibleItems = user ? navItems.filter((item) => item.roles.includes(user.role)) : [];
 
-          <div className="flex items-center gap-4">
-            <span
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${backendHealth === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-              title="Etat de la connexion backend/database"
+  return (
+    <aside className={`arch-card flex flex-col rounded-3xl p-4 ${className}`}>
+      <Link
+        to="/documents"
+        onClick={onNavigate}
+        className="mb-6 inline-flex items-center gap-2 self-start rounded-full bg-[#ebdcc5] px-3 py-1.5 text-lg font-bold text-[#6f563a]"
+      >
+        <RiFolderOpenLine className="h-5 w-5" />
+        <span>Archivage</span>
+      </Link>
+
+      <nav className="space-y-1">
+        {visibleItems.map(({ to, label, Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-[#806444] text-amber-50 shadow-sm'
+                  : 'text-[#625240] hover:bg-[#efe2cf] hover:text-[#3f3328]'
+              }`
+            }
+          >
+            <Icon className="h-4.5 w-4.5 shrink-0" />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="mt-auto space-y-3 pt-6">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${backendHealth === 'up' ? 'bg-[#dae7df] text-[#355246]' : 'bg-[#f0d3cf] text-[#8b3e34]'}`}
+          title="Etat de la connexion backend/database"
+        >
+          {backendHealth === 'up' ? (
+            <>
+              <RiWifiLine className="h-3.5 w-3.5" /> Backend OK
+            </>
+          ) : (
+            <>
+              <RiWifiOffLine className="h-3.5 w-3.5" /> Backend down
+            </>
+          )}
+        </span>
+
+        {user && (
+          <div className="rounded-2xl border border-[#dccdb8] bg-[#f5eddf] p-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="truncate text-sm font-medium text-[#5f4e3a]">{user.name}</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${roleColors[user.role]}`}>
+                {user.role}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="mt-3 w-full justify-center gap-1.5"
             >
-              {backendHealth === 'up' ? 'Backend OK' : 'Backend down'}
-            </span>
-            {user && (
-              <>
-                <Link to="/documents" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors">
-                  Documents
-                </Link>
-                {user.role === 'admin' && (
-                  <Link to="/users" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors">
-                    Utilisateurs
-                  </Link>
-                )}
-                {user.role === 'admin' && (
-                  <Link to="/roles" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors">
-                    Roles
-                  </Link>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${roleColors[user.role]}`}>
-                    {user.role}
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">{user.name}</span>
-                </div>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  Déconnexion
-                </Button>
-              </>
-            )}
+              <RiLogoutBoxLine className="h-4 w-4" />
+              Deconnexion
+            </Button>
           </div>
-        </div>
+        )}
       </div>
-    </nav>
+    </aside>
   );
 };
-

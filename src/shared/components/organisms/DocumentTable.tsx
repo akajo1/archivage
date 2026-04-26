@@ -1,9 +1,6 @@
-import { useNavigate } from 'react-router-dom';
 import type { Document } from '../../../features/documents/types/document.types';
-import { BadgePill } from '../atoms/BadgePill';
-import { ConfidentialityTag } from '../atoms/ConfidentialityTag';
-import { Button } from '../atoms/Button';
 import { useAuthStore } from '../../../features/auth/store/authStore';
+import { DocumentCard } from '../molecules/DocumentCard';
 
 interface DocumentTableProps {
   documents: Document[];
@@ -11,74 +8,32 @@ interface DocumentTableProps {
 }
 
 export const DocumentTable = ({ documents, onDelete }: DocumentTableProps) => {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
-  const canEdit = user?.documentAccesses?.includes('edit') ?? false;
 
   if (documents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-        <span className="text-5xl">📂</span>
-        <p className="mt-4 text-lg font-medium">Aucun document trouvé</p>
-        <p className="text-sm">Modifiez vos filtres ou créez un nouveau document</p>
+      <div className="arch-card flex flex-col items-center justify-center rounded-3xl border-dashed py-24 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eadbc4] text-3xl shadow-sm">
+          📂
+        </div>
+        <p className="mt-5 text-base font-semibold text-[#4f3f2f]">Aucun document trouve</p>
+        <p className="mt-1 text-sm text-[#8f7f6a]">Modifiez vos filtres ou creez un nouveau document</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-          <tr>
-            <th className="px-6 py-3">Titre</th>
-            <th className="px-6 py-3">Badge</th>
-            <th className="px-6 py-3">Confidentialité</th>
-            <th className="px-6 py-3">Auteur</th>
-            <th className="px-6 py-3">Date</th>
-            <th className="px-6 py-3 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {documents.map((doc) => (
-            <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-6 py-4 font-medium text-gray-900 max-w-xs truncate">
-                {doc.title}
-              </td>
-              <td className="px-6 py-4">
-                <BadgePill name={doc.badge.name} />
-              </td>
-              <td className="px-6 py-4">
-                <ConfidentialityTag level={doc.confidentiality.level} />
-              </td>
-              <td className="px-6 py-4 text-gray-600">{doc.createdBy.name}</td>
-              <td className="px-6 py-4 text-gray-400">
-                {new Date(doc.createdAt).toLocaleDateString('fr-FR')}
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex items-center justify-end gap-2">
-                  <Button size="sm" variant="ghost" onClick={() => navigate(`/documents/${doc.id}`)}>
-                    Voir
-                  </Button>
-                  {canEdit && (isAdmin || doc.createdBy.id === user?.id) && (
-                    <>
-                      <Button size="sm" variant="secondary" onClick={() => navigate(`/documents/${doc.id}/edit`)}>
-                        Modifier
-                      </Button>
-                      {isAdmin && onDelete && (
-                        <Button size="sm" variant="danger" onClick={() => onDelete(doc.id)}>
-                          Supprimer
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
+      {documents.map((doc) => (
+        <div key={doc.id} className="mb-4 break-inside-avoid">
+          <DocumentCard
+            document={doc}
+            canManage={isAdmin || doc.createdBy.id === user?.id}
+            onDelete={isAdmin ? onDelete : undefined}
+          />
+        </div>
+      ))}
     </div>
   );
 };
-

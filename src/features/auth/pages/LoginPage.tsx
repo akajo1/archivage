@@ -27,58 +27,75 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <span className="text-4xl">📁</span>
-          <h1 className="mt-3 text-2xl font-bold text-gray-900">Archivage</h1>
-          <p className="mt-1 text-sm text-gray-500">Connectez-vous à votre espace</p>
+    <div className="flex min-h-screen">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-linear-to-br from-[#6f563a] via-[#806444] to-[#9a7a53] p-12 text-amber-50">
+        <div className="flex items-center gap-2 text-xl font-bold">
+          <span>📁</span>
+          <span>Archivage</span>
         </div>
+        <div>
+          <h2 className="text-4xl font-bold leading-tight">Retrouvez tous vos documents en un seul endroit.</h2>
+          <p className="mt-4 text-base leading-relaxed text-amber-100/85">Organisez, partagez et gerez vos archives documentaires avec controle d'acces par role.</p>
+        </div>
+        <div className="grid grid-cols-3 gap-3 opacity-40">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} className={`rounded-2xl bg-amber-50/20 ${i % 3 === 0 ? 'h-24' : i % 3 === 1 ? 'h-32' : 'h-20'}`} />
+          ))}
+        </div>
+      </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-sm border border-gray-200">
-          <h2 className="mb-6 text-xl font-semibold text-gray-900">Connexion</h2>
+      <div className="flex flex-1 items-center justify-center bg-transparent p-6">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 text-center lg:hidden">
+            <span className="text-4xl">📁</span>
+            <h1 className="mt-2 text-2xl font-bold text-[#2f2a24]">Archivage</h1>
+          </div>
 
-          {apiError && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
-              {apiError}
-            </div>
-          )}
+          <div className="arch-card rounded-3xl p-8">
+            <h2 className="mb-1 text-2xl font-bold text-[#2f2a24]">Connexion</h2>
+            <p className="mb-6 text-sm text-[#7a6c59]">Bienvenue ! Entrez vos identifiants.</p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <FormField label="Email" htmlFor="email" required error={errors.email?.message}>
-              <Input
-                id="email"
-                type="email"
-                placeholder="vous@exemple.com"
-                {...register('email', { required: "L'email est requis" })}
-                error={errors.email?.message}
-              />
-            </FormField>
+            {apiError && (
+              <div className="mb-4 rounded-xl border border-[#d7a59c] bg-[#f3d8d2] p-3 text-sm text-[#8b3e34]">
+                {apiError}
+              </div>
+            )}
 
-            <FormField label="Mot de passe" htmlFor="password" required error={errors.password?.message}>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register('password', { required: 'Le mot de passe est requis' })}
-                error={errors.password?.message}
-              />
-            </FormField>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormField label="Email" htmlFor="email" required error={errors.email?.message}>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="vous@exemple.com"
+                  {...register('email', { required: "L'email est requis" })}
+                  error={errors.email?.message}
+                />
+              </FormField>
 
-            <Button type="submit" isLoading={isSubmitting} className="w-full mt-2">
-              Se connecter
-            </Button>
-          </form>
+              <FormField label="Mot de passe" htmlFor="password" required error={errors.password?.message}>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  {...register('password', { required: 'Le mot de passe est requis' })}
+                  error={errors.password?.message}
+                />
+              </FormField>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
-            Pas encore de compte ?{' '}
-            <Link to="/register" className="font-medium text-indigo-600 hover:underline">
-              S'inscrire
-            </Link>
-          </p>
+              <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
+                Se connecter
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-[#7a6c59]">
+              Pas encore de compte ?{' '}
+              <Link to="/register" className="font-medium text-[#7a5e3d] hover:underline">
+                S'inscrire
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
-

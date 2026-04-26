@@ -1,10 +1,10 @@
 import type { ConfidentialityLevel } from '../../../features/confidentiality/types/confidentiality.types';
 
 const styles: Record<ConfidentialityLevel, string> = {
-  public: 'bg-green-100 text-green-700 border border-green-200',
-  interne: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-  confidentiel: 'bg-orange-100 text-orange-700 border border-orange-200',
-  secret: 'bg-red-100 text-red-800 border border-red-300',
+  public: 'bg-[#dce8e2] text-[#355246] border border-[#b5cabf]',
+  interne: 'bg-[#efe2cb] text-[#775f3f] border border-[#d8c39d]',
+  confidentiel: 'bg-[#ecd8c8] text-[#8a5f3c] border border-[#d3b392]',
+  secret: 'bg-[#f0d3cf] text-[#8b3e34] border border-[#d7a59c]',
 };
 
 const icons: Record<ConfidentialityLevel, string> = {
@@ -20,4 +20,3 @@ export const ConfidentialityTag = ({ level }: { level: ConfidentialityLevel }) =
     {level}
   </span>
 );
-

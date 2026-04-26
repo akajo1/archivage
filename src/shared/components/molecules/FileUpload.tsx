@@ -12,7 +12,7 @@ export const FileUpload = ({ onChange, value, accept = '*' }: FileUploadProps) =
   return (
     <div
       onClick={() => ref.current?.click()}
-      className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-indigo-400 transition-colors"
+      className="cursor-pointer rounded-lg border-2 border-dashed border-[#ccb997] bg-[#f8f0e3] p-6 text-center transition-colors hover:border-[#9a7d58]"
     >
       <input
         ref={ref}
@@ -22,17 +22,16 @@ export const FileUpload = ({ onChange, value, accept = '*' }: FileUploadProps) =
         onChange={(e) => onChange(e.target.files?.[0] ?? null)}
       />
       {value ? (
-        <div className="flex items-center justify-center gap-2 text-sm text-indigo-600">
+        <div className="flex items-center justify-center gap-2 text-sm text-[#6f563a]">
           <span>📄</span>
-          <span className="font-medium truncate max-w-xs">{value.name}</span>
+          <span className="max-w-xs truncate font-medium">{value.name}</span>
         </div>
       ) : (
-        <div className="text-gray-400">
+        <div className="text-[#8f7f6a]">
           <p className="text-sm font-medium">Cliquer pour uploader un fichier</p>
-          <p className="text-xs mt-1">PDF, Word, Image...</p>
+          <p className="mt-1 text-xs">PDF, Word, Image...</p>
         </div>
       )}
     </div>
   );
 };
-

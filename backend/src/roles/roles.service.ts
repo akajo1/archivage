@@ -13,26 +13,6 @@ import { SearchRolesDto } from './dto/search-roles.dto';
 export class RolesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toDocumentAccesses(permission: {
-    canRead: boolean;
-    canCreate: boolean;
-    canEdit: boolean;
-  }) {
-    const accesses: Array<'read' | 'create' | 'edit'> = [];
-    if (permission.canRead) accesses.push('read');
-    if (permission.canCreate) accesses.push('create');
-    if (permission.canEdit) accesses.push('edit');
-    return accesses;
-  }
-
-  private toPermissionFlags(accesses: Array<'read' | 'create' | 'edit'>) {
-    return {
-      canRead: accesses.includes('read'),
-      canCreate: accesses.includes('create'),
-      canEdit: accesses.includes('edit'),
-    };
-  }
-
   findAll(query: SearchRolesDto) {
     const search = query.q?.trim();
 
@@ -63,9 +43,6 @@ export class RolesService {
             ...role,
             badges: permission?.badges ?? [],
             confidentialities: permission?.confidentialities ?? [],
-            documentAccesses: permission
-              ? this.toDocumentAccesses(permission)
-              : ['read'],
           };
         });
       });
@@ -103,7 +80,6 @@ export class RolesService {
         confidentialities: {
           connect: dto.confidentialityIds!.map((id) => ({ id })),
         },
-        ...this.toPermissionFlags(dto.documentAccesses),
       },
     });
 
@@ -130,9 +106,6 @@ export class RolesService {
       ...role,
       badges: permissions?.badges ?? [],
       confidentialities: permissions?.confidentialities ?? [],
-      documentAccesses: permissions
-        ? this.toDocumentAccesses(permissions)
-        : ['read'],
     };
   }
 
@@ -189,9 +162,6 @@ export class RolesService {
                 },
               }
             : {}),
-          ...(dto.documentAccesses
-            ? this.toPermissionFlags(dto.documentAccesses)
-            : {}),
         },
       });
     } else if (dto.badgeIds && dto.confidentialityIds) {
@@ -204,7 +174,6 @@ export class RolesService {
               id: confidentialityId,
             })),
           },
-          ...this.toPermissionFlags(dto.documentAccesses ?? ['read']),
         },
       });
     }

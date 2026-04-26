@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RiAddLine } from 'react-icons/ri';
 import { documentService } from '../services/documentService';
 import { badgeService } from '../../badges/services/badgeService';
 import { confidentialityService } from '../../confidentiality/services/confidentialityService';
@@ -10,14 +11,10 @@ import { DocumentTable } from '../../../shared/components/organisms/DocumentTabl
 import { FilterBar } from '../../../shared/components/molecules/FilterBar';
 import { Button } from '../../../shared/components/atoms/Button';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
-import { useAuthStore } from '../../auth/store/authStore';
 
 export const DocumentListPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const [documents, setDocuments] = useState<Document[]>([]);
-      const canCreate = user?.documentAccesses?.includes('create') ?? false;
-
   const [badges, setBadges] = useState<Badge[]>([]);
   const [confidentialities, setConfidentialities] = useState<Confidentiality[]>([]);
   const [filters, setFilters] = useState<DocumentFilters>({});
@@ -45,20 +42,18 @@ export const DocumentListPage = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-          <p className="mt-1 text-sm text-gray-500">{documents.length} document(s) accessible(s)</p>
-        </div>
-        {canCreate && (
-          <Button onClick={() => navigate('/documents/new')}>
-            + Nouveau document
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="arch-hero relative overflow-hidden rounded-3xl p-6 shadow-sm sm:p-8">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-[#2f2a24]">Documents</h1>
+            <p className="mt-1 text-sm text-[#6f614e]">{documents.length} document(s) accessible(s)</p>
+          </div>
+          <Button onClick={() => navigate('/documents/new')} className="rounded-full px-5">
+            <RiAddLine className="h-4 w-4" /> Nouveau document
           </Button>
-        )}
-      </div>
+        </div>
 
-      <div className="mb-6">
         <FilterBar
           badges={badges}
           confidentialities={confidentialities}
@@ -68,7 +63,7 @@ export const DocumentListPage = () => {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">{error}</div>
+        <div className="mb-4 rounded-lg border border-[#d7a59c] bg-[#f3d8d2] p-3 text-sm text-[#8b3e34]">{error}</div>
       )}
 
       {loading ? (
@@ -79,5 +74,3 @@ export const DocumentListPage = () => {
     </div>
   );
 };
-
-

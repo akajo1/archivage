@@ -30,6 +30,27 @@
 ```bash
 $ npm install
 ```
+### 2. Initialiser la base
+
+```bash
+cd /Users/akajodev/Documents/projects/archivage/backend
+npx prisma generate
+npx prisma db push
+npm run seed
+```
+
+### 3. Lancer le backend
+
+```bash
+cd /Users/akajodev/Documents/projects/archivage/backend
+npm run start:dev
+```
+
+### Vérifier la santé du backend
+
+```bash
+curl http://localhost:3000/health
+```
 
 ## Compile and run the project
 

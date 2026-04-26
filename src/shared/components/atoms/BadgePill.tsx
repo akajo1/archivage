@@ -1,9 +1,9 @@
 type BadgeName = 'critique' | 'normal' | 'faible';
 
 const colors: Record<BadgeName, string> = {
-  critique: 'bg-red-100 text-red-700 border border-red-200',
-  normal: 'bg-blue-100 text-blue-700 border border-blue-200',
-  faible: 'bg-gray-100 text-gray-600 border border-gray-200',
+  critique: 'bg-[#f3d8d2] text-[#8b3e34] border border-[#d9a79e]',
+  normal: 'bg-[#d9e6de] text-[#355246] border border-[#aec6ba]',
+  faible: 'bg-[#eadfcd] text-[#6f5839] border border-[#d2bf9f]',
 };
 
 interface BadgePillProps {
@@ -16,4 +16,3 @@ export const BadgePill = ({ name }: BadgePillProps) => (
     {name}
   </span>
 );
-

@@ -8,11 +8,10 @@ export const Input = ({ error, className = '', ...props }: InputProps) => (
   <div className="w-full">
     <input
       {...props}
-      className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-        error ? 'border-red-400 focus:ring-red-400' : 'border-gray-300'
+      className={`arch-input w-full rounded-xl px-3.5 py-2.5 text-sm shadow-sm transition-all placeholder:text-[#9c8d79] ${
+        error ? 'border-[#b45a4d] focus:border-[#b45a4d] focus:ring-[#b45a4d]/30' : ''
       } ${className}`}
     />
-    {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    {error && <p className="mt-1 text-xs text-[#b45a4d]">{error}</p>}
   </div>
 );
-

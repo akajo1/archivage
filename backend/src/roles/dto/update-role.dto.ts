@@ -1,10 +1,8 @@
 import {
   IsArray,
-  ArrayNotEmpty,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsIn,
   IsUUID,
   Matches,
 } from 'class-validator';
@@ -33,10 +31,4 @@ export class UpdateRoleDto {
   @IsArray()
   @IsUUID('4', { each: true })
   confidentialityIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsIn(['read', 'create', 'edit'], { each: true })
-  documentAccesses?: Array<'read' | 'create' | 'edit'>;
 }
