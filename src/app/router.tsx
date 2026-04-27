@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LoginPage } from '../features/auth/pages/LoginPage';
-import { RegisterPage } from '../features/auth/pages/RegisterPage';
+import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
+import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { DashboardPage } from '../features/documents/pages/DashboardPage';
 import { DocumentListPage } from '../features/documents/pages/DocumentListPage';
@@ -8,15 +9,18 @@ import { DocumentFormPage } from '../features/documents/pages/DocumentFormPage';
 import { DocumentDetailPage } from '../features/documents/pages/DocumentDetailPage';
 import { UserManagementPage } from '../features/users/pages/UserManagementPage';
 import { RolePermissionsPage } from '../features/users/pages/RolePermissionsPage';
+import { ChangePasswordPage } from '../features/users/pages/ChangePasswordPage';
 import { Layout } from './Layout';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <RegisterPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/reset-password', element: <ResetPasswordPage /> },
   {
     path: '/',
     element: <ProtectedRoute><Layout /></ProtectedRoute>,
     children: [
+      // ...existing routes...
       {
         index: true,
         element: (
@@ -80,6 +84,10 @@ export const router = createBrowserRouter([
             <RolePermissionsPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: 'change-password',
+        element: <ChangePasswordPage />,
       },
     ],
   },

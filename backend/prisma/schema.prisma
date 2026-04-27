@@ -22,14 +22,16 @@ enum BadgeName {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  name      String
-  email     String     @unique
-  password  String
-  role      String     @default("user")
-  documents Document[]
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+  id                   String     @id @default(uuid())
+  name                 String
+  email                String     @unique
+  password             String
+  role                 String     @default("user")
+  documents            Document[]
+  passwordResetToken   String?    @map("password_reset_token")
+  passwordResetExpiry  DateTime?  @map("password_reset_expiry")
+  createdAt            DateTime   @default(now()) @map("created_at")
+  updatedAt            DateTime   @updatedAt @map("updated_at")
 
   @@map("users")
 }

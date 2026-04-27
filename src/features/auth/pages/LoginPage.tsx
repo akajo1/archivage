@@ -82,16 +82,19 @@ export const LoginPage = () => {
                 />
               </FormField>
 
+              <div className="flex justify-end -mt-2">
+                <Link to="/forgot-password" className="text-sm font-medium text-[#234C6A] hover:underline">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+
               <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
                 Se connecter
               </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-[#456882]">
-              Pas encore de compte ?{' '}
-              <Link to="/register" className="font-medium text-[#234C6A] hover:underline">
-                S'inscrire
-              </Link>
+              Contactez un administrateur pour créer un compte.
             </p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import apiClient from '../../../shared/utils/apiClient';
-import type { LoginPayload, RegisterPayload, AuthResponse, User } from '../types/auth.types';
+import type { LoginPayload, RegisterPayload, AuthResponse, User, ForgotPasswordPayload, ResetPasswordPayload, ChangePasswordPayload } from '../types/auth.types';
 
 export const authService = {
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
@@ -14,7 +14,7 @@ export const authService = {
     const { data } = await apiClient.post<AuthResponse>(
       '/auth/refresh',
       { refresh_token: refreshToken },
-      { skipAuthRefresh: true } as object,  // prevent infinite loop
+      { skipAuthRefresh: true } as object,
     );
     return data;
   },
@@ -31,6 +31,18 @@ export const authService = {
   },
   refreshPermissions: async (): Promise<User> => {
     const { data } = await apiClient.post<User>('/auth/refresh-permissions');
+    return data;
+  },
+  forgotPassword: async (payload: ForgotPasswordPayload): Promise<{ message: string; resetUrl?: string }> => {
+    const { data } = await apiClient.post('/auth/forgot-password', payload);
+    return data;
+  },
+  resetPassword: async (payload: ResetPasswordPayload): Promise<{ message: string }> => {
+    const { data } = await apiClient.post('/auth/reset-password', payload);
+    return data;
+  },
+  changePassword: async (payload: ChangePasswordPayload): Promise<{ message: string }> => {
+    const { data } = await apiClient.post('/auth/change-password', payload);
     return data;
   },
 };

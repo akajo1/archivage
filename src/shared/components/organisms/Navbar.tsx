@@ -10,6 +10,7 @@ import {
   RiWifiLine,
   RiWifiOffLine,
   RiDashboardLine,
+  RiLockPasswordLine,
 } from 'react-icons/ri';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { authService } from '../../../features/auth/services/authService';
@@ -162,10 +163,18 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
                 </span>
               </div>
             </div>
+            <Link
+              to="/change-password"
+              onClick={onNavigate}
+              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/8 py-1.5 text-xs font-medium text-white/50 transition-all hover:border-white/15 hover:bg-white/10 hover:text-white"
+            >
+              <RiLockPasswordLine className="h-3.5 w-3.5" /> Changer le mot de passe
+            </Link>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleLogout}              className="mt-3 w-full justify-center gap-1.5 rounded-xl border border-white/8 text-white/50 transition-all hover:border-white/15 hover:bg-white/10 hover:text-white"
+              onClick={handleLogout}
+              className="mt-2 w-full justify-center gap-1.5 rounded-xl border border-white/8 text-white/50 transition-all hover:border-white/15 hover:bg-white/10 hover:text-white"
             >
               <RiLogoutBoxLine className="h-3.5 w-3.5" /> Déconnexion
             </Button>
