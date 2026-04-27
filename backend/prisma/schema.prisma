@@ -113,6 +113,7 @@ model RoleFeaturePermission {
   id               String         @id @default(uuid())
   feature          String
   canRead          Boolean        @default(false) @map("can_read")
+  canCreate        Boolean        @default(false) @map("can_create")
   canEdit          Boolean        @default(false) @map("can_edit")
   canDelete        Boolean        @default(false) @map("can_delete")
   canSearch        Boolean        @default(false) @map("can_search")

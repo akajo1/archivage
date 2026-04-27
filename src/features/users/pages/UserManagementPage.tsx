@@ -16,7 +16,7 @@ export const UserManagementPage = () => {
   const [roles, setRoles] = useState<Role[]>(['user']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { canEditFeature, canDeleteFeature } = usePermissions();
+  const { canCreateFeature, canDeleteFeature } = usePermissions();
   const { refreshPermissions } = useRefreshPermissions();
 
   const {
@@ -100,7 +100,7 @@ export const UserManagementPage = () => {
      }
    };
 
-   const canCreate = canEditFeature('users');
+   const canCreate = canCreateFeature('users');
    const canDelete = canDeleteFeature('users');
 
   return (

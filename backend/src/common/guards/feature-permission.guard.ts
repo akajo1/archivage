@@ -9,13 +9,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 export interface FeaturePermissionMetadata {
   feature: string;
-  operation: 'canRead' | 'canEdit' | 'canDelete' | 'canSearch';
+  operation: 'canRead' | 'canCreate' | 'canEdit' | 'canDelete' | 'canSearch';
 }
 
 /**
  * Decorator to specify required feature permissions for a route
  */
-export const FeaturePermission = Reflector.createDecorator<FeaturePermissionMetadata>();
+export const FeaturePermission =
+  Reflector.createDecorator<FeaturePermissionMetadata>();
 
 @Injectable()
 export class FeaturePermissionGuard implements CanActivate {
@@ -25,28 +26,37 @@ export class FeaturePermissionGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermission = this.reflector.getAllAndOverride<FeaturePermissionMetadata>(
-      FeaturePermission,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredPermission =
+      this.reflector.getAllAndOverride<FeaturePermissionMetadata>(
+        FeaturePermission,
+        [context.getHandler(), context.getClass()],
+      );
 
     if (!requiredPermission) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<{ user?: { role?: string } }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ user?: { role?: string } }>();
     const userRole = request.user?.role;
 
     if (!userRole) {
       throw new ForbiddenException('User role not found.');
     }
 
-
     const permission = await this.prisma.rolePermission.findUnique({
       where: { role: userRole },
       include: {
         featurePermissions: {
           where: { feature: requiredPermission.feature },
+          select: {
+            canRead: true,
+            canCreate: true,
+            canEdit: true,
+            canDelete: true,
+            canSearch: true,
+          },
         },
       },
     });
@@ -67,4 +77,3 @@ export class FeaturePermissionGuard implements CanActivate {
     return true;
   }
 }
-

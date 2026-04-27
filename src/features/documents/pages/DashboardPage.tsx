@@ -61,7 +61,7 @@ const formatDate = (iso: string) => {
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { canEditFeature, canReadFeature } = usePermissions();
+  const { canCreateFeature, canReadFeature } = usePermissions();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +87,7 @@ export const DashboardPage = () => {
   const selectedBadge = badges.find((b) => b.id === selectedBadgeId);
 
   const isAdmin = user?.role === 'admin';
-  const canCreate = canEditFeature('documents');
+  const canCreate = canCreateFeature('documents');
   const canReadUsers = canReadFeature('users');
   const canReadRoles = canReadFeature('roles');
 

@@ -20,6 +20,9 @@ export class FeaturePermissionDto {
   canRead!: boolean;
 
   @IsBoolean()
+  canCreate!: boolean;
+
+  @IsBoolean()
   canEdit!: boolean;
 
   @IsBoolean()
@@ -28,4 +31,3 @@ export class FeaturePermissionDto {
   @IsBoolean()
   canSearch!: boolean;
 }
-

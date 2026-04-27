@@ -13,7 +13,7 @@ export const usePermissions = () => {
   return {
     permissions,
     hasFeatureAccess: useCallback(
-      (feature: string, operation: 'canRead' | 'canEdit' | 'canDelete' | 'canSearch') =>
+      (feature: string, operation: 'canRead' | 'canCreate' | 'canEdit' | 'canDelete' | 'canSearch') =>
         PermissionUtils.hasFeatureAccess(permissions, feature, operation),
       [permissions],
     ),
@@ -23,6 +23,10 @@ export const usePermissions = () => {
     ),
     canEditFeature: useCallback(
       (feature: string) => PermissionUtils.canEditFeature(permissions, feature),
+      [permissions],
+    ),
+    canCreateFeature: useCallback(
+      (feature: string) => PermissionUtils.canCreateFeature(permissions, feature),
       [permissions],
     ),
     canDeleteFeature: useCallback(

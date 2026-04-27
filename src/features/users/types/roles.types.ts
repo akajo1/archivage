@@ -15,6 +15,7 @@ export type RoleFeatureKey = (typeof ROLE_FEATURE_KEYS)[number];
 export interface FeaturePermission {
   feature: RoleFeatureKey;
   canRead: boolean;
+  canCreate: boolean;
   canEdit: boolean;
   canDelete: boolean;
   canSearch: boolean;

@@ -32,6 +32,7 @@ export class AuthService {
           where: { feature: 'documents' },
           select: {
             canRead: true,
+            canCreate: true,
             canEdit: true,
             canDelete: true,
             canSearch: true,
@@ -49,19 +50,18 @@ export class AuthService {
 
     const byFeature = permission.featurePermissions[0];
     if (byFeature) {
-      const accesses: Array<'read' | 'create' | 'edit' | 'delete' | 'search'> = [];
+      const accesses: Array<'read' | 'create' | 'edit' | 'delete' | 'search'> =
+        [];
       if (byFeature.canRead) accesses.push('read');
-      if (byFeature.canEdit) {
-        accesses.push('edit');
-        // Keep compatibility with existing frontend checks expecting "create".
-        accesses.push('create');
-      }
+      if (byFeature.canCreate) accesses.push('create');
+      if (byFeature.canEdit) accesses.push('edit');
       if (byFeature.canDelete) accesses.push('delete');
       if (byFeature.canSearch) accesses.push('search');
       return accesses;
     }
 
-    const accesses: Array<'read' | 'create' | 'edit' | 'delete' | 'search'> = [];
+    const accesses: Array<'read' | 'create' | 'edit' | 'delete' | 'search'> =
+      [];
     if (permission.canRead) accesses.push('read');
     if (permission.canCreate) accesses.push('create');
     if (permission.canEdit) accesses.push('edit');
@@ -85,6 +85,7 @@ export class AuthService {
         featurePermissions: ROLE_FEATURES.map((feature) => ({
           feature,
           canRead: true,
+          canCreate: true,
           canEdit: true,
           canDelete: true,
           canSearch: true,
@@ -104,6 +105,7 @@ export class AuthService {
           select: {
             feature: true,
             canRead: true,
+            canCreate: true,
             canEdit: true,
             canDelete: true,
             canSearch: true,
@@ -119,19 +121,63 @@ export class AuthService {
         const allBadges = await this.prisma.badge.findMany({
           select: { id: true, name: true, color: true },
         });
-        const allConfidentialities = await this.prisma.confidentiality.findMany({
-          select: { id: true, level: true },
-        });
+        const allConfidentialities = await this.prisma.confidentiality.findMany(
+          {
+            select: { id: true, level: true },
+          },
+        );
         return {
           badges: allBadges,
           confidentialities: allConfidentialities,
           featurePermissions: [
-            { feature: 'dashboard', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-            { feature: 'documents', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-            { feature: 'users', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-            { feature: 'roles', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-            { feature: 'badges', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-            { feature: 'confidentiality', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+            {
+              feature: 'dashboard',
+              canRead: true,
+              canCreate: true,
+              canEdit: true,
+              canDelete: true,
+              canSearch: true,
+            },
+            {
+              feature: 'documents',
+              canRead: true,
+              canCreate: true,
+              canEdit: true,
+              canDelete: true,
+              canSearch: true,
+            },
+            {
+              feature: 'users',
+              canRead: true,
+              canCreate: true,
+              canEdit: true,
+              canDelete: true,
+              canSearch: true,
+            },
+            {
+              feature: 'roles',
+              canRead: true,
+              canCreate: true,
+              canEdit: true,
+              canDelete: true,
+              canSearch: true,
+            },
+            {
+              feature: 'badges',
+              canRead: true,
+              canCreate: true,
+              canEdit: true,
+              canDelete: true,
+              canSearch: true,
+            },
+            {
+              feature: 'confidentiality',
+              canRead: true,
+              canCreate: true,
+              canEdit: true,
+              canDelete: true,
+              canSearch: true,
+            },
           ],
           canRead: true,
           canCreate: true,
@@ -165,7 +211,8 @@ export class AuthService {
   }) {
     return this.jwt.sign(payload, {
       secret: this.config.get<string>('JWT_SECRET'),
-      expiresIn: (this.config.get<string>('JWT_EXPIRES_IN') ?? '15m') as unknown as number,
+      expiresIn: (this.config.get<string>('JWT_EXPIRES_IN') ??
+        '15m') as unknown as number,
     });
   }
 
@@ -176,7 +223,8 @@ export class AuthService {
   }) {
     return this.jwt.sign(payload, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d') as unknown as number,
+      expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ??
+        '7d') as unknown as number,
     });
   }
 

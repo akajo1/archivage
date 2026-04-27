@@ -2,7 +2,12 @@
  * Backend permission utilities for feature-based access control
  */
 
-export type FeatureOperation = 'canRead' | 'canEdit' | 'canDelete' | 'canSearch';
+export type FeatureOperation =
+  | 'canRead'
+  | 'canCreate'
+  | 'canEdit'
+  | 'canDelete'
+  | 'canSearch';
 export type RoleFeature =
   | 'dashboard'
   | 'documents'
@@ -14,6 +19,7 @@ export type RoleFeature =
 interface FeaturePermission {
   feature: RoleFeature;
   canRead: boolean;
+  canCreate: boolean;
   canEdit: boolean;
   canDelete: boolean;
   canSearch: boolean;
@@ -69,6 +75,16 @@ export class PermissionUtils {
   }
 
   /**
+   * Check if user can create in a feature
+   */
+  static canCreateFeature(
+    featurePermissions: FeaturePermission[] | undefined,
+    feature: RoleFeature,
+  ): boolean {
+    return this.hasFeatureAccess(featurePermissions, feature, 'canCreate');
+  }
+
+  /**
    * Check if user can delete on feature
    */
   static canDeleteFeature(
@@ -105,18 +121,17 @@ export class PermissionUtils {
     const map = new Map<RoleFeature, FeaturePermission>();
 
     features.forEach((feature) => {
-      const perm =
-        featurePermissions?.find((p) => p.feature === feature) || {
-          feature,
-          canRead: false,
-          canEdit: false,
-          canDelete: false,
-          canSearch: false,
-        };
+      const perm = featurePermissions?.find((p) => p.feature === feature) || {
+        feature,
+        canRead: false,
+        canCreate: false,
+        canEdit: false,
+        canDelete: false,
+        canSearch: false,
+      };
       map.set(feature, perm);
     });
 
     return map;
   }
 }
-

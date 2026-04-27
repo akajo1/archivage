@@ -17,16 +17,58 @@ export const router = createBrowserRouter([
     path: '/',
     element: <ProtectedRoute><Layout /></ProtectedRoute>,
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'documents', element: <DocumentListPage /> },
-      { path: 'documents/new', element: <DocumentFormPage /> },
-      { path: 'documents/:id', element: <DocumentDetailPage /> },
-      { path: 'documents/:id/edit', element: <DocumentFormPage /> },
+      {
+        index: true,
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'dashboard', operation: 'canRead' }}>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'dashboard',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'dashboard', operation: 'canRead' }}>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documents',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
+            <DocumentListPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documents/new',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canCreate' }}>
+            <DocumentFormPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documents/:id',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
+            <DocumentDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documents/:id/edit',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canEdit' }}>
+            <DocumentFormPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: 'users',
         element: (
-          <ProtectedRoute requiredRole="admin">
+          <ProtectedRoute requiredPermission={{ feature: 'users', operation: 'canRead' }}>
             <UserManagementPage />
           </ProtectedRoute>
         ),
@@ -34,7 +76,7 @@ export const router = createBrowserRouter([
       {
         path: 'roles',
         element: (
-          <ProtectedRoute requiredRole="admin">
+          <ProtectedRoute requiredPermission={{ feature: 'roles', operation: 'canRead' }}>
             <RolePermissionsPage />
           </ProtectedRoute>
         ),

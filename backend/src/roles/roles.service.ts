@@ -24,7 +24,12 @@ export class RolesService {
 
     const normalized = Array.from(byFeature.values());
     const hasAnyOperation = normalized.some(
-      (item) => item.canRead || item.canEdit || item.canDelete || item.canSearch,
+      (item) =>
+        item.canRead ||
+        item.canCreate ||
+        item.canEdit ||
+        item.canDelete ||
+        item.canSearch,
     );
 
     if (!hasAnyOperation) {
@@ -36,7 +41,9 @@ export class RolesService {
     return normalized;
   }
 
-  private extractDocumentLegacyAccess(featurePermissions: FeaturePermissionDto[]) {
+  private extractDocumentLegacyAccess(
+    featurePermissions: FeaturePermissionDto[],
+  ) {
     const documentsPermission = featurePermissions.find(
       (item) => item.feature === 'documents',
     );
@@ -45,7 +52,7 @@ export class RolesService {
 
     return {
       canRead: documentsPermission.canRead,
-      canCreate: documentsPermission.canEdit,
+      canCreate: documentsPermission.canCreate,
       canEdit: documentsPermission.canEdit,
     };
   }
@@ -75,6 +82,7 @@ export class RolesService {
               select: {
                 feature: true,
                 canRead: true,
+                canCreate: true,
                 canEdit: true,
                 canDelete: true,
                 canSearch: true,
@@ -163,6 +171,7 @@ export class RolesService {
           select: {
             feature: true,
             canRead: true,
+            canCreate: true,
             canEdit: true,
             canDelete: true,
             canSearch: true,

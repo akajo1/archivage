@@ -47,7 +47,7 @@ const sortDocuments = (docs: Document[], key: SortKey): Document[] => {
 export const DocumentListPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { canEditFeature, canDeleteFeature } = usePermissions();
+  const { canCreateFeature, canDeleteFeature } = usePermissions();
 
   const [allDocuments, setAllDocuments] = useState<Document[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -110,7 +110,7 @@ export const DocumentListPage = () => {
      }
    };
 
-   const canCreate = canEditFeature('documents');
+   const canCreate = canCreateFeature('documents');
    const canDelete = canDeleteFeature('documents');
   const activeBadge = badges.find((b) => b.id === filters.badge_id);
 

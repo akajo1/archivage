@@ -67,30 +67,156 @@ async function main() {
   console.log('✅ Confidentiality levels created');
 
   const adminFeatures = [
-    { feature: 'dashboard', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-    { feature: 'documents', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-    { feature: 'users', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-    { feature: 'roles', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-    { feature: 'badges', canRead: true, canEdit: true, canDelete: true, canSearch: true },
-    { feature: 'confidentiality', canRead: true, canEdit: true, canDelete: true, canSearch: true },
+    {
+      feature: 'dashboard',
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canSearch: true,
+    },
+    {
+      feature: 'documents',
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canSearch: true,
+    },
+    {
+      feature: 'users',
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canSearch: true,
+    },
+    {
+      feature: 'roles',
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canSearch: true,
+    },
+    {
+      feature: 'badges',
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canSearch: true,
+    },
+    {
+      feature: 'confidentiality',
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canSearch: true,
+    },
   ];
 
   const managerFeatures = [
-    { feature: 'dashboard', canRead: true, canEdit: false, canDelete: false, canSearch: true },
-    { feature: 'documents', canRead: true, canEdit: true, canDelete: false, canSearch: true },
-    { feature: 'users', canRead: true, canEdit: false, canDelete: false, canSearch: true },
-    { feature: 'roles', canRead: true, canEdit: false, canDelete: false, canSearch: true },
-    { feature: 'badges', canRead: true, canEdit: false, canDelete: false, canSearch: true },
-    { feature: 'confidentiality', canRead: true, canEdit: false, canDelete: false, canSearch: true },
+    {
+      feature: 'dashboard',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
+      feature: 'documents',
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
+      feature: 'users',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
+      feature: 'roles',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
+      feature: 'badges',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
+      feature: 'confidentiality',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
   ];
 
   const userFeatures = [
-    { feature: 'dashboard', canRead: true, canEdit: false, canDelete: false, canSearch: true },
-    { feature: 'documents', canRead: true, canEdit: false, canDelete: false, canSearch: true },
-    { feature: 'users', canRead: false, canEdit: false, canDelete: false, canSearch: false },
-    { feature: 'roles', canRead: false, canEdit: false, canDelete: false, canSearch: false },
-    { feature: 'badges', canRead: false, canEdit: false, canDelete: false, canSearch: false },
-    { feature: 'confidentiality', canRead: false, canEdit: false, canDelete: false, canSearch: false },
+    {
+      feature: 'dashboard',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
+      feature: 'documents',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
+      feature: 'users',
+      canRead: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: false,
+    },
+    {
+      feature: 'roles',
+      canRead: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: false,
+    },
+    {
+      feature: 'badges',
+      canRead: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: false,
+    },
+    {
+      feature: 'confidentiality',
+      canRead: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: false,
+    },
   ];
 
   // Default role permissions
@@ -98,10 +224,14 @@ async function main() {
     where: { role: 'admin' },
     update: {
       badges: {
-        set: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map((id) => ({ id })),
+        set: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map((id) => ({
+          id,
+        })),
       },
       confidentialities: {
-        set: [cPublic.id, cInterne.id, cConfidentiel.id, cSecret.id].map((id) => ({ id })),
+        set: [cPublic.id, cInterne.id, cConfidentiel.id, cSecret.id].map(
+          (id) => ({ id }),
+        ),
       },
       canRead: true,
       canCreate: true,
@@ -114,10 +244,14 @@ async function main() {
     create: {
       role: 'admin',
       badges: {
-        connect: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map((id) => ({ id })),
+        connect: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map(
+          (id) => ({ id }),
+        ),
       },
       confidentialities: {
-        connect: [cPublic.id, cInterne.id, cConfidentiel.id, cSecret.id].map((id) => ({ id })),
+        connect: [cPublic.id, cInterne.id, cConfidentiel.id, cSecret.id].map(
+          (id) => ({ id }),
+        ),
       },
       canRead: true,
       canCreate: true,
@@ -132,7 +266,9 @@ async function main() {
     where: { role: 'manager' },
     update: {
       badges: {
-        set: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map((id) => ({ id })),
+        set: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map((id) => ({
+          id,
+        })),
       },
       confidentialities: {
         set: [cPublic.id, cInterne.id, cConfidentiel.id].map((id) => ({ id })),
@@ -148,10 +284,14 @@ async function main() {
     create: {
       role: 'manager',
       badges: {
-        connect: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map((id) => ({ id })),
+        connect: [badgeCritique.id, badgeNormal.id, badgeFaible.id].map(
+          (id) => ({ id }),
+        ),
       },
       confidentialities: {
-        connect: [cPublic.id, cInterne.id, cConfidentiel.id].map((id) => ({ id })),
+        connect: [cPublic.id, cInterne.id, cConfidentiel.id].map((id) => ({
+          id,
+        })),
       },
       canRead: true,
       canCreate: true,
@@ -202,7 +342,12 @@ async function main() {
   await prisma.user.upsert({
     where: { email: 'admin@archivage.fr' },
     update: { name: 'Admin', role: 'admin', password: hashedPassword },
-    create: { name: 'Admin', email: 'admin@archivage.fr', password: hashedPassword, role: 'admin' },
+    create: {
+      name: 'Admin',
+      email: 'admin@archivage.fr',
+      password: hashedPassword,
+      role: 'admin',
+    },
   });
   console.log('✅ Admin user: admin@archivage.fr / admin123');
 
@@ -211,7 +356,12 @@ async function main() {
   await prisma.user.upsert({
     where: { email: 'manager@archivage.fr' },
     update: { name: 'Manager', role: 'manager', password: managerPassword },
-    create: { name: 'Manager', email: 'manager@archivage.fr', password: managerPassword, role: 'manager' },
+    create: {
+      name: 'Manager',
+      email: 'manager@archivage.fr',
+      password: managerPassword,
+      role: 'manager',
+    },
   });
   console.log('✅ Manager user: manager@archivage.fr / manager123');
 
@@ -219,5 +369,8 @@ async function main() {
 }
 
 main()
-  .catch((e) => { console.error(e); process.exit(1); })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
   .finally(() => prisma.$disconnect());

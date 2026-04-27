@@ -11,7 +11,7 @@ export const PermissionUtils = {
   hasFeatureAccess: (
     permissions: UserPermissions | undefined,
     feature: string,
-    operation: 'canRead' | 'canEdit' | 'canDelete' | 'canSearch',
+    operation: 'canRead' | 'canCreate' | 'canEdit' | 'canDelete' | 'canSearch',
   ): boolean => {
     if (!permissions) return false;
 
@@ -33,6 +33,13 @@ export const PermissionUtils = {
    */
   canEditFeature: (permissions: UserPermissions | undefined, feature: string): boolean => {
     return PermissionUtils.hasFeatureAccess(permissions, feature, 'canEdit');
+  },
+
+  /**
+   * Check if user can create in a specific feature
+   */
+  canCreateFeature: (permissions: UserPermissions | undefined, feature: string): boolean => {
+    return PermissionUtils.hasFeatureAccess(permissions, feature, 'canCreate');
   },
 
   /**
@@ -103,6 +110,7 @@ export const PermissionUtils = {
     if (!featurePermission) return false;
     return (
       featurePermission.canRead ||
+      featurePermission.canCreate ||
       featurePermission.canEdit ||
       featurePermission.canDelete ||
       featurePermission.canSearch

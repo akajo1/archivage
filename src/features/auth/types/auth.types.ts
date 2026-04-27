@@ -14,6 +14,7 @@ export interface Confidentiality {
 export interface FeaturePermission {
   feature: string;
   canRead: boolean;
+  canCreate: boolean;
   canEdit: boolean;
   canDelete: boolean;
   canSearch: boolean;

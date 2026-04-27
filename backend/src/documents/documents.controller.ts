@@ -20,7 +20,10 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { FeaturePermissionGuard, FeaturePermission } from '../common/guards/feature-permission.guard';
+import {
+  FeaturePermissionGuard,
+  FeaturePermission,
+} from '../common/guards/feature-permission.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 const uploadStorage = diskStorage({
@@ -59,10 +62,8 @@ export class DocumentsController {
   }
 
   @Post()
-  @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
-  @UseInterceptors(
-    FileInterceptor('file', { storage: uploadStorage }),
-  )
+  @FeaturePermission({ feature: 'documents', operation: 'canCreate' })
+  @UseInterceptors(FileInterceptor('file', { storage: uploadStorage }))
   async create(
     @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
     @Body() dto: CreateDocumentDto,
@@ -74,9 +75,7 @@ export class DocumentsController {
 
   @Post(':id/attachments')
   @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
-  @UseInterceptors(
-    FilesInterceptor('annexes', 20, { storage: uploadStorage }),
-  )
+  @UseInterceptors(FilesInterceptor('annexes', 20, { storage: uploadStorage }))
   async addAttachments(
     @Param('id') id: string,
     @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
@@ -97,9 +96,7 @@ export class DocumentsController {
 
   @Put(':id')
   @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
-  @UseInterceptors(
-    FileInterceptor('file', { storage: uploadStorage }),
-  )
+  @UseInterceptors(FileInterceptor('file', { storage: uploadStorage }))
   update(
     @Param('id') id: string,
     @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },

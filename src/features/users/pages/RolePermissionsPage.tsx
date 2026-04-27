@@ -36,6 +36,7 @@ const FEATURE_LABELS: Record<RoleFeatureKey, string> = {
 
 const OPERATIONS: Array<keyof Omit<FeaturePermission, 'feature'>> = [
   'canRead',
+  'canCreate',
   'canEdit',
   'canDelete',
   'canSearch',
@@ -43,6 +44,7 @@ const OPERATIONS: Array<keyof Omit<FeaturePermission, 'feature'>> = [
 
 const OPERATION_LABELS: Record<(typeof OPERATIONS)[number], string> = {
   canRead: 'Lire',
+  canCreate: 'Creer',
   canEdit: 'Editer',
   canDelete: 'Supprimer',
   canSearch: 'Rechercher',
@@ -52,6 +54,7 @@ const defaultFeaturePermissions = (): FeaturePermission[] =>
   ROLE_FEATURE_KEYS.map((feature) => ({
     feature,
     canRead: false,
+    canCreate: false,
     canEdit: false,
     canDelete: false,
     canSearch: false,
@@ -147,9 +150,10 @@ const toDraft = (role: AppRole): RoleDraft => ({
 
 export const RolePermissionsPage = () => {
   const { user } = useAuthStore();
-  const { canEditFeature, canDeleteFeature } = usePermissions();
+  const { canCreateFeature, canEditFeature, canDeleteFeature } = usePermissions();
   const { refreshPermissions } = useRefreshPermissions();
   const isAdmin = user?.role === 'admin';
+  const canCreateRoles = isAdmin || canCreateFeature('roles');
   const canManageRoles = isAdmin || canEditFeature('roles');
   const canRemoveRoles = isAdmin || canDeleteFeature('roles');
   const [roles, setRoles] = useState<AppRole[]>([]);
@@ -267,7 +271,7 @@ export const RolePermissionsPage = () => {
 
   const createRole = async () => {
     const hasFeatureAccess = newRole.featurePermissions.some(
-      (item) => item.canRead || item.canEdit || item.canDelete || item.canSearch,
+      (item) => item.canRead || item.canCreate || item.canEdit || item.canDelete || item.canSearch,
     );
 
     if (
@@ -383,7 +387,7 @@ export const RolePermissionsPage = () => {
     if (!roleDraft) return;
 
     const hasFeatureAccess = roleDraft.featurePermissions.some(
-      (item) => item.canRead || item.canEdit || item.canDelete || item.canSearch,
+      (item) => item.canRead || item.canCreate || item.canEdit || item.canDelete || item.canSearch,
     );
 
     if (
@@ -513,7 +517,7 @@ export const RolePermissionsPage = () => {
          </div>
        )}
 
-       {canManageRoles && (
+       {canCreateRoles && (
          <div className="arch-card rounded-3xl p-6">
            <div className="mb-5 flex items-center justify-between gap-3">
              <h2 className="text-base font-semibold text-[#1B3C53]">Creer un role</h2>

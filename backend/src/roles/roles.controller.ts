@@ -11,7 +11,10 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { FeaturePermissionGuard, FeaturePermission } from '../common/guards/feature-permission.guard';
+import {
+  FeaturePermissionGuard,
+  FeaturePermission,
+} from '../common/guards/feature-permission.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesService } from './roles.service';
 import { SearchRolesDto } from './dto/search-roles.dto';
@@ -39,7 +42,7 @@ export class RolesController {
 
   @Post()
   @Roles('admin')
-  @FeaturePermission({ feature: 'roles', operation: 'canEdit' })
+  @FeaturePermission({ feature: 'roles', operation: 'canCreate' })
   create(@Body() dto: CreateRoleDto) {
     return this.rolesService.create(dto);
   }
@@ -58,5 +61,3 @@ export class RolesController {
     return this.rolesService.remove(id);
   }
 }
-
-

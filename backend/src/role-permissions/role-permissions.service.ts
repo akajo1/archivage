@@ -11,12 +11,14 @@ import { ROLE_FEATURES } from '../roles/dto/feature-permission.dto';
 const toDocumentLegacyAccess = (
   featurePermissions: UpdateRolePermissionsDto['featurePermissions'],
 ) => {
-  const documents = featurePermissions?.find((item) => item.feature === 'documents');
+  const documents = featurePermissions?.find(
+    (item) => item.feature === 'documents',
+  );
   if (!documents) return null;
 
   return {
     canRead: documents.canRead,
-    canCreate: documents.canEdit,
+    canCreate: documents.canCreate,
     canEdit: documents.canEdit,
   };
 };
@@ -39,6 +41,7 @@ export class RolePermissionsService {
             select: {
               feature: true,
               canRead: true,
+              canCreate: true,
               canEdit: true,
               canDelete: true,
               canSearch: true,
@@ -61,7 +64,7 @@ export class RolePermissionsService {
         role: roleEntry.key,
         badges: permission?.badges ?? badges,
         confidentialities: permission?.confidentialities ?? confidentialities,
-          featurePermissions: permission?.featurePermissions ?? [],
+        featurePermissions: permission?.featurePermissions ?? [],
       };
     });
   }
@@ -102,6 +105,7 @@ export class RolePermissionsService {
         ? ROLE_FEATURES.map((feature) => ({
             feature,
             canRead: true,
+            canCreate: true,
             canEdit: true,
             canDelete: true,
             canSearch: true,
@@ -157,6 +161,7 @@ export class RolePermissionsService {
           select: {
             feature: true,
             canRead: true,
+            canCreate: true,
             canEdit: true,
             canDelete: true,
             canSearch: true,
