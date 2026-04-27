@@ -317,10 +317,22 @@ export const RolePermissionsPage = () => {
     }
   };
 
-  const openRoleModal = (role: AppRole) => {
-    setError('');
-    setRoleDraft(toDraft(role));
-    setIsModalOpen(true);
+  const openRoleModal = async (role: AppRole) => {
+    try {
+      setError('');
+      setSavingRoleId(role.id);
+
+      const completeRole = await rolesService.getById(role.id);
+      setRoles((prev) =>
+        prev.map((item) => (item.id === completeRole.id ? completeRole : item)),
+      );
+      setRoleDraft(toDraft(completeRole));
+      setIsModalOpen(true);
+    } catch {
+      setError("Impossible de charger le detail du role pour l'edition.");
+    } finally {
+      setSavingRoleId(null);
+    }
   };
 
   const toggleDraftBadge = (badgeId: string) => {
@@ -658,7 +670,7 @@ export const RolePermissionsPage = () => {
                      label="Modifier le role"
                      variant="default"
                      size="sm"
-                     onClick={() => openRoleModal(role)}
+                      onClick={() => void openRoleModal(role)}
                      isLoading={savingRoleId === role.id}
                    />
                  )}

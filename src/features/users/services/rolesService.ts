@@ -20,6 +20,11 @@ export const rolesService = {
     return data.map(normalizeRole);
   },
 
+  getById: async (id: string): Promise<AppRole> => {
+    const { data } = await apiClient.get<AppRole>(`/roles/${id}`);
+    return normalizeRole(data);
+  },
+
   create: async (payload: CreateRolePayload): Promise<AppRole> => {
     const { data } = await apiClient.post<AppRole>('/roles', payload);
     return normalizeRole(data);
