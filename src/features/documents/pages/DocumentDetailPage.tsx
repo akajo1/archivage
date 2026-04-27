@@ -19,6 +19,8 @@ import {
   RiHashtag,
   RiAlignLeft,
   RiFileTextLine,
+  RiEyeLine,
+  RiCloseLine,
 } from 'react-icons/ri';
 import { documentService } from '../services/documentService';
 import type { Document } from '../types/document.types';
@@ -37,6 +39,20 @@ export const DocumentDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewName, setPreviewName] = useState<string>('');
+
+  const openPreview = (url: string, name: string) => {
+    setPreviewUrl(url);
+    setPreviewName(name);
+  };
+  const closePreview = () => {
+    setPreviewUrl(null);
+    setPreviewName('');
+  };
+
+  const isImage = (url: string) => /\.(png|jpe?g|gif|webp|svg)$/i.test(url);
+  const isPdf = (url: string) => /\.pdf$/i.test(url);
 
   useEffect(() => {
     if (!id) return;
@@ -236,13 +252,24 @@ export const DocumentDetailPage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-[#1B3C53]">Fichier principal</p>
+                <p className="text-xs text-[#456882] truncate">{document.fileUrl.split('/').pop()}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {(isImage(document.fileUrl) || isPdf(document.fileUrl)) && (
+                  <button
+                    type="button"
+                    onClick={() => openPreview(document.fileUrl!, document.title)}
+                    className="inline-flex items-center gap-1 rounded-lg bg-[#dbeaf3] px-3 py-1.5 text-xs font-medium text-[#234C6A] hover:bg-[#c8dcea]"
+                  >
+                    <RiEyeLine className="h-3.5 w-3.5" /> Aperçu
+                  </button>
+                )}
                 <a
                   href={document.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-[#234C6A] hover:underline"
+                  download
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#234C6A] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1B3C53]"
                 >
-                  <RiDownloadLine className="h-3 w-3" /> Télécharger
+                  <RiDownloadLine className="h-3.5 w-3.5" /> Télécharger
                 </a>
               </div>
             </div>
@@ -289,14 +316,24 @@ export const DocumentDetailPage = () => {
                         </p>
                       )}
                     </div>
-                    <a
-                      href={att.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg bg-[#edf4f8] px-3 py-1.5 text-xs font-medium text-[#234C6A] hover:bg-[#dbeaf3]"
-                    >
-                      <RiDownloadLine className="h-3.5 w-3.5" /> Télécharger
-                    </a>
+                    <div className="flex items-center gap-2">
+                      {(isImage(att.fileUrl) || isPdf(att.fileUrl)) && (
+                        <button
+                          type="button"
+                          onClick={() => openPreview(att.fileUrl, att.fileName)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#edf4f8] px-3 py-1.5 text-xs font-medium text-[#234C6A] hover:bg-[#dbeaf3]"
+                        >
+                          <RiEyeLine className="h-3.5 w-3.5" /> Aperçu
+                        </button>
+                      )}
+                      <a
+                        href={att.fileUrl}
+                        download={att.fileName}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#234C6A] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1B3C53]"
+                      >
+                        <RiDownloadLine className="h-3.5 w-3.5" /> Télécharger
+                      </a>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -333,6 +370,58 @@ export const DocumentDetailPage = () => {
           </div>
         )}
       </div>
+
+      {/* File Preview Modal */}
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={closePreview}
+        >
+          <div
+            className="relative flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between gap-3 border-b border-[#dde8f0] bg-[#f4f7fa] px-5 py-3">
+              <p className="truncate text-sm font-semibold text-[#1B3C53]">{previewName}</p>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewUrl}
+                  download={previewName}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#234C6A] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1B3C53]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <RiDownloadLine className="h-3.5 w-3.5" /> Télécharger
+                </a>
+                <button
+                  type="button"
+                  onClick={closePreview}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]"
+                >
+                  <RiCloseLine className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal body */}
+            <div className="flex-1 overflow-auto bg-[#1B3C53]/10">
+              {isImage(previewUrl) ? (
+                <img
+                  src={previewUrl}
+                  alt={previewName}
+                  className="mx-auto max-h-[75vh] object-contain p-4"
+                />
+              ) : isPdf(previewUrl) ? (
+                <iframe
+                  src={previewUrl}
+                  title={previewName}
+                  className="h-[75vh] w-full border-0"
+                />
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

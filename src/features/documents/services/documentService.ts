@@ -1,18 +1,24 @@
 import apiClient from '../../../shared/utils/apiClient';
 import type { Document, CreateDocumentPayload, UpdateDocumentPayload, DocumentFilters } from '../types/document.types';
 
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+const normalizeFileUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  // Strip any host prefix so the URL is always relative (proxied through Vite → backend)
+  try {
+    const parsed = new URL(url);
+    return parsed.pathname; // e.g. "/uploads/filename.pdf"
+  } catch {
+    // Already a relative path
+    return url.startsWith('/') ? url : `/${url}`;
+  }
+};
 
 const normalizeDocument = (document: Document): Document => ({
   ...document,
-  fileUrl: document.fileUrl
-    ? document.fileUrl.startsWith('http')
-      ? document.fileUrl
-      : `${apiBaseUrl}${document.fileUrl}`
-    : null,
+  fileUrl: normalizeFileUrl(document.fileUrl),
   attachments: (document.attachments ?? []).map((a) => ({
     ...a,
-    fileUrl: a.fileUrl.startsWith('http') ? a.fileUrl : `${apiBaseUrl}${a.fileUrl}`,
+    fileUrl: normalizeFileUrl(a.fileUrl) ?? a.fileUrl,
   })),
 });
 
