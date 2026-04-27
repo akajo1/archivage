@@ -15,6 +15,7 @@ import { useAuthStore } from '../../../features/auth/store/authStore';
 import { authService } from '../../../features/auth/services/authService';
 import { Button } from '../atoms/Button';
 import { healthService, type BackendHealth } from '../../services/healthService';
+import { PermissionUtils } from '../../utils/permissionUtils';
 
 interface NavbarProps {
   className?: string;
@@ -25,15 +26,15 @@ interface NavItem {
   to: string;
   label: string;
   Icon: IconType;
-  roles: string[];
+  feature: string;
   activeColor: string;
 }
 
 const navItems: NavItem[] = [
-  { to: '/', label: 'Tableau de bord', Icon: RiDashboardLine, roles: ['admin', 'manager', 'user'], activeColor: 'text-[#2FA084]' },
-  { to: '/documents', label: 'Documents', Icon: RiFileList2Line, roles: ['admin', 'manager', 'user'], activeColor: 'text-[#5ecbaf]' },
-  { to: '/users', label: 'Utilisateurs', Icon: RiTeamLine, roles: ['admin'], activeColor: 'text-[#7aaac4]' },
-  { to: '/roles', label: 'Roles', Icon: RiShieldKeyholeLine, roles: ['admin'], activeColor: 'text-[#a8c8de]' },
+  { to: '/', label: 'Tableau de bord', Icon: RiDashboardLine, feature: 'dashboard', activeColor: 'text-[#2FA084]' },
+  { to: '/documents', label: 'Documents', Icon: RiFileList2Line, feature: 'documents', activeColor: 'text-[#5ecbaf]' },
+  { to: '/users', label: 'Utilisateurs', Icon: RiTeamLine, feature: 'users', activeColor: 'text-[#7aaac4]' },
+  { to: '/roles', label: 'Roles', Icon: RiShieldKeyholeLine, feature: 'roles', activeColor: 'text-[#a8c8de]' },
 ];
 
 const roleColors: Record<string, { bg: string; text: string; dot: string }> = {
@@ -63,7 +64,11 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
     logout();
     navigate('/login');
   };
-  const visibleItems = user ? navItems.filter((item) => item.roles.includes(user.role)) : [];
+  const visibleItems = user
+    ? navItems.filter((item) =>
+        PermissionUtils.canReadFeature(user.userPermissions, item.feature),
+      )
+    : [];
   const rc = user ? (roleColors[user.role] ?? roleColors.user) : roleColors.user;
   const initials = user?.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() ?? '';
 

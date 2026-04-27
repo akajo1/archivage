@@ -47,7 +47,7 @@ const sortDocuments = (docs: Document[], key: SortKey): Document[] => {
 export const DocumentListPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { canCreateFeature, canDeleteFeature } = usePermissions();
+  const { canCreateFeature, canEditFeature, canDeleteFeature, canSearchFeature } = usePermissions();
 
   const [allDocuments, setAllDocuments] = useState<Document[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -59,19 +59,33 @@ export const DocumentListPage = () => {
   const [showSortMenu, setShowSortMenu] = useState(false);
 
   // Sync filters with URL params
-  const filters: DocumentFilters = useMemo(() => ({
-    badge_id: searchParams.get('badge_id') || undefined,
-    confidentiality_id: searchParams.get('confidentiality_id') || undefined,
-    search: searchParams.get('search') || undefined,
-  }), [searchParams]);
+  const canSearch = canSearchFeature('documents');
+
+  const filters: DocumentFilters = useMemo(() => {
+    const search = searchParams.get('search') || undefined;
+
+    return {
+      badge_id: searchParams.get('badge_id') || undefined,
+      confidentiality_id: searchParams.get('confidentiality_id') || undefined,
+      search: canSearch ? search : undefined,
+    };
+  }, [searchParams, canSearch]);
 
   const handleFiltersChange = (f: DocumentFilters) => {
     const params = new URLSearchParams();
     if (f.badge_id) params.set('badge_id', f.badge_id);
     if (f.confidentiality_id) params.set('confidentiality_id', f.confidentiality_id);
-    if (f.search) params.set('search', f.search);
+    if (canSearch && f.search) params.set('search', f.search);
     setSearchParams(params);
   };
+
+  useEffect(() => {
+    if (canSearch || !searchParams.get('search')) return;
+
+    const params = new URLSearchParams(searchParams);
+    params.delete('search');
+    setSearchParams(params, { replace: true });
+  }, [canSearch, searchParams, setSearchParams]);
 
   useEffect(() => {
     Promise.all([badgeService.getAll(), confidentialityService.getAll()])
@@ -111,6 +125,7 @@ export const DocumentListPage = () => {
    };
 
    const canCreate = canCreateFeature('documents');
+   const canEdit = canEditFeature('documents');
    const canDelete = canDeleteFeature('documents');
   const activeBadge = badges.find((b) => b.id === filters.badge_id);
 
@@ -181,6 +196,7 @@ export const DocumentListPage = () => {
             confidentialities={confidentialities}
             filters={filters}
             onChange={handleFiltersChange}
+            showSearch={canSearch}
           />
         </div>
 
@@ -242,9 +258,9 @@ export const DocumentListPage = () => {
        {loading ? (
          <div className="flex justify-center py-24"><Spinner size="lg" /></div>
        ) : viewMode === 'grid' ? (
-         <DocumentTable documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canCreate} />
+          <DocumentTable documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canEdit} />
        ) : (
-         <DocumentListView documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canCreate} />
+          <DocumentListView documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canEdit} />
        )}
     </div>
   );

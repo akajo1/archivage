@@ -17,7 +17,6 @@ import { badgeService } from '../../badges/services/badgeService';
 import { confidentialityService } from '../../confidentiality/services/confidentialityService';
 import { rolesService } from '../services/rolesService';
 import { usePermissions, useRefreshPermissions } from '../../auth/hooks/usePermissions';
-import { useAuthStore } from '../../auth/store/authStore';
 import {
   ROLE_FEATURE_KEYS,
   type AppRole,
@@ -149,13 +148,11 @@ const toDraft = (role: AppRole): RoleDraft => ({
 });
 
 export const RolePermissionsPage = () => {
-  const { user } = useAuthStore();
   const { canCreateFeature, canEditFeature, canDeleteFeature } = usePermissions();
   const { refreshPermissions } = useRefreshPermissions();
-  const isAdmin = user?.role === 'admin';
-  const canCreateRoles = isAdmin || canCreateFeature('roles');
-  const canManageRoles = isAdmin || canEditFeature('roles');
-  const canRemoveRoles = isAdmin || canDeleteFeature('roles');
+  const canCreateRoles = canCreateFeature('roles');
+  const canManageRoles = canEditFeature('roles');
+  const canRemoveRoles = canDeleteFeature('roles');
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [allConfidentialities, setAllConfidentialities] = useState<Confidentiality[]>([]);

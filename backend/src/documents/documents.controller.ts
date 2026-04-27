@@ -19,7 +19,6 @@ import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
 import {
   FeaturePermissionGuard,
   FeaturePermission,
@@ -32,7 +31,7 @@ const uploadStorage = diskStorage({
     cb(null, `${Date.now()}${extname(file.originalname)}`),
 });
 
-@UseGuards(JwtAuthGuard, RolesGuard, FeaturePermissionGuard)
+@UseGuards(JwtAuthGuard, FeaturePermissionGuard)
 @Controller('documents')
 export class DocumentsController {
   constructor(private documentsService: DocumentsService) {}
@@ -45,10 +44,12 @@ export class DocumentsController {
     @Query('confidentiality_id') confidentiality_id?: string,
     @Query('search') search?: string,
   ) {
+    const normalizedSearch = search?.trim() || undefined;
+
     return this.documentsService.findAll(user.id, user.role, {
       badge_id,
       confidentiality_id,
-      search,
+      search: normalizedSearch,
     });
   }
 

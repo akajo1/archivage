@@ -86,7 +86,6 @@ export const DashboardPage = () => {
   const selectedDocs = selectedBadgeId ? (docsByBadge[selectedBadgeId] ?? []) : [];
   const selectedBadge = badges.find((b) => b.id === selectedBadgeId);
 
-  const isAdmin = user?.role === 'admin';
   const canCreate = canCreateFeature('documents');
   const canReadUsers = canReadFeature('users');
   const canReadRoles = canReadFeature('roles');
@@ -96,12 +95,12 @@ export const DashboardPage = () => {
       ? [{ label: 'Nouveau document', icon: RiAddLine, to: '/documents/new', color: 'bg-[#234C6A] text-white hover:bg-[#1B3C53]' }]
       : []),
     { label: 'Tous les documents', icon: RiFileList2Line, to: '/documents', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
-    ...(canReadUsers || isAdmin
+    ...(canReadUsers
       ? [
           { label: 'Utilisateurs', icon: RiTeamLine, to: '/users', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
         ]
       : []),
-    ...(canReadRoles || isAdmin
+    ...(canReadRoles
       ? [
           { label: 'Roles & permissions', icon: RiShieldKeyholeLine, to: '/roles', color: 'bg-[#edf4f8] text-[#456882] hover:bg-[#dbeaf3]' },
         ]

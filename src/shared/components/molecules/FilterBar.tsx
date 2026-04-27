@@ -8,21 +8,30 @@ interface FilterBarProps {
   confidentialities: Confidentiality[];
   filters: DocumentFilters;
   onChange: (filters: DocumentFilters) => void;
+  showSearch?: boolean;
 }
 
-export const FilterBar = ({ badges, confidentialities, filters, onChange }: FilterBarProps) => (
+export const FilterBar = ({
+  badges,
+  confidentialities,
+  filters,
+  onChange,
+  showSearch = true,
+}: FilterBarProps) => (
   <div className="arch-panel rounded-2xl p-3 shadow-sm sm:p-4">
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-      <div className="relative flex-1">
-        <RiSearchLine className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7aaac4]" />
-        <input
-          type="text"
-          placeholder="Rechercher un document..."
-          value={filters.search || ''}
-          onChange={(e) => onChange({ ...filters, search: e.target.value })}
-          className="arch-input w-full rounded-full py-2.5 pl-10 pr-4 text-sm"
-        />
-      </div>
+      {showSearch && (
+        <div className="relative flex-1">
+          <RiSearchLine className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7aaac4]" />
+          <input
+            type="text"
+            placeholder="Rechercher un document..."
+            value={filters.search || ''}
+            onChange={(e) => onChange({ ...filters, search: e.target.value })}
+            className="arch-input w-full rounded-full py-2.5 pl-10 pr-4 text-sm"
+          />
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         <select
           value={filters.badge_id || ''}

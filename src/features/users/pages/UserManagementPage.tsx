@@ -16,7 +16,7 @@ export const UserManagementPage = () => {
   const [roles, setRoles] = useState<Role[]>(['user']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { canCreateFeature, canDeleteFeature } = usePermissions();
+  const { canCreateFeature, canEditFeature, canDeleteFeature } = usePermissions();
   const { refreshPermissions } = useRefreshPermissions();
 
   const {
@@ -101,6 +101,7 @@ export const UserManagementPage = () => {
    };
 
    const canCreate = canCreateFeature('users');
+   const canEdit = canEditFeature('users');
    const canDelete = canDeleteFeature('users');
 
   return (
@@ -178,6 +179,7 @@ export const UserManagementPage = () => {
                    <select
                      value={user.role}
                      onChange={(e) => void onRoleChange(user.id, e.target.value as Role)}
+                      disabled={!canEdit}
                      className="arch-select rounded-full px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
                    >
                      {roles.map((role) => (

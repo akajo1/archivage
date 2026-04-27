@@ -54,6 +54,21 @@ export class DocumentsService {
     };
   }
 
+  private async canSearchDocuments(role: Role): Promise<boolean> {
+    const permission = await this.prisma.rolePermission.findUnique({
+      where: { role },
+      include: {
+        featurePermissions: {
+          where: { feature: 'documents' },
+          select: { canSearch: true },
+          take: 1,
+        },
+      },
+    });
+
+    return permission?.featurePermissions[0]?.canSearch ?? false;
+  }
+
   async findAll(
     userId: string,
     role: Role,
@@ -63,6 +78,13 @@ export class DocumentsService {
       search?: string;
     },
   ) {
+    const searchTerm = filters.search?.trim();
+    if (searchTerm && !(await this.canSearchDocuments(role))) {
+      throw new ForbiddenException(
+        'Recherche non autorisee pour cette fonctionnalite.',
+      );
+    }
+
     const accessRules = await this.getAccessRules(role);
 
     return this.prisma.document.findMany({
@@ -78,8 +100,8 @@ export class DocumentsService {
         ...(filters.confidentiality_id
           ? { confidentialityId: filters.confidentiality_id }
           : {}),
-        ...(filters.search
-          ? { title: { contains: filters.search } }
+        ...(searchTerm
+          ? { title: { contains: searchTerm } }
           : {}),
       },
       include,

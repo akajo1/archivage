@@ -10,7 +10,6 @@ import type { Document } from '../../../features/documents/types/document.types'
 import { BadgePill } from '../atoms/BadgePill';
 import { ConfidentialityTag } from '../atoms/ConfidentialityTag';
 import { IconButton } from '../atoms/IconButton';
-import { useAuthStore } from '../../../features/auth/store/authStore';
 import { useNavigate } from 'react-router-dom';
 
 interface DocumentListViewProps {
@@ -24,9 +23,7 @@ const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 
 export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: DocumentListViewProps) => {
-  const { user } = useAuthStore();
   const navigate = useNavigate();
-  const isAdmin = user?.role === 'admin';
 
   if (documents.length === 0) {
     return (
@@ -53,8 +50,6 @@ export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: Do
 
       <div className="divide-y divide-[#dde8f0]">
         {documents.map((doc) => {
-          const canManage = isAdmin || doc.createdBy?.id === user?.id;
-
           return (
             <div
               key={doc.id}
@@ -100,7 +95,7 @@ export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: Do
                    label="Voir"
                    onClick={() => navigate(`/documents/${doc.id}`)}
                  />
-                 {(canEdit || canManage) && (
+                  {canEdit && (
                    <IconButton
                      icon={<RiPencilLine className="h-3.5 w-3.5" />}
                      label="Modifier"
@@ -108,7 +103,7 @@ export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: Do
                      onClick={() => navigate(`/documents/${doc.id}/edit`)}
                    />
                  )}
-                 {(canDelete || isAdmin) && onDelete && (
+                  {canDelete && onDelete && (
                    <IconButton
                      icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
                      label="Supprimer"

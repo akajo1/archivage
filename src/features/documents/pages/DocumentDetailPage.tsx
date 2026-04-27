@@ -27,12 +27,12 @@ import { ConfidentialityTag } from '../../../shared/components/atoms/Confidentia
 import { Button } from '../../../shared/components/atoms/Button';
 import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
-import { useAuthStore } from '../../auth/store/authStore';
+import { usePermissions } from '../../auth/hooks/usePermissions';
 
 export const DocumentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { canEditFeature, canDeleteFeature } = usePermissions();
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -120,8 +120,8 @@ export const DocumentDetailPage = () => {
     );
   }
 
-  const canEdit = user?.role === 'admin' || user?.documentAccesses?.includes('edit') || document.createdBy?.id === user?.id;
-  const isAdmin = user?.role === 'admin';
+  const canEdit = canEditFeature('documents');
+  const canDelete = canDeleteFeature('documents');
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -305,10 +305,10 @@ export const DocumentDetailPage = () => {
         </div>
 
         {/* Actions footer */}
-        {(canEdit || isAdmin) && (
+        {(canEdit || canDelete) && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#dde8f0] bg-[#f4f7fa] px-8 py-4">
             <span className="text-xs text-[#456882]">
-              {isAdmin ? 'Accès administrateur' : 'Vous êtes l\'auteur de ce document'}
+              Actions autorisees selon vos permissions
             </span>
             <div className="flex gap-2">
               {canEdit && (
@@ -320,7 +320,7 @@ export const DocumentDetailPage = () => {
                   onClick={() => navigate(`/documents/${document.id}/edit`)}
                 />
               )}
-              {isAdmin && (
+              {canDelete && (
                 <IconButton
                   icon={<RiDeleteBinLine className="h-4 w-4" />}
                   label="Supprimer"

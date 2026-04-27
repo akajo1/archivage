@@ -6,7 +6,6 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import type { Role } from '../common/decorators/roles.decorator';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
-import { ROLE_FEATURES } from '../roles/dto/feature-permission.dto';
 
 const toDocumentLegacyAccess = (
   featurePermissions: UpdateRolePermissionsDto['featurePermissions'],
@@ -100,27 +99,10 @@ export class RolePermissionsService {
       );
     }
 
-    const normalizedFeaturePermissions =
-      role === 'admin'
-        ? ROLE_FEATURES.map((feature) => ({
-            feature,
-            canRead: true,
-            canCreate: true,
-            canEdit: true,
-            canDelete: true,
-            canSearch: true,
-          }))
-        : dto.featurePermissions;
+    const normalizedFeaturePermissions = dto.featurePermissions;
 
     const legacyAccess = toDocumentLegacyAccess(normalizedFeaturePermissions);
-    const forcedLegacyAccess =
-      role === 'admin'
-        ? {
-            canRead: true,
-            canCreate: true,
-            canEdit: true,
-          }
-        : (legacyAccess ?? {});
+    const legacyAccessPayload = legacyAccess ?? {};
 
     const updated = await this.prisma.rolePermission.upsert({
       where: { role },
@@ -129,7 +111,7 @@ export class RolePermissionsService {
         confidentialities: {
           set: dto.confidentialityIds.map((id) => ({ id })),
         },
-        ...forcedLegacyAccess,
+        ...legacyAccessPayload,
         ...(normalizedFeaturePermissions
           ? {
               featurePermissions: {
@@ -141,7 +123,7 @@ export class RolePermissionsService {
       },
       create: {
         role,
-        ...forcedLegacyAccess,
+        ...legacyAccessPayload,
         badges: { connect: dto.badgeIds.map((id) => ({ id })) },
         confidentialities: {
           connect: dto.confidentialityIds.map((id) => ({ id })),

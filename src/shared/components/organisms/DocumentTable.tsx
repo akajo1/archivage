@@ -1,5 +1,4 @@
 import type { Document } from '../../../features/documents/types/document.types';
-import { useAuthStore } from '../../../features/auth/store/authStore';
 import { DocumentCard } from '../molecules/DocumentCard';
 
 interface DocumentTableProps {
@@ -10,9 +9,6 @@ interface DocumentTableProps {
 }
 
 export const DocumentTable = ({ documents, onDelete, canDelete, canEdit }: DocumentTableProps) => {
-  const { user } = useAuthStore();
-  const isAdmin = user?.role === 'admin';
-
   if (documents.length === 0) {
     return (
       <div className="arch-card flex flex-col items-center justify-center rounded-3xl border-dashed py-24 text-center">
@@ -31,8 +27,8 @@ export const DocumentTable = ({ documents, onDelete, canDelete, canEdit }: Docum
         <DocumentCard
           key={doc.id}
           document={doc}
-          canManage={canEdit || isAdmin || doc.createdBy?.id === user?.id}
-          onDelete={canDelete || isAdmin ? onDelete : undefined}
+          canManage={Boolean(canEdit)}
+          onDelete={canDelete ? onDelete : undefined}
         />
       ))}
     </div>
