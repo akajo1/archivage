@@ -79,7 +79,7 @@ export class DocumentsService {
           ? { confidentialityId: filters.confidentiality_id }
           : {}),
         ...(filters.search
-          ? { title: { contains: filters.search, mode: 'insensitive' } }
+          ? { title: { contains: filters.search } }
           : {}),
       },
       include,

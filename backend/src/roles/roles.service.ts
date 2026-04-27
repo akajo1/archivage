@@ -58,8 +58,8 @@ export class RolesService {
         where: search
           ? {
               OR: [
-                { key: { contains: search, mode: 'insensitive' } },
-                { name: { contains: search, mode: 'insensitive' } },
+                { key: { contains: search } },
+                { name: { contains: search } },
               ],
             }
           : undefined,

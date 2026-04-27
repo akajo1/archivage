@@ -3,8 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
+
 
 enum ConfidentialityLevel {
   public
@@ -55,8 +57,8 @@ model Document {
   id                String               @id @default(uuid())
   title             String
   reference         String?
-  description       String?
-  content           String?
+  description       String?              @db.Text
+  content           String?              @db.LongText
   fileUrl           String?              @map("file_url")
   createdAt         DateTime             @default(now()) @map("created_at")
   createdBy         User                 @relation(fields: [createdById], references: [id])
@@ -87,7 +89,7 @@ model AppRole {
   id          String   @id @default(uuid())
   key         String   @unique
   name        String
-  description String?
+  description String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
