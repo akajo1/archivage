@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import type { Role } from '../common/decorators/roles.decorator';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
+import { ROLE_FEATURES } from '../roles/dto/feature-permission.dto';
 
 const toDocumentLegacyAccess = (
   featurePermissions: UpdateRolePermissionsDto['featurePermissions'],
@@ -96,7 +97,26 @@ export class RolePermissionsService {
       );
     }
 
-    const legacyAccess = toDocumentLegacyAccess(dto.featurePermissions);
+    const normalizedFeaturePermissions =
+      role === 'admin'
+        ? ROLE_FEATURES.map((feature) => ({
+            feature,
+            canRead: true,
+            canEdit: true,
+            canDelete: true,
+            canSearch: true,
+          }))
+        : dto.featurePermissions;
+
+    const legacyAccess = toDocumentLegacyAccess(normalizedFeaturePermissions);
+    const forcedLegacyAccess =
+      role === 'admin'
+        ? {
+            canRead: true,
+            canCreate: true,
+            canEdit: true,
+          }
+        : (legacyAccess ?? {});
 
     const updated = await this.prisma.rolePermission.upsert({
       where: { role },
@@ -105,27 +125,27 @@ export class RolePermissionsService {
         confidentialities: {
           set: dto.confidentialityIds.map((id) => ({ id })),
         },
-        ...(legacyAccess ?? {}),
-        ...(dto.featurePermissions
+        ...forcedLegacyAccess,
+        ...(normalizedFeaturePermissions
           ? {
               featurePermissions: {
                 deleteMany: {},
-                create: dto.featurePermissions,
+                create: normalizedFeaturePermissions,
               },
             }
           : {}),
       },
       create: {
         role,
-        ...(legacyAccess ?? {}),
+        ...forcedLegacyAccess,
         badges: { connect: dto.badgeIds.map((id) => ({ id })) },
         confidentialities: {
           connect: dto.confidentialityIds.map((id) => ({ id })),
         },
-        ...(dto.featurePermissions
+        ...(normalizedFeaturePermissions
           ? {
               featurePermissions: {
-                create: dto.featurePermissions,
+                create: normalizedFeaturePermissions,
               },
             }
           : {}),

@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ROLE_FEATURES } from '../roles/dto/feature-permission.dto';
 
 @Injectable()
 export class AuthService {
@@ -68,6 +69,32 @@ export class AuthService {
   }
 
   private async getUserPermissions(role: string) {
+    if (role === 'admin') {
+      const [allBadges, allConfidentialities] = await Promise.all([
+        this.prisma.badge.findMany({
+          select: { id: true, name: true, color: true },
+        }),
+        this.prisma.confidentiality.findMany({
+          select: { id: true, level: true },
+        }),
+      ]);
+
+      return {
+        badges: allBadges,
+        confidentialities: allConfidentialities,
+        featurePermissions: ROLE_FEATURES.map((feature) => ({
+          feature,
+          canRead: true,
+          canEdit: true,
+          canDelete: true,
+          canSearch: true,
+        })),
+        canRead: true,
+        canCreate: true,
+        canEdit: true,
+      };
+    }
+
     const permission = await this.prisma.rolePermission.findUnique({
       where: { role },
       include: {
@@ -86,9 +113,9 @@ export class AuthService {
       },
     });
 
-    // Handle default permissions for admin/manager roles
+    // Handle default permissions when no explicit role permission exists.
     if (!permission) {
-      if (role === 'admin' || role === 'manager') {
+      if (role === 'manager') {
         const allBadges = await this.prisma.badge.findMany({
           select: { id: true, name: true, color: true },
         });

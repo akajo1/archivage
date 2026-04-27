@@ -12,17 +12,23 @@ export const Layout = () => {
     if (!isAuthenticated) return;
 
     let active = true;
-    authService
-      .me()
-      .then((user) => {
-        if (active) setUser(user);
-      })
-      .catch(() => {
-        if (active) logout();
-      });
+    const syncCurrentUser = () => {
+      authService
+        .me()
+        .then((user) => {
+          if (active) setUser(user);
+        })
+        .catch(() => {
+          if (active) logout();
+        });
+    };
+
+    syncCurrentUser();
+    const intervalId = window.setInterval(syncCurrentUser, 10000);
 
     return () => {
       active = false;
+      window.clearInterval(intervalId);
     };
   }, [isAuthenticated, logout, setUser]);
 

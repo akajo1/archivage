@@ -69,7 +69,7 @@ async function main() {
   console.log('✅ Confidentiality levels created');
 
   const adminFeatures = [
-    { feature: 'dashboard', canRead: true, canEdit: true, canDelete: false, canSearch: true },
+    { feature: 'dashboard', canRead: true, canEdit: true, canDelete: true, canSearch: true },
     { feature: 'documents', canRead: true, canEdit: true, canDelete: true, canSearch: true },
     { feature: 'users', canRead: true, canEdit: true, canDelete: true, canSearch: true },
     { feature: 'roles', canRead: true, canEdit: true, canDelete: true, canSearch: true },

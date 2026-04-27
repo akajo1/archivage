@@ -16,7 +16,8 @@ import { Input } from '../../../shared/components/atoms/Input';
 import { badgeService } from '../../badges/services/badgeService';
 import { confidentialityService } from '../../confidentiality/services/confidentialityService';
 import { rolesService } from '../services/rolesService';
-import { usePermissions } from '../../auth/hooks/usePermissions';
+import { usePermissions, useRefreshPermissions } from '../../auth/hooks/usePermissions';
+import { useAuthStore } from '../../auth/store/authStore';
 import {
   ROLE_FEATURE_KEYS,
   type AppRole,
@@ -145,7 +146,12 @@ const toDraft = (role: AppRole): RoleDraft => ({
 });
 
 export const RolePermissionsPage = () => {
+  const { user } = useAuthStore();
   const { canEditFeature, canDeleteFeature } = usePermissions();
+  const { refreshPermissions } = useRefreshPermissions();
+  const isAdmin = user?.role === 'admin';
+  const canManageRoles = isAdmin || canEditFeature('roles');
+  const canRemoveRoles = isAdmin || canDeleteFeature('roles');
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [allConfidentialities, setAllConfidentialities] = useState<Confidentiality[]>([]);
@@ -289,6 +295,7 @@ export const RolePermissionsPage = () => {
       });
 
       setRoles((prev) => [created, ...prev]);
+      await refreshPermissions();
       setNewRole({
         key: '',
         name: '',
@@ -394,6 +401,7 @@ export const RolePermissionsPage = () => {
       });
 
       setRoles((prev) => prev.map((role) => (role.id === updated.id ? updated : role)));
+      await refreshPermissions();
       setIsModalOpen(false);
       setRoleDraft(null);
 
@@ -429,6 +437,7 @@ export const RolePermissionsPage = () => {
       setSavingRoleId(role.id);
       await rolesService.remove(role.id);
       setRoles((prev) => prev.filter((item) => item.id !== role.id));
+      await refreshPermissions();
 
       await Swal.fire({
         icon: 'success',
@@ -492,7 +501,7 @@ export const RolePermissionsPage = () => {
          </div>
        )}
 
-       {canEditFeature('roles') && (
+       {canManageRoles && (
          <div className="arch-card rounded-3xl p-6">
            <div className="mb-5 flex items-center justify-between gap-3">
              <h2 className="text-base font-semibold text-[#1B3C53]">Creer un role</h2>
@@ -643,7 +652,7 @@ export const RolePermissionsPage = () => {
               </div>
 
                <div className="col-span-3 flex justify-end gap-1.5">
-                 {canEditFeature('roles') && (
+                  {canManageRoles && (
                    <IconButton
                      icon={<RiPencilLine className="h-3.5 w-3.5" />}
                      label="Modifier le role"
@@ -653,7 +662,7 @@ export const RolePermissionsPage = () => {
                      isLoading={savingRoleId === role.id}
                    />
                  )}
-                 {canDeleteFeature('roles') && (
+                  {canRemoveRoles && (
                    <IconButton
                      icon={<RiDeleteBinLine className="h-3.5 w-3.5" />}
                      label="Supprimer le role"

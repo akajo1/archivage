@@ -57,19 +57,17 @@ export const usePermissions = () => {
  * Hook to refresh user permissions
  */
 export const useRefreshPermissions = () => {
-  const { setUserPermissions } = useAuthStore();
+  const { setUser } = useAuthStore();
 
   const refreshPermissions = useCallback(async () => {
     try {
       const updatedUser = await authService.refreshPermissions();
-      if (updatedUser.userPermissions) {
-        setUserPermissions(updatedUser.userPermissions);
-      }
+      setUser(updatedUser);
     } catch (error) {
       console.error('Failed to refresh permissions:', error);
       throw error;
     }
-  }, [setUserPermissions]);
+  }, [setUser]);
 
   return { refreshPermissions };
 };

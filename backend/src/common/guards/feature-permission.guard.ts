@@ -7,8 +7,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export const FEATURE_PERMISSION_KEY = 'featurePermission';
-
 export interface FeaturePermissionMetadata {
   feature: string;
   operation: 'canRead' | 'canEdit' | 'canDelete' | 'canSearch';
@@ -28,7 +26,7 @@ export class FeaturePermissionGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredPermission = this.reflector.getAllAndOverride<FeaturePermissionMetadata>(
-      FEATURE_PERMISSION_KEY,
+      FeaturePermission,
       [context.getHandler(), context.getClass()],
     );
 
@@ -43,10 +41,6 @@ export class FeaturePermissionGuard implements CanActivate {
       throw new ForbiddenException('User role not found.');
     }
 
-    // Always allow admin and manager roles
-    if (['admin', 'manager'].includes(userRole)) {
-      return true;
-    }
 
     const permission = await this.prisma.rolePermission.findUnique({
       where: { role: userRole },

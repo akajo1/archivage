@@ -6,7 +6,7 @@ import type { Role } from '../../auth/types/auth.types';
 import type { ManagedUser, CreateManagedUserPayload } from '../types/userManagement.types';
 import { userManagementService } from '../services/userManagementService';
 import { rolesService } from '../services/rolesService';
-import { usePermissions } from '../../auth/hooks/usePermissions';
+import { usePermissions, useRefreshPermissions } from '../../auth/hooks/usePermissions';
 import { Button } from '../../../shared/components/atoms/Button';
 import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Input } from '../../../shared/components/atoms/Input';
@@ -17,6 +17,7 @@ export const UserManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { canEditFeature, canDeleteFeature } = usePermissions();
+  const { refreshPermissions } = useRefreshPermissions();
 
   const {
     register,
@@ -71,6 +72,7 @@ export const UserManagementPage = () => {
     try {
       const updated = await userManagementService.update(id, { role });
       setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)));
+      await refreshPermissions();
     } catch {
       setError('Mise a jour du role impossible.');
     }
