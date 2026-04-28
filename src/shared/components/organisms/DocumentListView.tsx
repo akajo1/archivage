@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import {
   RiEyeLine,
   RiPencilLine,
@@ -17,12 +16,19 @@ interface DocumentListViewProps {
   onDelete?: (id: string) => void;
   canDelete?: boolean;
   canEdit?: boolean;
+  onOpenDetail?: (id: string) => void;
 }
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 
-export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: DocumentListViewProps) => {
+export const DocumentListView = ({
+  documents,
+  onDelete,
+  canDelete,
+  canEdit,
+  onOpenDetail,
+}: DocumentListViewProps) => {
   const navigate = useNavigate();
 
   if (documents.length === 0) {
@@ -36,6 +42,14 @@ export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: Do
       </div>
     );
   }
+
+  const openDetail = (id: string) => {
+    if (onOpenDetail) {
+      onOpenDetail(id);
+      return;
+    }
+    navigate(`/documents/${id}`);
+  };
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#c4d4df] bg-white">
@@ -56,8 +70,9 @@ export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: Do
               className="group grid grid-cols-[2fr_1fr_1fr_1fr_auto] items-center gap-4 px-5 py-3 transition-colors hover:bg-[#f4f7fa]"
             >
               {/* Title */}
-              <Link
-                to={`/documents/${doc.id}`}
+              <button
+                type="button"
+                onClick={() => openDetail(doc.id)}
                 className="flex min-w-0 items-center gap-3"
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#dbeaf3] text-[#234C6A]">
@@ -71,7 +86,7 @@ export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: Do
                   </p>
                   <p className="truncate text-xs text-[#456882]">{doc.createdBy?.name ?? '—'}</p>
                 </div>
-              </Link>
+              </button>
 
               {/* Badge */}
               <div>
@@ -93,7 +108,7 @@ export const DocumentListView = ({ documents, onDelete, canDelete, canEdit }: Do
                  <IconButton
                    icon={<RiEyeLine className="h-3.5 w-3.5" />}
                    label="Voir"
-                   onClick={() => navigate(`/documents/${doc.id}`)}
+                   onClick={() => openDetail(doc.id)}
                  />
                   {canEdit && (
                    <IconButton

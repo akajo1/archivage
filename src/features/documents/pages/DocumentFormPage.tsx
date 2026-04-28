@@ -90,7 +90,17 @@ const ModeOption = ({
   </button>
 );
 
-export const DocumentFormPage = () => {
+interface DocumentFormPageProps {
+  embedded?: boolean;
+  onCancel?: () => void;
+  onSaved?: () => void;
+}
+
+export const DocumentFormPage = ({
+  embedded = false,
+  onCancel,
+  onSaved,
+}: DocumentFormPageProps = {}) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
@@ -99,7 +109,17 @@ export const DocumentFormPage = () => {
   const [confidentialities, setConfidentialities] = useState<Confidentiality[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [annexes, setAnnexes] = useState<File[]>([]);
-  const [contentMode, setContentMode] = useState<ContentMode | null>(isEdit ? 'write' : null);
+  const [contentMode, setContentMode] = useState<ContentMode | null>(() => {
+    if (isEdit) return 'write';
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (!saved) return null;
+      const draft = JSON.parse(saved) as { mode?: ContentMode };
+      return draft.mode ?? null;
+    } catch {
+      return null;
+    }
+  });
   const [existingFileUrl, setExistingFileUrl] = useState<string | null>(null);
   const [content, setContent] = useState<string>(() => {
     if (isEdit) return '<p></p>';
@@ -153,9 +173,8 @@ export const DocumentFormPage = () => {
       try {
         const saved = localStorage.getItem(DRAFT_KEY);
         if (saved) {
-          const draft = JSON.parse(saved) as { title?: string; mode?: ContentMode };
+          const draft = JSON.parse(saved) as { title?: string };
           if (draft.title) reset({ title: draft.title });
-          if (draft.mode) setContentMode(draft.mode);
         }
       } catch { /* ignore */ }
     }
@@ -214,6 +233,8 @@ export const DocumentFormPage = () => {
         await documentService.create(payload);
         localStorage.removeItem(DRAFT_KEY);
       }
+      onSaved?.();
+      if (embedded) return;
       navigate('/documents');
     } catch {
       setApiError('Une erreur est survenue. Veuillez réessayer.');
@@ -223,22 +244,22 @@ export const DocumentFormPage = () => {
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className={embedded ? 'mx-auto max-w-3xl px-2 py-2' : 'mx-auto max-w-3xl px-4 py-8'}>
       {/* Breadcrumb */}
-      <div className="mb-4 flex items-center gap-2 text-sm text-[#456882]">
+      {!embedded && <div className="mb-4 flex items-center gap-2 text-sm text-[#456882]">
         <Link to="/" className="hover:text-[#234C6A]">Accueil</Link>
         <span>/</span>
         <Link to="/documents" className="hover:text-[#234C6A]">Documents</Link>
         <span>/</span>
         <span className="font-medium text-[#1B3C53]">{isEdit ? 'Modifier' : 'Nouveau document'}</span>
-      </div>
+      </div>}
 
-      <button
+      {!embedded && <button
         onClick={() => navigate(-1)}
         className="mb-5 flex items-center gap-1.5 rounded-full border border-[#c4d4df] bg-[#edf4f8] px-4 py-2 text-sm font-medium text-[#456882] shadow-sm transition hover:bg-[#dbeaf3]"
       >
         <RiArrowLeftLine className="h-4 w-4" /> Retour
-      </button>
+      </button>}
 
       {/* Hero Header */}
       <div className="arch-hero mb-6 overflow-hidden rounded-3xl border-b border-[#1a3850]">
@@ -446,8 +467,13 @@ export const DocumentFormPage = () => {
 
         {/* ── Actions ── */}
         <div className="flex gap-3 pt-1">
-          <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="flex-1 rounded-xl">
-            <RiCloseLine className="h-4 w-4" /> Annuler
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => (embedded ? onCancel?.() : navigate(-1))}
+            className="flex-1 rounded-xl"
+          >
+            <RiCloseLine className="h-4 w-4" /> {embedded ? 'Fermer' : 'Annuler'}
           </Button>
           <Button type="submit" isLoading={isSubmitting} className="flex-1 rounded-xl">
             {isEdit

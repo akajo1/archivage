@@ -7,6 +7,7 @@ interface DocumentCardProps {
   document: Document;
   canManage?: boolean;
   onDelete?: (id: string) => void;
+  onOpenDetail?: (id: string) => void;
 }
 
 type BadgeName = 'critique' | 'normal' | 'faible';
@@ -52,7 +53,12 @@ const refCode = (id: string) => {
   return `REF-${year}-${num || id.slice(0, 6).toUpperCase()}`;
 };
 
-export const DocumentCard = ({ document, canManage = false, onDelete }: DocumentCardProps) => {
+export const DocumentCard = ({
+  document,
+  canManage = false,
+  onDelete,
+  onOpenDetail,
+}: DocumentCardProps) => {
   const navigate = useNavigate();
   const badgeName = (document.badge?.name ?? 'faible') as BadgeName;
   const colors = tabColors[badgeName] ?? tabColors.faible;
@@ -68,9 +74,18 @@ export const DocumentCard = ({ document, canManage = false, onDelete }: Document
     onDelete?.(document.id);
   };
 
+  const openDetail = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (onOpenDetail) {
+      onOpenDetail(document.id);
+      return;
+    }
+    navigate(`/documents/${document.id}`);
+  };
+
   return (
     <div
-      onClick={() => navigate(`/documents/${document.id}`)}
+      onClick={() => openDetail()}
       className="group relative cursor-pointer transition-all duration-200 hover:-translate-y-1.5 hover:rotate-[-0.4deg]"
       style={{ filter: 'drop-shadow(0 4px 10px rgba(27,60,83,0.14))' }}
     >
@@ -157,7 +172,7 @@ export const DocumentCard = ({ document, canManage = false, onDelete }: Document
         {/* ── Hover action overlay ── */}
         <div className="absolute inset-0 flex items-center justify-center gap-2.5 rounded-b-lg bg-[#1B3C53]/70 opacity-0 backdrop-blur-[2px] transition-all duration-200 group-hover:opacity-100">
           <button type="button" title="Consulter" aria-label="Consulter"
-            onClick={(e) => { e.stopPropagation(); navigate(`/documents/${document.id}`); }}
+            onClick={(e) => openDetail(e)}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#1B3C53] shadow-lg hover:bg-[#edf4f8]">
             <RiEyeLine className="h-4 w-4" />
           </button>

@@ -31,9 +31,22 @@ import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
 import { usePermissions } from '../../auth/hooks/usePermissions';
 
-export const DocumentDetailPage = () => {
+interface DocumentDetailPageProps {
+  embedded?: boolean;
+  documentId?: string;
+  onClose?: () => void;
+  onDeleted?: () => void;
+}
+
+export const DocumentDetailPage = ({
+  embedded = false,
+  documentId,
+  onClose,
+  onDeleted,
+}: DocumentDetailPageProps = {}) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const resolvedId = documentId ?? id;
   const { canEditFeature, canDeleteFeature } = usePermissions();
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,16 +68,16 @@ export const DocumentDetailPage = () => {
   const isPdf = (url: string) => /\.pdf$/i.test(url);
 
   useEffect(() => {
-    if (!id) return;
+    if (!resolvedId) return;
     let active = true;
-    documentService.getById(id)
+    documentService.getById(resolvedId)
       .then((data) => { if (active) { setDocument(data); setLoading(false); } })
       .catch(() => { if (active) { setError('Document introuvable ou accès refusé.'); setLoading(false); } });
     return () => { active = false; };
-  }, [id]);
+  }, [resolvedId]);
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (!resolvedId) return;
     const result = await Swal.fire({
       title: 'Supprimer ce document ?',
       text: 'Cette action est irréversible.',
@@ -77,8 +90,11 @@ export const DocumentDetailPage = () => {
     });
     if (!result.isConfirmed) return;
     try {
-      await documentService.delete(id);
+      await documentService.delete(resolvedId);
       void Swal.fire({ title: 'Supprimé !', icon: 'success', timer: 1200, showConfirmButton: false });
+      onDeleted?.();
+      onClose?.();
+      if (embedded) return;
       navigate('/documents');
     } catch {
       void Swal.fire({ title: 'Erreur', text: 'Impossible de supprimer ce document.', icon: 'error' });
@@ -114,7 +130,7 @@ export const DocumentDetailPage = () => {
     window.print();
   };
 
-  if (!id) {
+  if (!resolvedId) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <span className="text-5xl">⚠️</span>
@@ -140,22 +156,22 @@ export const DocumentDetailPage = () => {
   const canDelete = canDeleteFeature('documents');
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className={embedded ? 'mx-auto max-w-4xl px-2 py-2' : 'mx-auto max-w-4xl px-4 py-8'}>
       {/* Breadcrumb + back */}
-      <div className="mb-5 flex items-center gap-2 text-sm text-[#456882]">
+      {!embedded && <div className="mb-5 flex items-center gap-2 text-sm text-[#456882]">
         <Link to="/" className="hover:text-[#234C6A]">Accueil</Link>
         <span>/</span>
         <Link to="/documents" className="hover:text-[#234C6A]">Documents</Link>
         <span>/</span>
         <span className="max-w-[200px] truncate font-medium text-[#1B3C53]">{document.title}</span>
-      </div>
+      </div>}
 
-      <button
+      {!embedded && <button
         onClick={() => navigate(-1)}
         className="mb-5 flex items-center gap-1.5 rounded-full border border-[#c4d4df] bg-[#edf4f8] px-4 py-2 text-sm font-medium text-[#456882] shadow-sm transition hover:bg-[#dbeaf3]"
       >
         <RiArrowLeftLine className="h-4 w-4" /> Retour
-      </button>
+      </button>}
 
       <div className="arch-card overflow-hidden rounded-3xl">
         {/* Hero banner */}

@@ -6,9 +6,16 @@ interface DocumentTableProps {
   onDelete?: (id: string) => void;
   canDelete?: boolean;
   canEdit?: boolean;
+  onOpenDetail?: (id: string) => void;
 }
 
-export const DocumentTable = ({ documents, onDelete, canDelete, canEdit }: DocumentTableProps) => {
+export const DocumentTable = ({
+  documents,
+  onDelete,
+  canDelete,
+  canEdit,
+  onOpenDetail,
+}: DocumentTableProps) => {
   if (documents.length === 0) {
     return (
       <div className="arch-card flex flex-col items-center justify-center rounded-3xl border-dashed py-24 text-center">
@@ -29,6 +36,7 @@ export const DocumentTable = ({ documents, onDelete, canDelete, canEdit }: Docum
           document={doc}
           canManage={Boolean(canEdit)}
           onDelete={canDelete ? onDelete : undefined}
+          onOpenDetail={onOpenDetail}
         />
       ))}
     </div>

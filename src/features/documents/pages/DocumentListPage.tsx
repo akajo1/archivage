@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import {
   RiAddLine,
@@ -7,6 +7,7 @@ import {
   RiListCheck2,
   RiArrowUpDownLine,
   RiFileTextLine,
+  RiCloseLine,
 } from 'react-icons/ri';
 import { documentService } from '../services/documentService';
 import { badgeService } from '../../badges/services/badgeService';
@@ -18,8 +19,11 @@ import { DocumentTable } from '../../../shared/components/organisms/DocumentTabl
 import { DocumentListView } from '../../../shared/components/organisms/DocumentListView';
 import { FilterBar } from '../../../shared/components/molecules/FilterBar';
 import { Button } from '../../../shared/components/atoms/Button';
+import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
 import { usePermissions } from '../../auth/hooks/usePermissions';
+import { DocumentFormPage } from './DocumentFormPage';
+import { DocumentDetailPage } from './DocumentDetailPage';
 
 type SortKey = 'date_desc' | 'date_asc' | 'title_asc' | 'title_desc' | 'badge';
 type ViewMode = 'grid' | 'list';
@@ -45,7 +49,6 @@ const sortDocuments = (docs: Document[], key: SortKey): Document[] => {
 };
 
 export const DocumentListPage = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { canCreateFeature, canEditFeature, canDeleteFeature, canSearchFeature } = usePermissions();
 
@@ -57,6 +60,8 @@ export const DocumentListPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortKey, setSortKey] = useState<SortKey>('date_desc');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [detailModalId, setDetailModalId] = useState<string | null>(null);
 
   // Sync filters with URL params
   const canSearch = canSearchFeature('documents');
@@ -93,13 +98,27 @@ export const DocumentListPage = () => {
       .catch(() => {});
   }, []);
 
+  const loadDocuments = useCallback(async () => {
+    const data = await documentService.getAll(filters);
+    setAllDocuments(data);
+  }, [filters]);
+
   useEffect(() => {
     let active = true;
-    documentService.getAll(filters)
-      .then((data) => { if (active) { setAllDocuments(data); setLoading(false); } })
-      .catch(() => { if (active) { setError('Erreur lors du chargement des documents.'); setLoading(false); } });
-    return () => { active = false; };
-  }, [filters]);
+    loadDocuments()
+      .then(() => {
+        if (active) setLoading(false);
+      })
+      .catch(() => {
+        if (active) {
+          setError('Erreur lors du chargement des documents.');
+          setLoading(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [loadDocuments]);
 
    const documents = useMemo(() => sortDocuments(allDocuments, sortKey), [allDocuments, sortKey]);
 
@@ -135,6 +154,38 @@ export const DocumentListPage = () => {
     return counts;
   }, [allDocuments, badges]);
 
+  const closeCreateModal = () => setIsCreateModalOpen(false);
+  const closeDetailModal = () => setDetailModalId(null);
+
+  useEffect(() => {
+    if (!isCreateModalOpen && !detailModalId) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      if (detailModalId) {
+        closeDetailModal();
+        return;
+      }
+      if (isCreateModalOpen) {
+        closeCreateModal();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isCreateModalOpen, detailModalId]);
+
+  const handleCreated = async () => {
+    closeCreateModal();
+    await loadDocuments();
+  };
+
+  const handleDeletedFromDetail = async () => {
+    closeDetailModal();
+    await loadDocuments();
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-8 sm:px-6 lg:px-8">
       {/* Hero Header */}
@@ -150,7 +201,7 @@ export const DocumentListPage = () => {
             </p>
           </div>
           {canCreate && (
-            <Button onClick={() => navigate('/documents/new')} className="rounded-full px-5">
+            <Button onClick={() => setIsCreateModalOpen(true)} className="rounded-full px-5">
               <RiAddLine className="h-4 w-4" /> Nouveau document
             </Button>
           )}
@@ -258,10 +309,75 @@ export const DocumentListPage = () => {
        {loading ? (
          <div className="flex justify-center py-24"><Spinner size="lg" /></div>
        ) : viewMode === 'grid' ? (
-          <DocumentTable documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canEdit} />
+           <DocumentTable
+             documents={documents}
+             onDelete={handleDelete}
+             canDelete={canDelete}
+             canEdit={canEdit}
+             onOpenDetail={(id) => setDetailModalId(id)}
+           />
        ) : (
-          <DocumentListView documents={documents} onDelete={handleDelete} canDelete={canDelete} canEdit={canEdit} />
+           <DocumentListView
+             documents={documents}
+             onDelete={handleDelete}
+             canDelete={canDelete}
+             canEdit={canEdit}
+             onOpenDetail={(id) => setDetailModalId(id)}
+           />
        )}
+
+      {isCreateModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeCreateModal();
+          }}
+          role="presentation"
+        >
+          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-[#dde8f0] bg-white p-5 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold text-[#1B3C53]">Creation de document</p>
+              <IconButton
+                icon={<RiCloseLine className="h-4 w-4" />}
+                label="Fermer"
+                variant="default"
+                size="md"
+                onClick={closeCreateModal}
+              />
+            </div>
+            <DocumentFormPage embedded onCancel={closeCreateModal} onSaved={() => void handleCreated()} />
+          </div>
+        </div>
+      )}
+
+      {detailModalId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeDetailModal();
+          }}
+          role="presentation"
+        >
+          <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-[#dde8f0] bg-white p-5 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold text-[#1B3C53]">Detail du document</p>
+              <IconButton
+                icon={<RiCloseLine className="h-4 w-4" />}
+                label="Fermer"
+                variant="default"
+                size="md"
+                onClick={closeDetailModal}
+              />
+            </div>
+            <DocumentDetailPage
+              embedded
+              documentId={detailModalId}
+              onClose={closeDetailModal}
+              onDeleted={() => void handleDeletedFromDetail()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
