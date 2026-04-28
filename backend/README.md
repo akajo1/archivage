@@ -1,119 +1,163 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Archivage - Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API NestJS de l'application d'archivage documentaire.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Elle couvre l'authentification JWT, la gestion documentaire, les permissions par role (RBAC granulaire par fonctionnalite), les journaux d'activite et le service de fichiers locaux pour les pieces jointes.
 
-## Description
+## Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- NestJS 11
+- Prisma + MySQL (`schema.prisma` configure `provider = "mysql"`)
+- JWT / Passport
+- class-validator + ValidationPipe globale
+- Multer (upload local en developpement)
 
-## Project setup
+## Fonctionnalites backend
 
-```bash
-$ npm install
+- Authentification: `register`, `login`, `refresh`, `logout`, `me`
+- Gestion des mots de passe:
+  - `forgot-password` (anti-enumeration email)
+  - `reset-password`
+  - `change-password`
+  - `first-login-change-password`
+- Documents:
+  - CRUD
+  - upload de fichier principal
+  - gestion d'annexes multiples
+  - filtres (`badge_id`, `confidentiality_id`, `search`)
+- Utilisateurs: CRUD + reset admin du mot de passe
+- Roles applicatifs: CRUD
+- Permissions par role: lecture/modification des permissions globales + par fonctionnalite
+- Referentiels: badges et niveaux de confidentialite
+- Activity logs: listing pagine, stats, export
+- Health check: etat API + base
+
+## Modules exposes
+
+- `auth`
+- `documents`
+- `users`
+- `roles`
+- `role-permissions`
+- `badges`
+- `confidentiality`
+- `activity-logs`
+- `health`
+
+## Variables d'environnement
+
+Creer `backend/.env`.
+
+```dotenv
+DATABASE_URL="mysql://user:password@localhost:3306/archivage"
+JWT_SECRET="change-me-access-secret"
+JWT_EXPIRES_IN="15m"
+JWT_REFRESH_SECRET="change-me-refresh-secret"
+JWT_REFRESH_EXPIRES_IN="7d"
+FRONTEND_URL="http://localhost:5173"
+PORT=3000
 ```
-### 2. Initialiser la base
+
+Notes:
+- `JWT_SECRET` et `JWT_REFRESH_SECRET` sont requis pour les strategies JWT.
+- `FRONTEND_URL` est utilise pour construire le lien de reset password (fallback `http://localhost:5173`).
+
+## Installation
 
 ```bash
 cd /Users/akajodev/Documents/projects/archivage/backend
-npx prisma generate
-npx prisma db push
+npm install
+```
+
+## Initialisation de la base
+
+```bash
+cd /Users/akajodev/Documents/projects/archivage/backend
+npm run db:generate
+npm run db:push
 npm run seed
 ```
 
-### 3. Lancer le backend
+Alternative avec migrations:
+
+```bash
+cd /Users/akajodev/Documents/projects/archivage/backend
+npm run db:migrate
+```
+
+## Lancer l'API
 
 ```bash
 cd /Users/akajodev/Documents/projects/archivage/backend
 npm run start:dev
 ```
 
-### Vérifier la santé du backend
+Build + prod:
+
+```bash
+cd /Users/akajodev/Documents/projects/archivage/backend
+npm run build
+npm run start:prod
+```
+
+## Verifications rapides
+
+Health check:
 
 ```bash
 curl http://localhost:3000/health
 ```
 
-## Compile and run the project
+L'API active CORS pour `http://localhost:5173` avec credentials.
+
+## Comptes de demonstration (seed)
+
+- `admin@archivage.fr` / `admin123`
+- `manager@archivage.fr` / `manager123`
+
+## Resume des routes
+
+Base URL locale par defaut: `http://localhost:3000`
+
+- `GET /health`
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- `GET /auth/me`
+- `POST /auth/refresh-permissions`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `POST /auth/first-login-change-password`
+- `POST /auth/change-password`
+- `GET /documents`, `GET /documents/:id`, `POST /documents`, `PUT /documents/:id`, `DELETE /documents/:id`
+- `POST /documents/:id/attachments`, `DELETE /documents/:id/attachments/:attachmentId`
+- `GET /users`, `GET /users/:id`, `POST /users`, `PATCH /users/:id`, `DELETE /users/:id`
+- `POST /users/:id/admin-reset-password`
+- `GET /roles`, `GET /roles/:id`, `POST /roles`, `PATCH /roles/:id`, `DELETE /roles/:id`
+- `GET /role-permissions`, `PUT /role-permissions/:role`
+- `GET /badges`
+- `GET /confidentiality`
+- `GET /activity-logs`, `GET /activity-logs/stats`, `GET /activity-logs/export`
+
+La plupart des routes (hors `health` et endpoints publics auth) sont protegees par:
+- `JwtAuthGuard`
+- `FeaturePermissionGuard` (controle par fonctionnalite + operation `canRead|canCreate|canEdit|canDelete|canSearch`)
+
+## Uploads
+
+- Dossier local: `backend/uploads/`
+- Service statique: `/uploads/*`
+- `documents` utilise Multer (`FileInterceptor` et `FilesInterceptor`)
+
+## Scripts utiles
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd /Users/akajodev/Documents/projects/archivage/backend
+npm run lint
+npm run test
+npm run test:e2e
+npm run test:cov
+npm run db:studio
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
