@@ -55,6 +55,20 @@ export class UsersController {
     return this.usersService.update(id, dto, user.id, user.role, user.name);
   }
 
+  @Post(':id/admin-reset-password')
+  @FeaturePermission({ feature: 'users', operation: 'canEdit' })
+  adminResetPassword(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: Role; name: string },
+  ) {
+    return this.usersService.adminResetPassword(
+      id,
+      user.id,
+      user.role,
+      user.name,
+    );
+  }
+
   @Delete(':id')
   @FeaturePermission({ feature: 'users', operation: 'canDelete' })
   remove(

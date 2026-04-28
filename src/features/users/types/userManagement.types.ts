@@ -5,6 +5,9 @@ export interface ManagedUser {
   name: string;
   email: string;
   role: Role;
+  mustChangePassword?: boolean;
+  passwordResetRequestedAt?: string | null;
+  temporaryPassword?: string;
   createdAt: string;
   updatedAt: string;
 }

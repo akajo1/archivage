@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { authService } from '../services/authService';
 import type { ForgotPasswordPayload } from '../types/auth.types';
 import { Button } from '../../../shared/components/atoms/Button';
@@ -11,16 +12,27 @@ export const ForgotPasswordPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [apiError, setApiError] = useState('');
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordPayload>();
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordPayload>({
+    mode: 'onBlur',
+    shouldFocusError: true,
+  });
 
   const onSubmit = async (data: ForgotPasswordPayload) => {
+    const payload = { email: data.email.trim() };
+
     try {
       setApiError('');
-      await authService.forgotPassword(data);
+      setSuccessMessage('');
+      await authService.forgotPassword(payload);
       setSuccessMessage(
-        'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.',
+        'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé et une demande d\'assistance a été enregistrée.',
       );
-    } catch {
+    } catch (err: unknown) {
+      setSuccessMessage('');
+      if (isAxiosError(err) && typeof err.response?.data?.message === 'string') {
+        setApiError(err.response.data.message);
+        return;
+      }
       setApiError('Une erreur est survenue. Veuillez réessayer.');
     }
   };
@@ -55,18 +67,18 @@ export const ForgotPasswordPage = () => {
           <div className="arch-card rounded-3xl p-8">
             <h2 className="mb-1 text-2xl font-bold text-[#1B3C53]">Mot de passe oublié</h2>
             <p className="mb-6 text-sm text-[#456882]">
-              Saisissez votre email pour recevoir un lien de réinitialisation.
+              Saisissez votre email pour recevoir un lien de réinitialisation. Si vous ne pouvez pas y accéder, un administrateur verra aussi votre demande.
             </p>
 
             {apiError && (
-              <div className="mb-4 rounded-xl border border-[#f4a8bf] bg-[#fce8ef] p-3 text-sm text-[#BD114A]">
+              <div role="alert" aria-live="assertive" className="mb-4 rounded-xl border border-[#f4a8bf] bg-[#fce8ef] p-3 text-sm text-[#BD114A]">
                 {apiError}
               </div>
             )}
 
             {successMessage ? (
               <div className="space-y-4">
-                <div className="rounded-xl border border-[#b8d8c0] bg-[#eaf6ed] p-4 text-sm text-[#2a6b3f]">
+                <div role="status" aria-live="polite" className="rounded-xl border border-[#b8d8c0] bg-[#eaf6ed] p-4 text-sm text-[#2a6b3f]">
                   {successMessage}
                 </div>
                 <Link
@@ -79,12 +91,21 @@ export const ForgotPasswordPage = () => {
             ) : (
               <>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField label="Email" htmlFor="email" required error={errors.email?.message}>
+                  <FormField label="Email" htmlFor="email" required>
                     <Input
                       id="email"
                       type="email"
+                      autoComplete="email"
+                      autoFocus
                       placeholder="vous@exemple.com"
-                      {...register('email', { required: "L'email est requis" })}
+                      {...register('email', {
+                        required: "L'email est requis",
+                        setValueAs: (value: string) => value.trim(),
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: 'Veuillez saisir une adresse email valide',
+                        },
+                      })}
                       error={errors.email?.message}
                     />
                   </FormField>

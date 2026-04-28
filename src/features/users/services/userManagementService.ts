@@ -24,6 +24,13 @@ export const userManagementService = {
     return data;
   },
 
+  adminResetPassword: async (id: string): Promise<ManagedUser> => {
+    const { data } = await apiClient.post<ManagedUser>(
+      `/users/${id}/admin-reset-password`,
+    );
+    return data;
+  },
+
   remove: async (id: string): Promise<void> => {
     await apiClient.delete(`/users/${id}`);
   },

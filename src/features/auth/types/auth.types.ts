@@ -34,6 +34,7 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  mustChangePassword?: boolean;
   documentAccesses: Array<'read' | 'create' | 'edit' | 'delete' | 'search'>;
   userPermissions?: UserPermissions;
 }
@@ -74,3 +75,10 @@ export interface ChangePasswordPayload {
   currentPassword: string;
   newPassword: string;
 }
+
+export interface FirstLoginChangePasswordPayload {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+}
+

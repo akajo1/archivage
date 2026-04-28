@@ -27,6 +27,15 @@ export class UsersService {
     }
   }
 
+  private generateTemporaryPassword() {
+    const chars =
+      'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';
+    return Array.from(
+      { length: 12 },
+      () => chars[Math.floor(Math.random() * chars.length)],
+    ).join('');
+  }
+
   findAll() {
     return this.prisma.user.findMany({
       select: {
@@ -34,6 +43,8 @@ export class UsersService {
         name: true,
         email: true,
         role: true,
+        mustChangePassword: true,
+        passwordResetRequestedAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -49,6 +60,8 @@ export class UsersService {
         name: true,
         email: true,
         role: true,
+        mustChangePassword: true,
+        passwordResetRequestedAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -61,7 +74,12 @@ export class UsersService {
     return user;
   }
 
-  async create(dto: CreateUserDto, actorId?: string, actorName?: string, actorRole?: string) {
+  async create(
+    dto: CreateUserDto,
+    actorId?: string,
+    actorName?: string,
+    actorRole?: string,
+  ) {
     const exists = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -72,7 +90,8 @@ export class UsersService {
     const roleKey = dto.role ?? 'user';
     await this.assertRoleExists(roleKey);
 
-    const password = await bcrypt.hash(dto.password, 10);
+    const rawPassword = dto.password;
+    const password = await bcrypt.hash(rawPassword, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -80,12 +99,15 @@ export class UsersService {
         email: dto.email,
         password,
         role: roleKey,
+        mustChangePassword: true,
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        mustChangePassword: true,
+        passwordResetRequestedAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -101,7 +123,10 @@ export class UsersService {
       userRole: actorRole,
     });
 
-    return user;
+    return {
+      ...user,
+      temporaryPassword: rawPassword,
+    };
   }
 
   async update(
@@ -157,6 +182,8 @@ export class UsersService {
         name: true,
         email: true,
         role: true,
+        mustChangePassword: true,
+        passwordResetRequestedAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -175,7 +202,75 @@ export class UsersService {
     return updated;
   }
 
-  async remove(id: string, currentUserId: string, currentUserName?: string, currentUserRole?: string) {
+  async adminResetPassword(
+    id: string,
+    currentUserId: string,
+    currentUserRole: Role,
+    currentUserName?: string,
+  ) {
+    if (currentUserRole !== 'admin') {
+      throw new ForbiddenException(
+        'Seul un administrateur peut reinitialiser un mot de passe.',
+      );
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable.');
+    }
+
+    if (!user.passwordResetRequestedAt) {
+      throw new ForbiddenException(
+        "Aucune demande de reinitialisation n'a ete enregistree pour cet utilisateur.",
+      );
+    }
+
+    const temporaryPassword = this.generateTemporaryPassword();
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: true,
+        passwordResetRequestedAt: null,
+        passwordResetToken: null,
+        passwordResetExpiry: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        mustChangePassword: true,
+        passwordResetRequestedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    this.activityLog.log({
+      action: 'USER_PASSWORD_RESET_BY_ADMIN',
+      entity: 'user',
+      entityId: updated.id,
+      entityLabel: updated.email,
+      userId: currentUserId,
+      userName: currentUserName,
+      userRole: currentUserRole,
+    });
+
+    return {
+      ...updated,
+      temporaryPassword,
+    };
+  }
+
+  async remove(
+    id: string,
+    currentUserId: string,
+    currentUserName?: string,
+    currentUserRole?: string,
+  ) {
     if (id === currentUserId) {
       throw new ForbiddenException(
         'Vous ne pouvez pas supprimer votre propre compte.',

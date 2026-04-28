@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
+import { FirstLoginChangePasswordPage } from '../features/auth/pages/FirstLoginChangePasswordPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { DashboardPage } from '../features/documents/pages/DashboardPage';
 import { DocumentListPage } from '../features/documents/pages/DocumentListPage';
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/reset-password', element: <ResetPasswordPage /> },
+  { path: '/first-login-change-password', element: <FirstLoginChangePasswordPage /> },
   {
     path: '/',
     element: <ProtectedRoute><Layout /></ProtectedRoute>,

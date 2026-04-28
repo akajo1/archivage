@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -16,6 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { FirstLoginChangePasswordDto } from './dto/first-login-change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -143,6 +145,7 @@ export class AuthService {
     email: string;
     role: string;
     name: string;
+    mustChangePassword?: boolean;
   }) {
     const tokenPayload = { sub: user.id, email: user.email, role: user.role };
     const documentAccesses = await this.getDocumentAccesses(user.role);
@@ -156,6 +159,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        mustChangePassword: user.mustChangePassword ?? false,
         documentAccesses,
         userPermissions,
       },
@@ -191,11 +195,27 @@ export class AuthService {
   async login(dto: LoginDto, ipAddress?: string) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+        role: true,
+        mustChangePassword: true,
+      },
     });
     if (!user) throw new UnauthorizedException('Identifiants invalides.');
 
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Identifiants invalides.');
+
+    if (user.mustChangePassword) {
+      throw new ForbiddenException({
+        code: 'FIRST_LOGIN_PASSWORD_CHANGE_REQUIRED',
+        message:
+          'Vous devez changer votre mot de passe avant la premiere connexion.',
+      });
+    }
 
     this.activityLog.log({
       action: 'LOGIN',
@@ -219,7 +239,12 @@ export class AuthService {
     return this.buildAuthResponse(user);
   }
 
-  async logout(userId: string, userName: string, userRole: string, ipAddress?: string) {
+  logout(
+    userId: string,
+    userName: string,
+    userRole: string,
+    ipAddress?: string,
+  ) {
     this.activityLog.log({
       action: 'LOGOUT',
       entity: 'user',
@@ -236,7 +261,13 @@ export class AuthService {
   async me(userId: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, name: true, email: true, role: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        mustChangePassword: true,
+      },
     });
     const documentAccesses = await this.getDocumentAccesses(user.role);
     const userPermissions = await this.getUserPermissions(user.role);
@@ -244,6 +275,60 @@ export class AuthService {
       ...user,
       documentAccesses,
       userPermissions,
+    };
+  }
+
+  async firstLoginChangePassword(dto: FirstLoginChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+        role: true,
+        mustChangePassword: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable.');
+    }
+
+    if (!user.mustChangePassword) {
+      throw new BadRequestException(
+        'Ce compte ne nécessite pas de changement de mot de passe initial.',
+      );
+    }
+
+    const valid = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!valid) {
+      throw new UnauthorizedException('Mot de passe initial incorrect.');
+    }
+
+    const hashed = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashed,
+        mustChangePassword: false,
+        passwordResetRequestedAt: null,
+      },
+    });
+
+    this.activityLog.log({
+      action: 'FIRST_LOGIN_PASSWORD_CHANGED',
+      entity: 'user',
+      entityId: user.id,
+      entityLabel: user.email,
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+    });
+
+    return {
+      message:
+        'Mot de passe initial changé avec succès. Vous pouvez maintenant vous connecter.',
     };
   }
 
@@ -256,7 +341,7 @@ export class AuthService {
     if (!user) {
       return {
         message:
-          'Si cet email existe, un lien de réinitialisation a été envoyé.',
+          "Si cet email existe, un lien de réinitialisation a été envoyé et une demande d'assistance a été enregistrée.",
       };
     }
 
@@ -272,6 +357,7 @@ export class AuthService {
       data: {
         passwordResetToken: hashedToken,
         passwordResetExpiry: expiry,
+        passwordResetRequestedAt: new Date(),
       },
     });
 
@@ -289,7 +375,8 @@ export class AuthService {
     console.log(`[DEV] Password reset link for ${user.email}: ${resetUrl}`);
 
     return {
-      message: 'Si cet email existe, un lien de réinitialisation a été envoyé.',
+      message:
+        "Si cet email existe, un lien de réinitialisation a été envoyé et une demande d'assistance a été enregistrée.",
       resetUrl,
     };
   }
@@ -317,8 +404,10 @@ export class AuthService {
       where: { id: user.id },
       data: {
         password: hashed,
+        mustChangePassword: false,
         passwordResetToken: null,
         passwordResetExpiry: null,
+        passwordResetRequestedAt: null,
       },
     });
 
@@ -346,7 +435,11 @@ export class AuthService {
     const hashed = await bcrypt.hash(dto.newPassword, 10);
     await this.prisma.user.update({
       where: { id: userId },
-      data: { password: hashed },
+      data: {
+        password: hashed,
+        mustChangePassword: false,
+        passwordResetRequestedAt: null,
+      },
     });
 
     this.activityLog.log({

@@ -1,5 +1,14 @@
 import apiClient from '../../../shared/utils/apiClient';
-import type { LoginPayload, RegisterPayload, AuthResponse, User, ForgotPasswordPayload, ResetPasswordPayload, ChangePasswordPayload } from '../types/auth.types';
+import type {
+  LoginPayload,
+  RegisterPayload,
+  AuthResponse,
+  User,
+  ForgotPasswordPayload,
+  ResetPasswordPayload,
+  ChangePasswordPayload,
+  FirstLoginChangePasswordPayload,
+} from '../types/auth.types';
 
 export const authService = {
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
@@ -43,6 +52,12 @@ export const authService = {
   },
   changePassword: async (payload: ChangePasswordPayload): Promise<{ message: string }> => {
     const { data } = await apiClient.post('/auth/change-password', payload);
+    return data;
+  },
+  firstLoginChangePassword: async (
+    payload: FirstLoginChangePasswordPayload,
+  ): Promise<{ message: string }> => {
+    const { data } = await apiClient.post('/auth/first-login-change-password', payload);
     return data;
   },
 };

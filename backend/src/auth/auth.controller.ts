@@ -6,6 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { FirstLoginChangePasswordDto } from './dto/first-login-change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -64,6 +65,12 @@ export class AuthController {
   @Post('reset-password')
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('first-login-change-password')
+  firstLoginChangePassword(@Body() dto: FirstLoginChangePasswordDto) {
+    return this.authService.firstLoginChangePassword(dto);
   }
 
   @UseGuards(JwtAuthGuard)
