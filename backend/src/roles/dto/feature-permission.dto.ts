@@ -5,6 +5,7 @@ export const ROLE_FEATURES = [
   'documents',
   'users',
   'roles',
+  'logs',
   'badges',
   'confidentiality',
 ] as const;

@@ -57,21 +57,21 @@ export class DocumentsController {
   @FeaturePermission({ feature: 'documents', operation: 'canRead' })
   findOne(
     @Param('id') id: string,
-    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
   ) {
-    return this.documentsService.findOne(id, user.role);
+    return this.documentsService.findOne(id, user.role, user.id, user.name);
   }
 
   @Post()
   @FeaturePermission({ feature: 'documents', operation: 'canCreate' })
   @UseInterceptors(FileInterceptor('file', { storage: uploadStorage }))
   async create(
-    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
     @Body() dto: CreateDocumentDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     const fileUrl = file ? `/uploads/${file.filename}` : undefined;
-    return this.documentsService.create(user.id, user.role, dto, fileUrl);
+    return this.documentsService.create(user.id, user.role, dto, fileUrl, user.name);
   }
 
   @Post(':id/attachments')
@@ -79,10 +79,10 @@ export class DocumentsController {
   @UseInterceptors(FilesInterceptor('annexes', 20, { storage: uploadStorage }))
   async addAttachments(
     @Param('id') id: string,
-    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.documentsService.addAttachments(id, user.role, files ?? []);
+    return this.documentsService.addAttachments(id, user.role, files ?? [], user.id, user.name);
   }
 
   @Delete(':id/attachments/:attachmentId')
@@ -90,9 +90,9 @@ export class DocumentsController {
   removeAttachment(
     @Param('id') id: string,
     @Param('attachmentId') attachmentId: string,
-    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
   ) {
-    return this.documentsService.removeAttachment(id, attachmentId, user.role);
+    return this.documentsService.removeAttachment(id, attachmentId, user.role, user.id, user.name);
   }
 
   @Put(':id')
@@ -100,20 +100,20 @@ export class DocumentsController {
   @UseInterceptors(FileInterceptor('file', { storage: uploadStorage }))
   update(
     @Param('id') id: string,
-    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
     @Body() dto: UpdateDocumentDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     const fileUrl = file ? `/uploads/${file.filename}` : undefined;
-    return this.documentsService.update(id, user.id, user.role, dto, fileUrl);
+    return this.documentsService.update(id, user.id, user.role, dto, fileUrl, user.name);
   }
 
   @Delete(':id')
   @FeaturePermission({ feature: 'documents', operation: 'canDelete' })
   remove(
     @Param('id') id: string,
-    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user' },
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
   ) {
-    return this.documentsService.remove(id, user.id, user.role);
+    return this.documentsService.remove(id, user.id, user.role, user.name);
   }
 }

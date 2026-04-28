@@ -13,6 +13,7 @@ export type RoleFeature =
   | 'documents'
   | 'users'
   | 'roles'
+  | 'logs'
   | 'badges'
   | 'confidentiality';
 
@@ -115,6 +116,7 @@ export class PermissionUtils {
       'documents',
       'users',
       'roles',
+      'logs',
       'badges',
       'confidentiality',
     ];

@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -22,6 +23,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private activityLog: ActivityLogService,
   ) {}
 
   /* ── helpers ── */
@@ -172,10 +174,21 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: { name: dto.name, email: dto.email, password: hashed },
     });
+
+    this.activityLog.log({
+      action: 'REGISTER',
+      entity: 'user',
+      entityId: user.id,
+      entityLabel: user.email,
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+    });
+
     return this.buildAuthResponse(user);
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ipAddress?: string) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -183,6 +196,17 @@ export class AuthService {
 
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Identifiants invalides.');
+
+    this.activityLog.log({
+      action: 'LOGIN',
+      entity: 'user',
+      entityId: user.id,
+      entityLabel: user.email,
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      ipAddress,
+    });
 
     return this.buildAuthResponse(user);
   }
@@ -193,6 +217,20 @@ export class AuthService {
       select: { id: true, name: true, email: true, role: true },
     });
     return this.buildAuthResponse(user);
+  }
+
+  async logout(userId: string, userName: string, userRole: string, ipAddress?: string) {
+    this.activityLog.log({
+      action: 'LOGOUT',
+      entity: 'user',
+      entityId: userId,
+      entityLabel: userName,
+      userId,
+      userName,
+      userRole,
+      ipAddress,
+    });
+    return { message: 'Déconnexion réussie.' };
   }
 
   async me(userId: string) {
@@ -237,14 +275,21 @@ export class AuthService {
       },
     });
 
-    // In production, send an email with the reset link.
-    // For development, we log the token to console.
+    this.activityLog.log({
+      action: 'FORGOT_PASSWORD',
+      entity: 'user',
+      entityId: user.id,
+      entityLabel: user.email,
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+    });
+
     const resetUrl = `${this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173'}/reset-password?token=${rawToken}`;
     console.log(`[DEV] Password reset link for ${user.email}: ${resetUrl}`);
 
     return {
       message: 'Si cet email existe, un lien de réinitialisation a été envoyé.',
-      // Remove resetUrl from response in production
       resetUrl,
     };
   }
@@ -277,6 +322,16 @@ export class AuthService {
       },
     });
 
+    this.activityLog.log({
+      action: 'RESET_PASSWORD',
+      entity: 'user',
+      entityId: user.id,
+      entityLabel: user.email,
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+    });
+
     return { message: 'Mot de passe réinitialisé avec succès.' };
   }
 
@@ -292,6 +347,16 @@ export class AuthService {
     await this.prisma.user.update({
       where: { id: userId },
       data: { password: hashed },
+    });
+
+    this.activityLog.log({
+      action: 'CHANGE_PASSWORD',
+      entity: 'user',
+      entityId: user.id,
+      entityLabel: user.email,
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
     });
 
     return { message: 'Mot de passe modifié avec succès.' };

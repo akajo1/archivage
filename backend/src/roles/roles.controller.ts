@@ -18,6 +18,7 @@ import { RolesService } from './roles.service';
 import { SearchRolesDto } from './dto/search-roles.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard, FeaturePermissionGuard)
 @Controller('roles')
@@ -38,19 +39,29 @@ export class RolesController {
 
   @Post()
   @FeaturePermission({ feature: 'roles', operation: 'canCreate' })
-  create(@Body() dto: CreateRoleDto) {
-    return this.rolesService.create(dto);
+  create(
+    @Body() dto: CreateRoleDto,
+    @CurrentUser() user: { id: string; role: string; name: string },
+  ) {
+    return this.rolesService.create(dto, user.id, user.name, user.role);
   }
 
   @Patch(':id')
   @FeaturePermission({ feature: 'roles', operation: 'canEdit' })
-  update(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
-    return this.rolesService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateRoleDto,
+    @CurrentUser() user: { id: string; role: string; name: string },
+  ) {
+    return this.rolesService.update(id, dto, user.id, user.name, user.role);
   }
 
   @Delete(':id')
   @FeaturePermission({ feature: 'roles', operation: 'canDelete' })
-  remove(@Param('id') id: string) {
-    return this.rolesService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: string; name: string },
+  ) {
+    return this.rolesService.remove(id, user.id, user.name, user.role);
   }
 }

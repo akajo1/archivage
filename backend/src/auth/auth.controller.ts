@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -20,8 +21,9 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(@Body() dto: LoginDto, @Req() req: Request) {
+    const ip = req.headers['x-forwarded-for']?.toString() ?? req.socket.remoteAddress;
+    return this.authService.login(dto, ip);
   }
 
   @UseGuards(JwtRefreshGuard)
@@ -34,8 +36,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('logout')
-  logout() {
-    return { message: 'Déconnexion réussie.' };
+  logout(@CurrentUser() user: { id: string; name: string; role: string }, @Req() req: Request) {
+    const ip = req.headers['x-forwarded-for']?.toString() ?? req.socket.remoteAddress;
+    return this.authService.logout(user.id, user.name, user.role, ip);
   }
 
   @UseGuards(JwtAuthGuard)

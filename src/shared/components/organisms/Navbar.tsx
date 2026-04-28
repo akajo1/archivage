@@ -11,6 +11,7 @@ import {
   RiWifiOffLine,
   RiDashboardLine,
   RiLockPasswordLine,
+  RiHistoryLine,
 } from 'react-icons/ri';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { authService } from '../../../features/auth/services/authService';
@@ -36,6 +37,7 @@ const navItems: NavItem[] = [
   { to: '/documents', label: 'Documents', Icon: RiFileList2Line, feature: 'documents', activeColor: 'text-[#5ecbaf]' },
   { to: '/users', label: 'Utilisateurs', Icon: RiTeamLine, feature: 'users', activeColor: 'text-[#7aaac4]' },
   { to: '/roles', label: 'Roles', Icon: RiShieldKeyholeLine, feature: 'roles', activeColor: 'text-[#a8c8de]' },
+  { to: '/logs', label: "Journal d'activité", Icon: RiHistoryLine, feature: 'logs', activeColor: 'text-[#9dc7ff]' },
 ];
 
 const roleColors: Record<string, { bg: string; text: string; dot: string }> = {

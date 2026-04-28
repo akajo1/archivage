@@ -6,6 +6,7 @@ export const ROLE_FEATURE_KEYS = [
   'documents',
   'users',
   'roles',
+  'logs',
   'badges',
   'confidentiality',
 ] as const;

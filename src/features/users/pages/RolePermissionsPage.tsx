@@ -29,6 +29,7 @@ const FEATURE_LABELS: Record<RoleFeatureKey, string> = {
   documents: 'Documents',
   users: 'Utilisateurs',
   roles: 'Roles',
+  logs: 'Journaux & exports',
   badges: 'Badges',
   confidentiality: 'Confidentialite',
 };
@@ -160,6 +161,8 @@ export const RolePermissionsPage = () => {
   const [error, setError] = useState('');
   const [savingRoleId, setSavingRoleId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreatingRole, setIsCreatingRole] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [roleDraft, setRoleDraft] = useState<RoleDraft | null>(null);
   const [newRole, setNewRole] = useState({
@@ -220,19 +223,28 @@ export const RolePermissionsPage = () => {
     setRoleDraft(null);
   }, [isSavingModalRole]);
 
+  const closeCreateModal = useCallback(() => {
+    if (isCreatingRole) return;
+    setIsCreateModalOpen(false);
+  }, [isCreatingRole]);
+
   useEffect(() => {
-    if (!isModalOpen) return;
+    if (!isModalOpen && !isCreateModalOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
+        if (isCreateModalOpen) {
+          closeCreateModal();
+          return;
+        }
         closeRoleModal();
       }
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isModalOpen, closeRoleModal]);
+  }, [isModalOpen, isCreateModalOpen, closeRoleModal, closeCreateModal]);
 
   const toggleNewRoleBadge = (badgeId: string) => {
     setNewRole((prev) => ({
@@ -286,6 +298,7 @@ export const RolePermissionsPage = () => {
 
     try {
       setError('');
+      setIsCreatingRole(true);
       const created = await rolesService.create({
         key: newRole.key.trim(),
         name: newRole.name.trim(),
@@ -305,6 +318,7 @@ export const RolePermissionsPage = () => {
         confidentialityIds: [],
         featurePermissions: defaultFeaturePermissions(),
       });
+      setIsCreateModalOpen(false);
 
       await Swal.fire({
         icon: 'success',
@@ -315,6 +329,8 @@ export const RolePermissionsPage = () => {
       });
     } catch {
       setError('Creation du role impossible.');
+    } finally {
+      setIsCreatingRole(false);
     }
   };
 
@@ -505,6 +521,11 @@ export const RolePermissionsPage = () => {
           <Button type="button" variant="secondary" onClick={() => void searchRoles()}>
             <RiSearchLine className="h-4 w-4" /> Rechercher
           </Button>
+          {canCreateRoles && (
+            <Button type="button" onClick={() => setIsCreateModalOpen(true)}>
+              <RiAddLine className="h-4 w-4" /> Ajouter un role
+            </Button>
+          )}
         </div>
       </div>
 
@@ -514,106 +535,146 @@ export const RolePermissionsPage = () => {
          </div>
        )}
 
-       {canCreateRoles && (
-         <div className="arch-card rounded-3xl p-6">
-           <div className="mb-5 flex items-center justify-between gap-3">
-             <h2 className="text-base font-semibold text-[#1B3C53]">Creer un role</h2>
-             <span className="rounded-full bg-[#dbeaf3] px-3 py-1 text-xs font-medium text-[#234C6A]">
-               {roles.length} role(s)
-             </span>
-           </div>
+      {isCreateModalOpen && canCreateRoles && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeCreateModal();
+          }}
+          role="presentation"
+        >
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#dde8f0] bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-[#1B3C53]">Ajouter un role</h2>
+                <p className="mt-1 text-sm text-[#456882]">
+                  Renseignez les informations, puis configurez les permissions.
+                </p>
+              </div>
+              <IconButton
+                icon={<RiCloseLine className="h-4 w-4" />}
+                label="Fermer"
+                variant="default"
+                size="md"
+                onClick={closeCreateModal}
+                disabled={isCreatingRole}
+              />
+            </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Input
-            placeholder="Nom du role"
-            value={newRole.name}
-            onChange={(event) => setNewRole((prev) => ({ ...prev, name: event.target.value }))}
-          />
-          <Input
-            placeholder="Cle (ex: auditeur)"
-            value={newRole.key}
-            onChange={(event) => setNewRole((prev) => ({ ...prev, key: event.target.value }))}
-          />
-          <Input
-            placeholder="Description (optionnel)"
-            value={newRole.description}
-            onChange={(event) =>
-              setNewRole((prev) => ({ ...prev, description: event.target.value }))
-            }
-          />
-        </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Input
+                placeholder="Nom du role"
+                value={newRole.name}
+                disabled={isCreatingRole}
+                onChange={(event) =>
+                  setNewRole((prev) => ({ ...prev, name: event.target.value }))
+                }
+              />
+              <Input
+                placeholder="Cle (ex: auditeur)"
+                value={newRole.key}
+                disabled={isCreatingRole}
+                onChange={(event) =>
+                  setNewRole((prev) => ({ ...prev, key: event.target.value }))
+                }
+              />
+              <Input
+                placeholder="Description (optionnel)"
+                value={newRole.description}
+                disabled={isCreatingRole}
+                onChange={(event) =>
+                  setNewRole((prev) => ({ ...prev, description: event.target.value }))
+                }
+              />
+            </div>
 
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
-              Badges autorises
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {allBadges.map((badge) => {
-                const checked = newRole.badgeIds.includes(badge.id);
-                return (
-                  <button
-                    key={badge.id}
-                    type="button"
-                    onClick={() => toggleNewRoleBadge(badge.id)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                      checked
-                        ? 'border-[#a8c8de] bg-[#dbeaf3] text-[#234C6A]'
-                        : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
-                    }`}
-                  >
-                    {checked ? '✓ ' : ''}
-                    {badge.name}
-                  </button>
-                );
-              })}
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
+                  Badges autorises
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {allBadges.map((badge) => {
+                    const checked = newRole.badgeIds.includes(badge.id);
+                    return (
+                      <button
+                        key={badge.id}
+                        type="button"
+                        onClick={() => toggleNewRoleBadge(badge.id)}
+                        disabled={isCreatingRole}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
+                          checked
+                            ? 'border-[#a8c8de] bg-[#dbeaf3] text-[#234C6A]'
+                            : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
+                        }`}
+                      >
+                        {checked ? '✓ ' : ''}
+                        {badge.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
+                  Confidentialites autorisees
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {allConfidentialities.map((item) => {
+                    const checked = newRole.confidentialityIds.includes(item.id);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => toggleNewRoleConfidentiality(item.id)}
+                        disabled={isCreatingRole}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
+                          checked
+                            ? 'border-[#9fd8c8] bg-[#d4f0e8] text-[#237a63]'
+                            : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
+                        }`}
+                      >
+                        {checked ? '✓ ' : ''}
+                        {item.level}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
+                Permissions par fonctionnalite
+              </p>
+              <FeaturePermissionsMatrix
+                value={newRole.featurePermissions}
+                onToggle={toggleNewRoleFeatureOperation}
+                disabled={isCreatingRole}
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={closeCreateModal}
+                disabled={isCreatingRole}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                onClick={() => void createRole()}
+                isLoading={isCreatingRole}
+              >
+                <RiAddLine className="h-4 w-4" /> Creer le role
+              </Button>
             </div>
           </div>
-
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
-              Confidentialites autorisees
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {allConfidentialities.map((item) => {
-                const checked = newRole.confidentialityIds.includes(item.id);
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => toggleNewRoleConfidentiality(item.id)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                      checked
-                        ? 'border-[#9fd8c8] bg-[#d4f0e8] text-[#237a63]'
-                        : 'border-[#c4d4df] bg-[#edf4f8] text-[#456882] hover:border-[#7aaac4] hover:text-[#1B3C53]'
-                    }`}
-                  >
-                    {checked ? '✓ ' : ''}
-                    {item.level}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
-
-        <div className="mt-5">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#456882]">
-            Permissions par fonctionnalite
-          </p>
-          <FeaturePermissionsMatrix
-            value={newRole.featurePermissions}
-            onToggle={toggleNewRoleFeatureOperation}
-          />
-        </div>
-
-         <div className="mt-5">
-           <Button onClick={() => void createRole()}>
-             <RiAddLine className="h-4 w-4" /> Creer le role
-           </Button>
-         </div>
-       </div>
-       )}
+      )}
 
       {loading ? (
         <div className="arch-card rounded-3xl py-16">

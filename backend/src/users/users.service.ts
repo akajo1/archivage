@@ -9,10 +9,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import type { Role } from '../common/decorators/roles.decorator';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLog: ActivityLogService,
+  ) {}
 
   private async assertRoleExists(roleKey: string) {
     const role = await this.prisma.appRole.findUnique({
@@ -57,7 +61,7 @@ export class UsersService {
     return user;
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto, actorId?: string, actorName?: string, actorRole?: string) {
     const exists = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -70,7 +74,7 @@ export class UsersService {
 
     const password = await bcrypt.hash(dto.password, 10);
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         name: dto.name,
         email: dto.email,
@@ -86,6 +90,18 @@ export class UsersService {
         updatedAt: true,
       },
     });
+
+    this.activityLog.log({
+      action: 'USER_CREATED',
+      entity: 'user',
+      entityId: user.id,
+      entityLabel: user.email,
+      userId: actorId,
+      userName: actorName,
+      userRole: actorRole,
+    });
+
+    return user;
   }
 
   async update(
@@ -93,6 +109,7 @@ export class UsersService {
     dto: UpdateUserDto,
     currentUserId: string,
     currentUserRole: Role,
+    currentUserName?: string,
   ) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
@@ -132,7 +149,7 @@ export class UsersService {
     if (dto.password) data.password = await bcrypt.hash(dto.password, 10);
     if (dto.role) data.role = dto.role;
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data,
       select: {
@@ -144,9 +161,21 @@ export class UsersService {
         updatedAt: true,
       },
     });
+
+    this.activityLog.log({
+      action: 'USER_UPDATED',
+      entity: 'user',
+      entityId: updated.id,
+      entityLabel: updated.email,
+      userId: currentUserId,
+      userName: currentUserName,
+      userRole: currentUserRole,
+    });
+
+    return updated;
   }
 
-  async remove(id: string, currentUserId: string) {
+  async remove(id: string, currentUserId: string, currentUserName?: string, currentUserRole?: string) {
     if (id === currentUserId) {
       throw new ForbiddenException(
         'Vous ne pouvez pas supprimer votre propre compte.',
@@ -159,6 +188,17 @@ export class UsersService {
     }
 
     await this.prisma.user.delete({ where: { id } });
+
+    this.activityLog.log({
+      action: 'USER_DELETED',
+      entity: 'user',
+      entityId: id,
+      entityLabel: user.email,
+      userId: currentUserId,
+      userName: currentUserName,
+      userRole: currentUserRole,
+    });
+
     return { message: 'Utilisateur supprime.' };
   }
 }

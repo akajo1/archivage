@@ -11,6 +11,7 @@ import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { RolesModule } from './roles/roles.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RolesModule } from './roles/roles.module';
     UsersModule,
     RolesModule,
     RolePermissionsModule,
+    ActivityLogModule,
     HealthModule,
   ],
 })

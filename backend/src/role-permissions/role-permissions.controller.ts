@@ -7,6 +7,7 @@ import {
 } from '../common/guards/feature-permission.guard';
 import { type Role } from '../common/decorators/roles.decorator';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard, FeaturePermissionGuard)
 @Controller('role-permissions')
@@ -23,7 +24,11 @@ export class RolePermissionsController {
 
   @Put(':role')
   @FeaturePermission({ feature: 'roles', operation: 'canEdit' })
-  update(@Param('role') role: Role, @Body() dto: UpdateRolePermissionsDto) {
-    return this.rolePermissionsService.update(role, dto);
+  update(
+    @Param('role') role: Role,
+    @Body() dto: UpdateRolePermissionsDto,
+    @CurrentUser() user: { id: string; role: string; name: string },
+  ) {
+    return this.rolePermissionsService.update(role, dto, user.id, user.name, user.role);
   }
 }

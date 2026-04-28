@@ -100,6 +100,14 @@ async function main() {
       canSearch: true,
     },
     {
+      feature: 'logs',
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: true,
+    },
+    {
       feature: 'badges',
       canRead: true,
       canCreate: true,
@@ -151,6 +159,14 @@ async function main() {
       canSearch: true,
     },
     {
+      feature: 'logs',
+      canRead: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: false,
+    },
+    {
       feature: 'badges',
       canRead: true,
       canCreate: false,
@@ -195,6 +211,14 @@ async function main() {
     },
     {
       feature: 'roles',
+      canRead: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canSearch: false,
+    },
+    {
+      feature: 'logs',
       canRead: false,
       canCreate: false,
       canEdit: false,

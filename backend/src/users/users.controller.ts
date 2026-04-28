@@ -38,8 +38,11 @@ export class UsersController {
 
   @Post()
   @FeaturePermission({ feature: 'users', operation: 'canCreate' })
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  create(
+    @Body() dto: CreateUserDto,
+    @CurrentUser() user: { id: string; role: Role; name: string },
+  ) {
+    return this.usersService.create(dto, user.id, user.name, user.role);
   }
 
   @Patch(':id')
@@ -47,14 +50,17 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
-    @CurrentUser() user: { id: string; role: Role },
+    @CurrentUser() user: { id: string; role: Role; name: string },
   ) {
-    return this.usersService.update(id, dto, user.id, user.role);
+    return this.usersService.update(id, dto, user.id, user.role, user.name);
   }
 
   @Delete(':id')
   @FeaturePermission({ feature: 'users', operation: 'canDelete' })
-  remove(@Param('id') id: string, @CurrentUser() user: { id: string }) {
-    return this.usersService.remove(id, user.id);
+  remove(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: Role; name: string },
+  ) {
+    return this.usersService.remove(id, user.id, user.name, user.role);
   }
 }

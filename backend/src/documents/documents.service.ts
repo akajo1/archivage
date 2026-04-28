@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import type { Role } from '../common/decorators/roles.decorator';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 const ROLE_ALLOWED_LEVELS: Record<Role, string[]> = {
   admin: ['public', 'interne', 'confidentiel', 'secret'],
@@ -30,7 +31,10 @@ const include = {
 
 @Injectable()
 export class DocumentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activityLog: ActivityLogService,
+  ) {}
 
   private async getAccessRules(role: Role): Promise<AccessRules> {
     const permission = await this.prisma.rolePermission.findUnique({
@@ -109,7 +113,7 @@ export class DocumentsService {
     });
   }
 
-  async findOne(id: string, role: Role) {
+  async findOne(id: string, role: Role, userId?: string, userName?: string) {
     const doc = await this.prisma.document.findUnique({
       where: { id },
       include,
@@ -136,6 +140,18 @@ export class DocumentsService {
       throw new ForbiddenException('Accès refusé à ce document.');
     }
 
+    if (userId) {
+      this.activityLog.log({
+        action: 'DOCUMENT_VIEWED',
+        entity: 'document',
+        entityId: doc.id,
+        entityLabel: doc.title,
+        userId,
+        userName,
+        userRole: role,
+      });
+    }
+
     return doc;
   }
 
@@ -144,6 +160,7 @@ export class DocumentsService {
     role: Role,
     dto: CreateDocumentDto,
     fileUrl?: string,
+    userName?: string,
   ) {
     const hasFile = Boolean(fileUrl);
     const hasContent = Boolean(dto.content?.trim());
@@ -173,7 +190,7 @@ export class DocumentsService {
       );
     }
 
-    return this.prisma.document.create({
+    const doc = await this.prisma.document.create({
       data: {
         title: dto.title,
         reference: dto.reference ?? null,
@@ -186,6 +203,18 @@ export class DocumentsService {
       },
       include,
     });
+
+    this.activityLog.log({
+      action: 'DOCUMENT_CREATED',
+      entity: 'document',
+      entityId: doc.id,
+      entityLabel: doc.title,
+      userId,
+      userName,
+      userRole: role,
+    });
+
+    return doc;
   }
 
   async update(
@@ -194,6 +223,7 @@ export class DocumentsService {
     role: Role,
     dto: UpdateDocumentDto,
     fileUrl?: string,
+    userName?: string,
   ) {
     const accessRules = await this.getAccessRules(role);
     const doc = await this.prisma.document.findUnique({ where: { id } });
@@ -234,7 +264,7 @@ export class DocumentsService {
       );
     }
 
-    return this.prisma.document.update({
+    const updated = await this.prisma.document.update({
       where: { id },
       data: {
         ...(dto.title ? { title: dto.title } : {}),
@@ -251,17 +281,29 @@ export class DocumentsService {
       },
       include,
     });
+
+    this.activityLog.log({
+      action: 'DOCUMENT_UPDATED',
+      entity: 'document',
+      entityId: updated.id,
+      entityLabel: updated.title,
+      userId,
+      userName,
+      userRole: role,
+    });
+
+    return updated;
   }
 
   async addAttachments(
     documentId: string,
     role: Role,
     files: Express.Multer.File[],
+    userId?: string,
+    userName?: string,
   ) {
     const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
     if (!doc) throw new NotFoundException('Document introuvable.');
-
-    const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
 
     await this.prisma.documentAttachment.createMany({
       data: files.map((f) => ({
@@ -273,25 +315,69 @@ export class DocumentsService {
       })),
     });
 
+    if (userId && files.length > 0) {
+      this.activityLog.log({
+        action: 'ATTACHMENT_ADDED',
+        entity: 'document',
+        entityId: documentId,
+        entityLabel: doc.title,
+        userId,
+        userName,
+        userRole: role,
+      });
+    }
+
     return this.prisma.document.findUnique({ where: { id: documentId }, include });
   }
 
-  async removeAttachment(documentId: string, attachmentId: string, _role: Role) {
+  async removeAttachment(
+    documentId: string,
+    attachmentId: string,
+    role: Role,
+    userId?: string,
+    userName?: string,
+  ) {
     const attachment = await this.prisma.documentAttachment.findFirst({
       where: { id: attachmentId, documentId },
+      include: { document: { select: { title: true } } },
     });
     if (!attachment) throw new NotFoundException('Pièce jointe introuvable.');
+
     await this.prisma.documentAttachment.delete({ where: { id: attachmentId } });
+
+    if (userId) {
+      this.activityLog.log({
+        action: 'ATTACHMENT_DELETED',
+        entity: 'document',
+        entityId: documentId,
+        entityLabel: attachment.document.title,
+        userId,
+        userName,
+        userRole: role,
+      });
+    }
+
     return { message: 'Pièce jointe supprimée.' };
   }
 
-  async remove(id: string, userId: string, role: Role) {
+  async remove(id: string, userId: string, role: Role, userName?: string) {
     const doc = await this.prisma.document.findUnique({ where: { id } });
     if (!doc) throw new NotFoundException('Document introuvable.');
     if (role !== 'admin' && doc.createdById !== userId) {
       throw new ForbiddenException('Suppression non autorisée.');
     }
     await this.prisma.document.delete({ where: { id } });
+
+    this.activityLog.log({
+      action: 'DOCUMENT_DELETED',
+      entity: 'document',
+      entityId: id,
+      entityLabel: doc.title,
+      userId,
+      userName,
+      userRole: role,
+    });
+
     return { message: 'Document supprimé.' };
   }
 }

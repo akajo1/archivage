@@ -9,10 +9,14 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { SearchRolesDto } from './dto/search-roles.dto';
 import type { FeaturePermissionDto } from './dto/feature-permission.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
 export class RolesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLog: ActivityLogService,
+  ) {}
 
   private normalizeFeaturePermissions(
     featurePermissions: FeaturePermissionDto[] | undefined,
@@ -104,7 +108,7 @@ export class RolesService {
       });
   }
 
-  async create(dto: CreateRoleDto) {
+  async create(dto: CreateRoleDto, actorId?: string, actorName?: string, actorRole?: string) {
     const exists = await this.prisma.appRole.findUnique({
       where: { key: dto.key },
     });
@@ -151,6 +155,16 @@ export class RolesService {
       },
     });
 
+    this.activityLog.log({
+      action: 'ROLE_CREATED',
+      entity: 'role',
+      entityId: role.id,
+      entityLabel: role.name,
+      userId: actorId,
+      userName: actorName,
+      userRole: actorRole,
+    });
+
     return this.findOne(role.id);
   }
 
@@ -189,7 +203,7 @@ export class RolesService {
     };
   }
 
-  async update(id: string, dto: UpdateRoleDto) {
+  async update(id: string, dto: UpdateRoleDto, actorId?: string, actorName?: string, actorRole?: string) {
     const role = await this.prisma.appRole.findUnique({ where: { id } });
     if (!role) {
       throw new NotFoundException('Role introuvable.');
@@ -290,10 +304,20 @@ export class RolesService {
       });
     }
 
+    this.activityLog.log({
+      action: 'ROLE_UPDATED',
+      entity: 'role',
+      entityId: updatedRole.id,
+      entityLabel: updatedRole.name,
+      userId: actorId,
+      userName: actorName,
+      userRole: actorRole,
+    });
+
     return this.findOne(updatedRole.id);
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId?: string, actorName?: string, actorRole?: string) {
     const role = await this.prisma.appRole.findUnique({ where: { id } });
     if (!role) {
       throw new NotFoundException('Role introuvable.');
@@ -312,6 +336,16 @@ export class RolesService {
 
     await this.prisma.rolePermission.deleteMany({ where: { role: role.key } });
     await this.prisma.appRole.delete({ where: { id } });
+
+    this.activityLog.log({
+      action: 'ROLE_DELETED',
+      entity: 'role',
+      entityId: id,
+      entityLabel: role.name,
+      userId: actorId,
+      userName: actorName,
+      userRole: actorRole,
+    });
 
     return { message: 'Role supprime.' };
   }

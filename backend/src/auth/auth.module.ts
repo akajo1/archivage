@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
         signOptions: { expiresIn: (config.get<string>('JWT_EXPIRES_IN') ?? '15m') as unknown as number },
       }),
     }),
+    ActivityLogModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy],

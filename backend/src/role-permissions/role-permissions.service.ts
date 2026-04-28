@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import type { Role } from '../common/decorators/roles.decorator';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 const toDocumentLegacyAccess = (
   featurePermissions: UpdateRolePermissionsDto['featurePermissions'],
@@ -14,7 +15,6 @@ const toDocumentLegacyAccess = (
     (item) => item.feature === 'documents',
   );
   if (!documents) return null;
-
   return {
     canRead: documents.canRead,
     canCreate: documents.canCreate,
@@ -24,7 +24,10 @@ const toDocumentLegacyAccess = (
 
 @Injectable()
 export class RolePermissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLog: ActivityLogService,
+  ) {}
 
   async findAll() {
     const [roles, permissions, badges, confidentialities] = await Promise.all([
@@ -68,7 +71,13 @@ export class RolePermissionsService {
     });
   }
 
-  async update(role: Role, dto: UpdateRolePermissionsDto) {
+  async update(
+    role: Role,
+    dto: UpdateRolePermissionsDto,
+    actorId?: string,
+    actorName?: string,
+    actorRole?: string,
+  ) {
     const roleExists = await this.prisma.appRole.findUnique({
       where: { key: role },
     });
@@ -151,6 +160,16 @@ export class RolePermissionsService {
           orderBy: { feature: 'asc' },
         },
       },
+    });
+
+    this.activityLog.log({
+      action: 'ROLE_PERMISSIONS_UPDATED',
+      entity: 'role',
+      entityId: updated.id,
+      entityLabel: updated.role,
+      userId: actorId,
+      userName: actorName,
+      userRole: actorRole,
     });
 
     return {

@@ -10,6 +10,7 @@ import { DocumentDetailPage } from '../features/documents/pages/DocumentDetailPa
 import { UserManagementPage } from '../features/users/pages/UserManagementPage';
 import { RolePermissionsPage } from '../features/users/pages/RolePermissionsPage';
 import { ChangePasswordPage } from '../features/users/pages/ChangePasswordPage';
+import { ActivityLogPage } from '../features/logs/pages/ActivityLogPage';
 import { Layout } from './Layout';
 
 export const router = createBrowserRouter([
@@ -88,6 +89,14 @@ export const router = createBrowserRouter([
       {
         path: 'change-password',
         element: <ChangePasswordPage />,
+      },
+      {
+        path: 'logs',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'logs', operation: 'canRead' }}>
+            <ActivityLogPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

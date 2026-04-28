@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Swal from 'sweetalert2';
-import { RiUserAddLine, RiDeleteBinLine, RiTeamLine } from 'react-icons/ri';
+import { RiUserAddLine, RiDeleteBinLine, RiTeamLine, RiCloseLine } from 'react-icons/ri';
 import type { Role } from '../../auth/types/auth.types';
 import type { ManagedUser, CreateManagedUserPayload } from '../types/userManagement.types';
 import { userManagementService } from '../services/userManagementService';
@@ -16,6 +16,7 @@ export const UserManagementPage = () => {
   const [roles, setRoles] = useState<Role[]>(['user']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { canCreateFeature, canEditFeature, canDeleteFeature } = usePermissions();
   const { refreshPermissions } = useRefreshPermissions();
 
@@ -63,10 +64,30 @@ export const UserManagementPage = () => {
       const created = await userManagementService.create(payload);
       setUsers((prev) => [created, ...prev]);
       reset({ role: 'user', name: '', email: '', password: '' });
+      setIsCreateModalOpen(false);
     } catch {
       setError('Creation impossible. Verifiez email/role.');
     }
   };
+
+  const closeCreateModal = useCallback(() => {
+    if (isSubmitting) return;
+    setIsCreateModalOpen(false);
+  }, [isSubmitting]);
+
+  useEffect(() => {
+    if (!isCreateModalOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeCreateModal();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isCreateModalOpen, closeCreateModal]);
 
   const onRoleChange = async (id: string, role: Role) => {
     try {
@@ -111,35 +132,88 @@ export const UserManagementPage = () => {
         <p className="mt-1 text-sm text-[#a8c8de]">Administrez les comptes et les niveaux d'acces.</p>
       </div>
 
+      <div className="arch-panel rounded-3xl p-5 shadow-sm backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-[#456882]">{users.length} utilisateur(s)</p>
+          {canCreate && (
+            <Button type="button" onClick={() => setIsCreateModalOpen(true)}>
+              <RiUserAddLine className="h-4 w-4" /> Ajouter un utilisateur
+            </Button>
+          )}
+        </div>
+      </div>
+
        {error && (
          <div className="rounded-2xl border border-[#f4a8bf] bg-[#fce8ef] px-4 py-3 text-sm text-[#BD114A]">
            {error}
          </div>
        )}
 
-       {canCreate && (
-         <div className="arch-card rounded-3xl p-6">
-           <h2 className="mb-5 text-base font-semibold text-[#1B3C53]">Creer un utilisateur</h2>
-           <form onSubmit={handleSubmit(onCreate)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-             <Input placeholder="Nom complet" {...register('name', { required: true })} />
-             <Input placeholder="Email" type="email" {...register('email', { required: true })} />
-             <Input placeholder="Mot de passe" type="password" {...register('password', { required: true, minLength: 6 })} />
-             <select
-               {...register('role', { required: true })}
-               className="arch-select rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
-             >
-               {roles.map((role) => (
-                 <option key={role} value={role}>{role}</option>
-               ))}
-             </select>
-             <div className="sm:col-span-2 lg:col-span-4">
-               <Button type="submit" isLoading={isSubmitting}>
-                 <RiUserAddLine className="h-4 w-4" /> Ajouter l'utilisateur
-               </Button>
-             </div>
-           </form>
-         </div>
-       )}
+      {isCreateModalOpen && canCreate && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeCreateModal();
+          }}
+          role="presentation"
+        >
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#dde8f0] bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-[#1B3C53]">Ajouter un utilisateur</h2>
+                <p className="mt-1 text-sm text-[#456882]">Creez un compte et assignez un role.</p>
+              </div>
+              <IconButton
+                icon={<RiCloseLine className="h-4 w-4" />}
+                label="Fermer"
+                variant="default"
+                size="md"
+                onClick={closeCreateModal}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <form onSubmit={handleSubmit(onCreate)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Input
+                placeholder="Nom complet"
+                disabled={isSubmitting}
+                {...register('name', { required: true })}
+              />
+              <Input
+                placeholder="Email"
+                type="email"
+                disabled={isSubmitting}
+                {...register('email', { required: true })}
+              />
+              <Input
+                placeholder="Mot de passe"
+                type="password"
+                disabled={isSubmitting}
+                {...register('password', { required: true, minLength: 6 })}
+              />
+              <select
+                {...register('role', { required: true })}
+                disabled={isSubmitting}
+                className="arch-select rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
+              >
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+              <div className="sm:col-span-2 lg:col-span-4 flex justify-end gap-2 mt-2">
+                <Button type="button" variant="secondary" onClick={closeCreateModal} disabled={isSubmitting}>
+                  Annuler
+                </Button>
+                <Button type="submit" isLoading={isSubmitting}>
+                  <RiUserAddLine className="h-4 w-4" /> Ajouter l'utilisateur
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="arch-card overflow-hidden rounded-3xl">
         <div className="border-b border-[#dde8f0] px-6 py-4">

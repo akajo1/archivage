@@ -111,6 +111,24 @@ model RolePermission {
   @@map("role_permissions")
 }
 
+model ActivityLog {
+  id          String   @id @default(uuid())
+  action      String
+  entity      String?
+  entityId    String?  @map("entity_id")
+  entityLabel String?  @map("entity_label")
+  userId      String?  @map("user_id")
+  userName    String?  @map("user_name")
+  userRole    String?  @map("user_role")
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
 model RoleFeaturePermission {
   id               String         @id @default(uuid())
   feature          String
