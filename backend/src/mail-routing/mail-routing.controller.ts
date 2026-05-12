@@ -19,6 +19,7 @@ import {
   RejectRoutingDto,
   AddParticipantDto,
   AddCommentDto,
+  CompleteRoutingDto,
 } from './dto';
 
 @Controller('mail-routings')
@@ -68,6 +69,15 @@ export class MailRoutingController {
     @CurrentUser() user: User,
   ) {
     return this.mailRoutingService.returnToSender(routingId, dto, user.id);
+  }
+
+  @Post(':id/complete')
+  async complete(
+    @Param('id') routingId: string,
+    @Body() dto: CompleteRoutingDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.mailRoutingService.complete(routingId, user.id, dto);
   }
 
   @Post(':id/comments')

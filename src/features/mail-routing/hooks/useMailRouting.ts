@@ -188,3 +188,26 @@ export const useRejectRouting = () => {
   return { reject, loading, error };
 };
 
+/**
+ * Hook pour compléter un routing (et optionnellement archiver le document)
+ */
+export const useCompleteRouting = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const complete = useCallback(async (routingId: string, note?: string, archive?: boolean): Promise<MailRouting | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      return await mailRoutingClient.completeRouting(routingId, { note, archive });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete routing');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { complete, loading, error };
+};
+

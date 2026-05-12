@@ -21,6 +21,7 @@ import {
   RiFileTextLine,
   RiEyeLine,
   RiCloseLine,
+  RiSendPlane2Line,
 } from 'react-icons/ri';
 import { documentService } from '../services/documentService';
 import type { Document } from '../types/document.types';
@@ -30,6 +31,7 @@ import { Button } from '../../../shared/components/atoms/Button';
 import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { Spinner } from '../../../shared/components/atoms/Spinner';
 import { usePermissions } from '../../auth/hooks/usePermissions';
+import { mailRoutingClient } from '../../mail-routing/services/mailRoutingClient';
 
 interface DocumentDetailPageProps {
   embedded?: boolean;
@@ -54,6 +56,10 @@ export const DocumentDetailPage = ({
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState<string>('');
+  const [showRoutingModal, setShowRoutingModal] = useState(false);
+  const [routingDueDate, setRoutingDueDate] = useState('');
+  const [routingNotes, setRoutingNotes] = useState('');
+  const [routingLoading, setRoutingLoading] = useState(false);
 
   const openPreview = (url: string, name: string) => {
     setPreviewUrl(url);
@@ -154,6 +160,37 @@ export const DocumentDetailPage = ({
 
   const canEdit = canEditFeature('documents');
   const canDelete = canDeleteFeature('documents');
+  const canRoute = canEditFeature('mail_routing') || canEditFeature('documents');
+  const isArchived = document.status === 'archived';
+
+  const handleInitiateRouting = async () => {
+    if (!resolvedId) return;
+    setRoutingLoading(true);
+    try {
+      const routing = await mailRoutingClient.initializeRouting({
+        documentId: resolvedId,
+        dueDate: routingDueDate || undefined,
+        notes: routingNotes || undefined,
+      });
+      setShowRoutingModal(false);
+      void Swal.fire({
+        title: 'Circuit initié !',
+        text: 'Le document est maintenant en circuit de traitement.',
+        icon: 'success',
+        confirmButtonText: 'Voir le circuit',
+        confirmButtonColor: '#234C6A',
+        showCancelButton: true,
+        cancelButtonText: 'Rester ici',
+      }).then((result) => {
+        if (result.isConfirmed) navigate(`/mail-routing/${routing.id}`);
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erreur lors de l\'initiation du circuit.';
+      void Swal.fire({ title: 'Erreur', text: msg, icon: 'error' });
+    } finally {
+      setRoutingLoading(false);
+    }
+  };
 
   return (
     <div className={embedded ? 'mx-auto max-w-4xl px-2 py-2' : 'mx-auto max-w-4xl px-4 py-8'}>
@@ -358,13 +395,18 @@ export const DocumentDetailPage = ({
         </div>
 
         {/* Actions footer */}
-        {(canEdit || canDelete) && (
+        {(canEdit || canDelete || canRoute) && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#dde8f0] bg-[#f4f7fa] px-8 py-4">
             <span className="text-xs text-[#456882]">
               Actions autorisees selon vos permissions
             </span>
-            <div className="flex gap-2">
-              {canEdit && (
+            <div className="flex flex-wrap gap-2">
+              {canRoute && !isArchived && (
+                <Button size="sm" variant="secondary" onClick={() => setShowRoutingModal(true)}>
+                  <RiSendPlane2Line className="h-3.5 w-3.5" /> Initier un circuit
+                </Button>
+              )}
+              {canEdit && !isArchived && (
                 <IconButton
                   icon={<RiPencilLine className="h-4 w-4" />}
                   label="Modifier"
@@ -386,6 +428,60 @@ export const DocumentDetailPage = ({
           </div>
         )}
       </div>
+
+      {/* Routing Modal */}
+      {showRoutingModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowRoutingModal(false); }}
+        >
+          <div className="w-full max-w-md rounded-2xl border border-[#dde8f0] bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#dde8f0] px-5 py-4">
+              <p className="font-semibold text-[#1B3C53]">📤 Initier un circuit de traitement</p>
+              <button type="button" onClick={() => setShowRoutingModal(false)} className="flex h-7 w-7 items-center justify-center rounded-lg text-[#456882] hover:bg-[#edf4f8]">
+                <RiCloseLine className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-4 p-5">
+              <p className="text-sm text-[#456882]">
+                Le document <strong className="text-[#1B3C53]">«{document.title}»</strong> sera mis en circuit de traitement. Vous pourrez ensuite le transmettre à d'autres utilisateurs.
+              </p>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#1B3C53]">Date d'échéance (optionnel)</label>
+                <input
+                  type="date"
+                  value={routingDueDate}
+                  onChange={(e) => setRoutingDueDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full rounded-xl border border-[#c4d4df] bg-[#f4f7fa] px-3 py-2 text-sm text-[#1B3C53] focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#1B3C53]">Notes / instructions (optionnel)</label>
+                <textarea
+                  value={routingNotes}
+                  onChange={(e) => setRoutingNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Ajouter des instructions pour les destinataires..."
+                  className="w-full resize-none rounded-xl border border-[#c4d4df] bg-[#f4f7fa] px-3 py-2 text-sm text-[#1B3C53] placeholder:text-[#7aaac4] focus:outline-none focus:ring-2 focus:ring-[#234C6A]/30"
+                />
+              </div>
+              <div className="rounded-xl bg-[#edf4f8] p-3 text-xs text-[#456882]">
+                💡 Après initiation, vous pourrez transmettre le document à d'autres utilisateurs, en copie (CC) ou en lecture seule, et le clôturer en l'archivant.
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => void handleInitiateRouting()}
+                  isLoading={routingLoading}
+                >
+                  <RiSendPlane2Line className="h-4 w-4" /> Initier le circuit
+                </Button>
+                <Button variant="secondary" onClick={() => setShowRoutingModal(false)}>Annuler</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* File Preview Modal */}
       {previewUrl && (

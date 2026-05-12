@@ -151,3 +151,8 @@ export interface AddCommentPayload {
   parentCommentId?: string;
 }
 
+export interface CompleteRoutingPayload {
+  note?: string;
+  archive?: boolean;
+}
+

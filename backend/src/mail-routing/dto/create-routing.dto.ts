@@ -55,3 +55,15 @@ export class AddCommentDto {
   parentCommentId?: string;
 }
 
+import { IsBoolean } from 'class-validator';
+
+export class CompleteRoutingDto {
+  @IsOptional()
+  @IsString()
+  note?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  archive?: boolean;
+}
+

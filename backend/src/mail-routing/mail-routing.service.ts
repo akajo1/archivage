@@ -7,6 +7,7 @@ import {
   RejectRoutingDto,
   AddParticipantDto,
   AddCommentDto,
+  CompleteRoutingDto,
 } from './dto';
 import { MailRoutingStatus, MailActionType, ParticipantRole, DocumentStatus } from '@prisma/client';
 import { ActivityLogService } from '../activity-log/activity-log.service';
@@ -35,6 +36,7 @@ export class MailRoutingService {
       data: {
         documentId: dto.documentId,
         initiatedById: currentUserId,
+        currentAssigneeId: currentUserId,
         status: MailRoutingStatus.pending,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
         notes: dto.notes,
@@ -318,6 +320,105 @@ export class MailRoutingService {
   }
 
   /**
+   * Complete routing and optionally archive the document
+   */
+  async complete(routingId: string, currentUserId: string, dto: CompleteRoutingDto) {
+    const routing = await this.prisma.mailRouting.findUnique({
+      where: { id: routingId },
+      include: { participants: true },
+    });
+
+    if (!routing) {
+      throw new NotFoundException('Routing not found');
+    }
+
+    const isInitiator = routing.initiatedById === currentUserId;
+    const isAssignee = routing.currentAssigneeId === currentUserId;
+
+    if (!isInitiator && !isAssignee) {
+      throw new ForbiddenException('Only the initiator or current assignee can complete a routing');
+    }
+
+    if (routing.status === MailRoutingStatus.completed) {
+      throw new BadRequestException('Routing is already completed');
+    }
+
+    const updatedRouting = await this.prisma.mailRouting.update({
+      where: { id: routingId },
+      data: {
+        status: MailRoutingStatus.completed,
+        updatedAt: new Date(),
+      },
+      include: {
+        participants: { include: { user: { select: { id: true, name: true, email: true } } } },
+        document: true,
+        initiatedBy: { select: { id: true, name: true, email: true } },
+        currentAssignee: { select: { id: true, name: true, email: true } },
+        actions: { include: { actor: { select: { id: true, name: true } }, targetUser: { select: { id: true, name: true } } }, orderBy: { createdAt: 'desc' } },
+        comments: { include: { author: { select: { id: true, name: true } }, replies: true }, orderBy: { createdAt: 'desc' } },
+      },
+    });
+
+    // Archive document if requested
+    if (dto.archive) {
+      await this.prisma.document.update({
+        where: { id: routing.documentId },
+        data: { status: DocumentStatus.archived },
+      });
+    }
+
+    // Log complete action
+    await this.prisma.mailRoutingAction.create({
+      data: {
+        routingId,
+        actorId: currentUserId,
+        actionType: MailActionType.mark_complete,
+        previousStatus: routing.status,
+        newStatus: MailRoutingStatus.completed,
+        note: dto.note,
+      },
+    });
+
+    // Log archive action separately
+    if (dto.archive) {
+      await this.prisma.mailRoutingAction.create({
+        data: {
+          routingId,
+          actorId: currentUserId,
+          actionType: MailActionType.archive,
+          note: 'Document archivé après traitement complet',
+        },
+      });
+    }
+
+    // Audit trail
+    await this.prisma.mailAuditTrail.create({
+      data: {
+        routingId,
+        actorId: currentUserId,
+        action: 'ROUTING_COMPLETED',
+        newValues: JSON.stringify({
+          status: MailRoutingStatus.completed,
+          archived: dto.archive ?? false,
+        }),
+      },
+    });
+
+    const actor = await this.prisma.user.findUnique({ where: { id: currentUserId } });
+    await this.activityLog.log({
+      action: dto.archive ? 'MAIL_COMPLETED_AND_ARCHIVED' : 'MAIL_COMPLETED',
+      entity: 'MailRouting',
+      entityId: routingId,
+      entityLabel: `Routing completed`,
+      userId: currentUserId,
+      userName: actor?.name,
+      userRole: actor?.role,
+    });
+
+    return updatedRouting;
+  }
+
+  /**
    * Add comment to routing
    */
   async addComment(routingId: string, dto: AddCommentDto, currentUserId: string) {
@@ -446,14 +547,23 @@ export class MailRoutingService {
   async getUserInbox(currentUserId: string, status?: MailRoutingStatus) {
     const routings = await this.prisma.mailRouting.findMany({
       where: {
-        participants: {
-          some: {
-            userId: currentUserId,
-            role: { in: [ParticipantRole.receiver, ParticipantRole.assignee] },
-            completedAt: null,
+        OR: [
+          {
+            participants: {
+              some: {
+                userId: currentUserId,
+                role: { in: [ParticipantRole.receiver, ParticipantRole.assignee] },
+                completedAt: null,
+              },
+            },
           },
-        },
-        status: status,
+          { currentAssigneeId: currentUserId },
+          { initiatedById: currentUserId },
+        ],
+        // If a specific status is requested, filter by it; otherwise exclude completed
+        ...(status
+          ? { status }
+          : { status: { not: MailRoutingStatus.completed } }),
       },
       include: {
         document: true,
@@ -512,9 +622,19 @@ export class MailRoutingService {
       throw new NotFoundException('Routing not found');
     }
 
-    // Only current assignee can forward/verify/reject
-    if (['forward', 'verify', 'reject', 'return'].includes(action) && routing.currentAssigneeId !== userId) {
-      throw new ForbiddenException(`Only current assignee can ${action}`);
+    // Allow current assignee OR any receiver/assignee participant to act
+    if (['forward', 'verify', 'reject', 'return'].includes(action)) {
+      const isCurrentAssignee = routing.currentAssigneeId === userId;
+      const isActiveParticipant = routing.participants.some(
+        p => p.userId === userId &&
+          (p.role === ParticipantRole.receiver || p.role === ParticipantRole.assignee) &&
+          !p.completedAt,
+      );
+      const isInitiator = routing.initiatedById === userId;
+
+      if (!isCurrentAssignee && !isActiveParticipant && !isInitiator) {
+        throw new ForbiddenException(`Only current assignee or active participants can ${action}`);
+      }
     }
 
     return routing;
