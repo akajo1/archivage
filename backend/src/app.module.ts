@@ -12,6 +12,7 @@ import { UsersModule } from './users/users.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { RolesModule } from './roles/roles.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
+import { MailRoutingModule } from './mail-routing/mail-routing.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ActivityLogModule } from './activity-log/activity-log.module';
     RolesModule,
     RolePermissionsModule,
     ActivityLogModule,
+    MailRoutingModule,
     HealthModule,
   ],
 })

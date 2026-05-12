@@ -6,7 +6,6 @@ datasource db {
   provider = "mysql"
 }
 
-
 enum ConfidentialityLevel {
   public
   interne
@@ -20,21 +19,85 @@ enum BadgeName {
   faible
 }
 
+enum DocumentStatus {
+  draft
+  received
+  in_review
+  validated
+  archived
+  courrier_prepared
+  courrier_sent
+}
+
+enum MailRoutingStatus {
+  pending
+  in_review
+  forwarded
+  intervening
+  awaiting_verification
+  verified
+  rejected
+  returned
+  completed
+}
+
+enum MailActionType {
+  forward
+  add_cc
+  assign
+  comment
+  verify
+  reject
+  return_to_sender
+  mark_complete
+  archive
+}
+
+enum ParticipantRole {
+  receiver
+  assignee
+  reviewer
+  approver
+  cc
+  observer
+}
+
 model User {
-  id                   String     @id @default(uuid())
-  name                 String
-  email                String     @unique
-  password             String
-  role                 String     @default("user")
-  mustChangePassword   Boolean    @default(false) @map("must_change_password")
-  documents            Document[]
-  passwordResetToken   String?    @map("password_reset_token")
-  passwordResetExpiry  DateTime?  @map("password_reset_expiry")
-  passwordResetRequestedAt DateTime? @map("password_reset_requested_at")
-  createdAt            DateTime   @default(now()) @map("created_at")
-  updatedAt            DateTime   @updatedAt @map("updated_at")
+  id                            String     @id @default(uuid())
+  name                          String
+  email                         String     @unique
+  password                      String
+  role                          String     @default("user")
+  mustChangePassword            Boolean    @default(false) @map("must_change_password")
+  departmentId                  String?    @map("department_id")
+  department                    Department? @relation("DepartmentUsers", fields: [departmentId], references: [id])
+  departmentChief               Department? @relation("DepartmentChief")
+  documents                     Document[]
+  mailRoutingsInitiated         MailRouting[] @relation("routing_initiated")
+  mailRoutingsAssigned          MailRouting[] @relation("routing_assignee")
+  mailParticipants              MailParticipant[]
+  mailRoutingActions            MailRoutingAction[]
+  mailRoutingActionsAsTarget    MailRoutingAction[] @relation("action_target")
+  mailComments                  MailComment[]
+  mailAuditTrails               MailAuditTrail[]
+  passwordResetToken            String?    @map("password_reset_token")
+  passwordResetExpiry           DateTime?  @map("password_reset_expiry")
+  passwordResetRequestedAt      DateTime?  @map("password_reset_requested_at")
+  createdAt                     DateTime   @default(now()) @map("created_at")
+  updatedAt                     DateTime   @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  chiefId   String?  @unique @map("chief_id")
+  chief     User?    @relation("DepartmentChief", fields: [chiefId], references: [id])
+  users     User[]   @relation("DepartmentUsers")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("departments")
 }
 
 model Badge {
@@ -57,20 +120,28 @@ model Confidentiality {
 }
 
 model Document {
-  id                String               @id @default(uuid())
-  title             String
-  reference         String?
-  description       String?              @db.Text
-  content           String?              @db.LongText
-  fileUrl           String?              @map("file_url")
-  createdAt         DateTime             @default(now()) @map("created_at")
-  createdBy         User                 @relation(fields: [createdById], references: [id])
-  createdById       String               @map("created_by")
-  badge             Badge                @relation(fields: [badgeId], references: [id])
-  badgeId           String               @map("badge_id")
-  confidentiality   Confidentiality      @relation(fields: [confidentialityId], references: [id])
-  confidentialityId String               @map("confidentiality_id")
-  attachments       DocumentAttachment[]
+  id                   String               @id @default(uuid())
+  title                String
+  reference            String?
+  description          String?              @db.Text
+  content              String?              @db.LongText
+  fileUrl              String?              @map("file_url")
+  status               DocumentStatus       @default(draft)
+  documentType         String?              @map("document_type")
+  senderDepartment     String?              @map("sender_department")
+  senderName           String?              @map("sender_name")
+  receiptDate          DateTime?            @map("receipt_date")
+  registrationNumber   String?              @unique @map("registration_number")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  createdBy            User                 @relation(fields: [createdById], references: [id])
+  createdById          String               @map("created_by")
+  badge                Badge                @relation(fields: [badgeId], references: [id])
+  badgeId              String               @map("badge_id")
+  confidentiality      Confidentiality      @relation(fields: [confidentialityId], references: [id])
+  confidentialityId    String               @map("confidentiality_id")
+  attachments          DocumentAttachment[]
+  mailRoutings         MailRouting[]
+  comments             MailComment[]
 
   @@map("documents")
 }
@@ -86,6 +157,110 @@ model DocumentAttachment {
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("document_attachments")
+}
+
+model MailRouting {
+  id                String   @id @default(uuid())
+  document          Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId        String   @map("document_id")
+  status            MailRoutingStatus @default(pending)
+  initiatedBy       User     @relation("routing_initiated", fields: [initiatedById], references: [id])
+  initiatedById     String   @map("initiated_by_id")
+  currentAssignee   User?    @relation("routing_assignee", fields: [currentAssigneeId], references: [id])
+  currentAssigneeId String?  @map("current_assignee_id")
+  dueDate           DateTime? @map("due_date")
+  notes             String?  @db.Text
+  participants      MailParticipant[]
+  actions           MailRoutingAction[]
+  comments          MailComment[]
+  auditTrail        MailAuditTrail[]
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([documentId])
+  @@index([status])
+  @@index([currentAssigneeId])
+  @@index([dueDate])
+  @@map("mail_routings")
+}
+
+model MailParticipant {
+  id        String   @id @default(uuid())
+  routing   MailRouting @relation(fields: [routingId], references: [id], onDelete: Cascade)
+  routingId String   @map("routing_id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  role      ParticipantRole
+  joinedAt  DateTime @default(now()) @map("joined_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@unique([routingId, userId, role])
+  @@index([routingId])
+  @@index([userId])
+  @@map("mail_participants")
+}
+
+model MailRoutingAction {
+  id             String   @id @default(uuid())
+  routing        MailRouting @relation(fields: [routingId], references: [id], onDelete: Cascade)
+  routingId      String   @map("routing_id")
+  actor          User     @relation(fields: [actorId], references: [id])
+  actorId        String   @map("actor_id")
+  actionType     MailActionType
+  targetUser     User?    @relation("action_target", fields: [targetUserId], references: [id])
+  targetUserId   String?  @map("target_user_id")
+  previousStatus MailRoutingStatus? @map("previous_status")
+  newStatus      MailRoutingStatus? @map("new_status")
+  note           String?  @db.Text
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([routingId])
+  @@index([actorId])
+  @@index([actionType])
+  @@index([createdAt])
+  @@map("mail_routing_actions")
+}
+
+model MailComment {
+  id              String   @id @default(uuid())
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId      String   @map("document_id")
+  routing         MailRouting @relation(fields: [routingId], references: [id], onDelete: Cascade)
+  routingId       String   @map("routing_id")
+  author          User     @relation(fields: [authorId], references: [id])
+  authorId        String   @map("author_id")
+  body            String   @db.Text
+  parentComment   MailComment? @relation("comment_replies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  parentCommentId String?  @map("parent_comment_id")
+  replies         MailComment[] @relation("comment_replies")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([documentId])
+  @@index([routingId])
+  @@index([authorId])
+  @@map("mail_comments")
+}
+
+model MailAuditTrail {
+  id             String   @id @default(uuid())
+  routing        MailRouting @relation(fields: [routingId], references: [id], onDelete: Cascade)
+  routingId      String   @map("routing_id")
+  actor          User     @relation(fields: [actorId], references: [id])
+  actorId        String   @map("actor_id")
+  action         String
+  previousValues Json?    @map("previous_values")
+  newValues      Json?    @map("new_values")
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([routingId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("mail_audit_trails")
 }
 
 model AppRole {

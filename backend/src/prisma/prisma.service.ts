@@ -34,8 +34,27 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get roleFeaturePermission() {
     return this.client.roleFeaturePermission;
   }
+  // ...existing code...
   get activityLog() {
     return this.client.activityLog;
+  }
+  get department() {
+    return this.client.department;
+  }
+  get mailRouting() {
+    return this.client.mailRouting;
+  }
+  get mailParticipant() {
+    return this.client.mailParticipant;
+  }
+  get mailRoutingAction() {
+    return this.client.mailRoutingAction;
+  }
+  get mailComment() {
+    return this.client.mailComment;
+  }
+  get mailAuditTrail() {
+    return this.client.mailAuditTrail;
   }
 
   async ping() {
