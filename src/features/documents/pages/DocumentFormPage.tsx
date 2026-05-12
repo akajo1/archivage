@@ -202,7 +202,7 @@ export const DocumentFormPage = ({
       setFileError('');
 
       if (!contentMode) {
-        setModeError('Choisissez comment créer l\'archive : upload ou rédaction.');
+        setModeError('Choisissez comment créer le document : upload ou rédaction.');
         return;
       }
 
@@ -267,12 +267,12 @@ export const DocumentFormPage = ({
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">
-                {isEdit ? 'Modifier le document' : 'Nouvelle archive'}
+                {isEdit ? 'Modifier le document' : 'Nouveau document'}
               </h1>
               <p className="mt-0.5 text-sm text-[#a8c8de]">
                 {isEdit
                   ? 'Mettez à jour les informations du document.'
-                  : 'Remplissez les champs et choisissez comment créer votre archive.'}
+                  : 'Remplissez les champs et choisissez comment créer votre document.'}
               </p>
             </div>
             {!isEdit && draftSaved && (
@@ -355,7 +355,7 @@ export const DocumentFormPage = ({
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#dbeaf3] text-[#234C6A]">
               <RiFileTextLine className="h-4 w-4" />
             </span>
-            <span className="text-sm font-semibold text-[#1B3C53]">Contenu de l'archive</span>
+            <span className="text-sm font-semibold text-[#1B3C53]">Contenu du document</span>
             <span className="ml-auto rounded-full bg-[#234C6A] px-2 py-0.5 text-[10px] font-medium text-white">
               Choisir le mode
             </span>

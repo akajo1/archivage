@@ -1,8 +1,8 @@
-import { IsString, IsOptional, IsArray, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsArray, IsUUID, IsBoolean } from 'class-validator';
 
 export class CreateRoutingDto {
   @IsUUID()
-  documentId: string;
+  documentId!: string;
 
   @IsOptional()
   @IsString()
@@ -15,7 +15,7 @@ export class CreateRoutingDto {
 
 export class ForwardRoutingDto {
   @IsUUID()
-  receiverId: string;
+  receiverId!: string;
 
   @IsOptional()
   @IsArray()
@@ -35,27 +35,26 @@ export class VerifyRoutingDto {
 
 export class RejectRoutingDto {
   @IsString()
-  rejectionReason: string;
+  rejectionReason!: string;
 }
 
 export class AddParticipantDto {
   @IsUUID()
-  userId: string;
+  userId!: string;
 
   @IsString()
-  role: 'cc' | 'observer' | 'reviewer';
+  role!: string;
 }
 
 export class AddCommentDto {
   @IsString()
-  body: string;
+  body!: string;
 
   @IsOptional()
   @IsUUID()
   parentCommentId?: string;
 }
 
-import { IsBoolean } from 'class-validator';
 
 export class CompleteRoutingDto {
   @IsOptional()

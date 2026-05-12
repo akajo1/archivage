@@ -143,7 +143,7 @@ export interface RejectRoutingPayload {
 
 export interface AddParticipantPayload {
   userId: string;
-  role: 'cc' | 'observer' | 'reviewer';
+  role: ParticipantRole | string;
 }
 
 export interface AddCommentPayload {
