@@ -1,5 +1,6 @@
 import React from 'react';
-import { MailParticipant, ParticipantRole, User } from '../types/mail-routing.types';
+import type { MailParticipant, User } from '../types/mail-routing.types';
+import { ParticipantRole } from '../types/mail-routing.types';
 
 interface MailParticipantListProps {
   participants: MailParticipant[];

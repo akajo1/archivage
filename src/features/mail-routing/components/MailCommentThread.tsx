@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MailComment } from '../types/mail-routing.types';
+import type { MailComment } from '../types/mail-routing.types';
 import { useAddComment } from '../hooks/useMailRouting';
 import { Button } from '../../../shared/components/atoms/Button';
 import { Input } from '../../../shared/components/atoms/Input';

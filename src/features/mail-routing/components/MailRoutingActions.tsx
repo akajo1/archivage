@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MailRouting, MailRoutingStatus } from '../types/mail-routing.types';
+import type { MailRouting } from '../types/mail-routing.types';
+import { MailRoutingStatus } from '../types/mail-routing.types';
 import { useForwardRouting, useVerifyRouting, useRejectRouting } from '../hooks/useMailRouting';
 import { Button } from '../../../shared/components/atoms/Button';
 import { Modal } from '../../../shared/components/molecules/Modal';
@@ -93,7 +94,7 @@ export const MailRoutingActions: React.FC<MailRoutingActionsProps> = ({
         </Button>
         <Button
           onClick={() => setShowVerifyModal(true)}
-          variant="success"
+          variant="primary"
           size="sm"
         >
           ✓ Valider
@@ -180,7 +181,7 @@ export const MailRoutingActions: React.FC<MailRoutingActionsProps> = ({
               <Button
                 onClick={handleVerify}
                 isLoading={verifyLoading}
-                variant="success"
+                variant="primary"
               >
                 Valider
               </Button>

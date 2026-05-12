@@ -1,7 +1,8 @@
-import axios, { AxiosInstance } from 'axios';
-import {
+import axios from 'axios';
+import type { AxiosInstance } from 'axios';
+import { MailRoutingStatus } from '../types/mail-routing.types';
+import type {
   MailRouting,
-  MailRoutingStatus,
   InitializeRoutingPayload,
   ForwardRoutingPayload,
   VerifyRoutingPayload,

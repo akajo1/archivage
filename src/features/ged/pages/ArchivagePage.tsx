@@ -5,7 +5,7 @@ import { Button } from '../../../shared/components/atoms/Button';
  * Page archivage - Gestion des documents archivés
  */
 export const ArchivagePage: React.FC = () => {
-  const [archivedDocs, setArchivedDocs] = useState<any[]>([]);
+  const archivedDocs: Record<string, unknown>[] = []; // Will be replaced by API hook
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('date');
 

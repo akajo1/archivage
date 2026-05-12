@@ -105,10 +105,9 @@ export const DocumentListPage = () => {
 
   useEffect(() => {
     let active = true;
-    loadDocuments()
-      .then(() => {
-        if (active) setLoading(false);
-      })
+    Promise.resolve()
+      .then(() => loadDocuments())
+      .then(() => { if (active) setLoading(false); })
       .catch(() => {
         if (active) {
           setError('Erreur lors du chargement des documents.');

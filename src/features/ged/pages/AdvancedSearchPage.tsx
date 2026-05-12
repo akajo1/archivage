@@ -5,7 +5,7 @@ import { Button } from '../../../shared/components/atoms/Button';
  * Page recherche avancée
  */
 export const AdvancedSearchPage: React.FC = () => {
-  const [results, setResults] = useState<any[]>([]);
+  const results: Record<string, unknown>[] = []; // Will be fetched from API
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = () => {

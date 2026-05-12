@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { Button } from '../../../shared/components/atoms/Button';
 
-/**
- * Page classification - Gestion des badges et confidentialité
- */
+interface BadgeItem { id: string; name: string; color: string; count: number; }
+interface ConfItem  { id: string; level: string; count: number; }
+
 export const ClassificationPage: React.FC = () => {
-  const [badges, setBadges] = useState<any[]>([
+  const [badges] = useState<BadgeItem[]>([
     { id: '1', name: 'critique', color: '#ef4444', count: 5 },
-    { id: '2', name: 'normal', color: '#3b82f6', count: 12 },
-    { id: '3', name: 'faible', color: '#6b7280', count: 8 },
+    { id: '2', name: 'normal',   color: '#3b82f6', count: 12 },
+    { id: '3', name: 'faible',   color: '#6b7280', count: 8 },
   ]);
 
-  const [confidentialities] = useState<any[]>([
-    { id: '1', level: 'public', count: 8 },
-    { id: '2', level: 'interne', count: 15 },
+  const [confidentialities] = useState<ConfItem[]>([
+    { id: '1', level: 'public',       count: 8  },
+    { id: '2', level: 'interne',      count: 15 },
     { id: '3', level: 'confidentiel', count: 12 },
-    { id: '4', level: 'secret', count: 3 },
+    { id: '4', level: 'secret',       count: 3  },
   ]);
 
   return (

@@ -50,7 +50,7 @@ export const Layout = () => {
               Menu
             </button>
             <span className="rounded-full bg-[#234C6A] px-3 py-1 text-sm font-semibold text-white">
-              Archivage
+              GED Platform
             </span>
           </div>
         </header>

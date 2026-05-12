@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Document, DocumentListFilters } from '../types/document.types';
+import type { Document, DocumentListFilters } from '../types/document.types';
 import { Button } from '../../../shared/components/atoms/Button';
 
-/**
- * Page liste documents - Vue principale de gestion documents
- */
 export const DocumentListPage: React.FC = () => {
   const [filters, setFilters] = useState<DocumentListFilters>({});
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(false);
+  const documents: Document[] = []; // Will be replaced by API hook
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {

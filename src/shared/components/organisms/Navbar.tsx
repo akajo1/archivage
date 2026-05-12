@@ -12,6 +12,10 @@ import {
   RiDashboardLine,
   RiLockPasswordLine,
   RiHistoryLine,
+  RiMailLine,
+  RiArchiveDrawerLine,
+  RiPriceTag3Line,
+  RiSearchLine,
 } from 'react-icons/ri';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { authService } from '../../../features/auth/services/authService';
@@ -32,12 +36,36 @@ interface NavItem {
   activeColor: string;
 }
 
-const navItems: NavItem[] = [
-  { to: '/', label: 'Tableau de bord', Icon: RiDashboardLine, feature: 'dashboard', activeColor: 'text-[#2FA084]' },
-  { to: '/documents', label: 'Documents', Icon: RiFileList2Line, feature: 'documents', activeColor: 'text-[#5ecbaf]' },
-  { to: '/users', label: 'Utilisateurs', Icon: RiTeamLine, feature: 'users', activeColor: 'text-[#7aaac4]' },
-  { to: '/roles', label: 'Roles', Icon: RiShieldKeyholeLine, feature: 'roles', activeColor: 'text-[#a8c8de]' },
-  { to: '/logs', label: "Journal d'activité", Icon: RiHistoryLine, feature: 'logs', activeColor: 'text-[#9dc7ff]' },
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    label: 'Principal',
+    items: [
+      { to: '/', label: 'Tableau de bord', Icon: RiDashboardLine, feature: 'dashboard', activeColor: 'text-[#2FA084]' },
+    ],
+  },
+  {
+    label: 'GED',
+    items: [
+      { to: '/documents', label: 'Documents', Icon: RiFileList2Line, feature: 'documents', activeColor: 'text-[#5ecbaf]' },
+      { to: '/mail-routing/inbox', label: 'Courrier', Icon: RiMailLine, feature: 'documents', activeColor: 'text-[#60a5fa]' },
+      { to: '/archivage', label: 'Archivage', Icon: RiArchiveDrawerLine, feature: 'documents', activeColor: 'text-[#fb923c]' },
+      { to: '/classification', label: 'Classification', Icon: RiPriceTag3Line, feature: 'documents', activeColor: 'text-[#a78bfa]' },
+      { to: '/search', label: 'Recherche', Icon: RiSearchLine, feature: 'documents', activeColor: 'text-[#f472b6]' },
+    ],
+  },
+  {
+    label: 'Administration',
+    items: [
+      { to: '/users', label: 'Utilisateurs', Icon: RiTeamLine, feature: 'users', activeColor: 'text-[#7aaac4]' },
+      { to: '/roles', label: 'Rôles', Icon: RiShieldKeyholeLine, feature: 'roles', activeColor: 'text-[#a8c8de]' },
+      { to: '/logs', label: "Journal d'activité", Icon: RiHistoryLine, feature: 'logs', activeColor: 'text-[#9dc7ff]' },
+    ],
+  },
 ];
 
 const roleColors: Record<string, { bg: string; text: string; dot: string }> = {
@@ -67,11 +95,6 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
     logout();
     navigate('/login');
   };
-  const visibleItems = user
-    ? navItems.filter((item) =>
-        PermissionUtils.canReadFeature(user.userPermissions, item.feature),
-      )
-    : [];
   const rc = user ? (roleColors[user.role] ?? roleColors.user) : roleColors.user;
   const initials = user?.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() ?? '';
 
@@ -88,45 +111,57 @@ export const Navbar = ({ className = '', onNavigate }: NavbarProps) => {
         <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2FA084]/20 ring-1 ring-[#2FA084]/40">
           <RiFolderOpenLine className="h-4.5 w-4.5 text-[#2FA084]" />
         </span>
-        <span className="tracking-tight">Archivage</span>
+        <span className="tracking-tight">GED Platform</span>
       </Link>
 
-      {/* ── Section label ── */}
-      <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-        Navigation
-      </p>
-
-      {/* ── Nav items ── */}
-      <nav className="space-y-0.5">
-        {visibleItems.map(({ to, label, Icon, activeColor }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            onClick={onNavigate}
-            style={({ isActive }) => ({
-              color: isActive ? '#ffffff' : 'rgba(255,255,255,0.85)',
-            })}
-            className={({ isActive }) =>
-              `relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
-                isActive
-                  ? 'bg-[#234C6A] shadow-md ring-1 ring-white/10'
-                  : 'hover:bg-white/10'
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <span className="absolute left-0 top-1/2 h-5 w-0.75 -translate-y-1/2 rounded-r-full bg-[#2FA084]" />
-                )}
-                <Icon className={`h-4.5 w-4.5 shrink-0 transition-colors ${isActive ? activeColor : ''}`} />
-                <span>{label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
+      {/* ── Nav sections ── */}
+      <div className="space-y-4 overflow-y-auto flex-1">
+        {navSections.map((section) => {
+          const visibleItems = user
+            ? section.items.filter((item) =>
+                PermissionUtils.canReadFeature(user.userPermissions, item.feature),
+              )
+            : [];
+          if (visibleItems.length === 0) return null;
+          return (
+            <div key={section.label}>
+              <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                {section.label}
+              </p>
+              <nav className="space-y-0.5">
+                {visibleItems.map(({ to, label, Icon, activeColor }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={to === '/'}
+                    onClick={onNavigate}
+                    style={({ isActive }) => ({
+                      color: isActive ? '#ffffff' : 'rgba(255,255,255,0.85)',
+                    })}
+                    className={({ isActive }) =>
+                      `relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                        isActive
+                          ? 'bg-[#234C6A] shadow-md ring-1 ring-white/10'
+                          : 'hover:bg-white/10'
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <span className="absolute left-0 top-1/2 h-5 w-0.75 -translate-y-1/2 rounded-r-full bg-[#2FA084]" />
+                        )}
+                        <Icon className={`h-4.5 w-4.5 shrink-0 transition-colors ${isActive ? activeColor : ''}`} />
+                        <span>{label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+          );
+        })}
+      </div>
 
       <div className="mt-auto space-y-3 pt-6">
         {/* ── Divider ── */}

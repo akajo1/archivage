@@ -4,14 +4,15 @@ import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { FirstLoginChangePasswordPage } from '../features/auth/pages/FirstLoginChangePasswordPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
-import { DashboardPage } from '../features/documents/pages/DashboardPage';
-import { DocumentListPage } from '../features/documents/pages/DocumentListPage';
 import { DocumentFormPage } from '../features/documents/pages/DocumentFormPage';
 import { DocumentDetailPage } from '../features/documents/pages/DocumentDetailPage';
 import { UserManagementPage } from '../features/users/pages/UserManagementPage';
 import { RolePermissionsPage } from '../features/users/pages/RolePermissionsPage';
 import { ChangePasswordPage } from '../features/users/pages/ChangePasswordPage';
 import { ActivityLogPage } from '../features/logs/pages/ActivityLogPage';
+import { GedDashboardPage, ArchivagePage, ClassificationPage, AdvancedSearchPage } from '../features/ged/pages';
+import { DocumentListPage as GedDocumentListPage } from '../features/documents-ged/pages';
+import { MailRoutingInboxPage, MailRoutingDetailPage } from '../features/mail-routing/pages';
 import { Layout } from './Layout';
 
 export const router = createBrowserRouter([
@@ -23,28 +24,22 @@ export const router = createBrowserRouter([
     path: '/',
     element: <ProtectedRoute><Layout /></ProtectedRoute>,
     children: [
-      // ...existing routes...
+      // GED Dashboard (accueil)
       {
         index: true,
         element: (
           <ProtectedRoute requiredPermission={{ feature: 'dashboard', operation: 'canRead' }}>
-            <DashboardPage />
+            <GedDashboardPage />
           </ProtectedRoute>
         ),
       },
-      {
-        path: 'dashboard',
-        element: (
-          <ProtectedRoute requiredPermission={{ feature: 'dashboard', operation: 'canRead' }}>
-            <DashboardPage />
-          </ProtectedRoute>
-        ),
-      },
+
+      // Documents GED
       {
         path: 'documents',
         element: (
           <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
-            <DocumentListPage />
+            <GedDocumentListPage />
           </ProtectedRoute>
         ),
       },
@@ -72,6 +67,56 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
+      // Mail Routing / Courrier
+      {
+        path: 'mail-routing/inbox',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
+            <MailRoutingInboxPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'mail-routing/:routingId',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
+            <MailRoutingDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      // Archivage
+      {
+        path: 'archivage',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
+            <ArchivagePage />
+          </ProtectedRoute>
+        ),
+      },
+
+      // Classification
+      {
+        path: 'classification',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
+            <ClassificationPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      // Recherche avancée
+      {
+        path: 'search',
+        element: (
+          <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
+            <AdvancedSearchPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      // Admin
       {
         path: 'users',
         element: (
@@ -89,16 +134,16 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'change-password',
-        element: <ChangePasswordPage />,
-      },
-      {
         path: 'logs',
         element: (
           <ProtectedRoute requiredPermission={{ feature: 'logs', operation: 'canRead' }}>
             <ActivityLogPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: 'change-password',
+        element: <ChangePasswordPage />,
       },
     ],
   },

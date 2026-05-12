@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MailRouting, MailRoutingStatus, TimelineEvent, MailComment } from '../types/mail-routing.types';
+import { MailRoutingStatus } from '../types/mail-routing.types';
+import type { MailRouting, TimelineEvent, MailComment } from '../types/mail-routing.types';
 import { mailRoutingClient } from '../services/mailRoutingClient';
 
 /**
@@ -10,24 +11,23 @@ export const useMailRouting = (routingId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRouting = useCallback(async () => {
+  const fetchRouting = useCallback(() => {
     if (!routingId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await mailRoutingClient.getRouting(routingId);
-      setRouting(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load routing');
-    } finally {
-      setLoading(false);
-    }
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => { if (!cancelled) { setLoading(true); setError(null); } })
+      .then(() => mailRoutingClient.getRouting(routingId))
+      .then((data) => { if (!cancelled) { setRouting(data); setLoading(false); } })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load routing');
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
   }, [routingId]);
 
-  useEffect(() => {
-    fetchRouting();
-  }, [fetchRouting]);
+  useEffect(() => fetchRouting(), [fetchRouting]);
 
   return { routing, loading, error, refetch: fetchRouting };
 };
@@ -40,24 +40,23 @@ export const useMailRoutingTimeline = (routingId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTimeline = useCallback(async () => {
+  const fetchTimeline = useCallback(() => {
     if (!routingId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await mailRoutingClient.getRoutingTimeline(routingId);
-      setTimeline(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load timeline');
-    } finally {
-      setLoading(false);
-    }
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => { if (!cancelled) { setLoading(true); setError(null); } })
+      .then(() => mailRoutingClient.getRoutingTimeline(routingId))
+      .then((data) => { if (!cancelled) { setTimeline(data); setLoading(false); } })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load timeline');
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
   }, [routingId]);
 
-  useEffect(() => {
-    fetchTimeline();
-  }, [fetchTimeline]);
+  useEffect(() => fetchTimeline(), [fetchTimeline]);
 
   return { timeline, loading, error, refetch: fetchTimeline };
 };
@@ -71,23 +70,28 @@ export const useMailRoutingInbox = (status?: MailRoutingStatus) => {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
 
-  const fetchInbox = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await mailRoutingClient.getUserInbox(status);
-      setRoutings(data);
-      setTotal(data.length);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load inbox');
-    } finally {
-      setLoading(false);
-    }
+  const fetchInbox = useCallback(() => {
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => { if (!cancelled) { setLoading(true); setError(null); } })
+      .then(() => mailRoutingClient.getUserInbox(status))
+      .then((data) => {
+        if (!cancelled) {
+          setRoutings(data);
+          setTotal(data.length);
+          setLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load inbox');
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
   }, [status]);
 
-  useEffect(() => {
-    fetchInbox();
-  }, [fetchInbox]);
+  useEffect(() => fetchInbox(), [fetchInbox]);
 
   return { routings, total, loading, error, refetch: fetchInbox };
 };
@@ -103,11 +107,9 @@ export const useAddComment = () => {
     try {
       setLoading(true);
       setError(null);
-      const comment = await mailRoutingClient.addComment(routingId, { body, parentCommentId });
-      return comment;
+      return await mailRoutingClient.addComment(routingId, { body, parentCommentId });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to add comment';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Failed to add comment');
       return null;
     } finally {
       setLoading(false);
@@ -128,11 +130,9 @@ export const useForwardRouting = () => {
     try {
       setLoading(true);
       setError(null);
-      const updated = await mailRoutingClient.forwardRouting(routingId, { receiverId, ccUserIds, note });
-      return updated;
+      return await mailRoutingClient.forwardRouting(routingId, { receiverId, ccUserIds, note });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to forward routing';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Failed to forward routing');
       return null;
     } finally {
       setLoading(false);
@@ -153,11 +153,9 @@ export const useVerifyRouting = () => {
     try {
       setLoading(true);
       setError(null);
-      const updated = await mailRoutingClient.verifyRouting(routingId, { note });
-      return updated;
+      return await mailRoutingClient.verifyRouting(routingId, { note });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to verify routing';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Failed to verify routing');
       return null;
     } finally {
       setLoading(false);
@@ -178,11 +176,9 @@ export const useRejectRouting = () => {
     try {
       setLoading(true);
       setError(null);
-      const updated = await mailRoutingClient.rejectRouting(routingId, { rejectionReason });
-      return updated;
+      return await mailRoutingClient.rejectRouting(routingId, { rejectionReason });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to reject routing';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Failed to reject routing');
       return null;
     } finally {
       setLoading(false);

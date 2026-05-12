@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useMailRoutingInbox } from '../mail-routing/hooks/useMailRouting';
+import { useMailRoutingInbox } from '../../mail-routing/hooks/useMailRouting';
 
 /**
  * Dashboard principal de la plateforme GED
