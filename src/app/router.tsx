@@ -4,6 +4,7 @@ import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { FirstLoginChangePasswordPage } from '../features/auth/pages/FirstLoginChangePasswordPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
+import { DocumentListPage } from '../features/documents/pages/DocumentListPage';
 import { DocumentFormPage } from '../features/documents/pages/DocumentFormPage';
 import { DocumentDetailPage } from '../features/documents/pages/DocumentDetailPage';
 import { UserManagementPage } from '../features/users/pages/UserManagementPage';
@@ -11,7 +12,6 @@ import { RolePermissionsPage } from '../features/users/pages/RolePermissionsPage
 import { ChangePasswordPage } from '../features/users/pages/ChangePasswordPage';
 import { ActivityLogPage } from '../features/logs/pages/ActivityLogPage';
 import { GedDashboardPage, ArchivagePage, ClassificationPage, AdvancedSearchPage } from '../features/ged/pages';
-import { DocumentListPage as GedDocumentListPage } from '../features/documents-ged/pages';
 import { MailRoutingInboxPage, MailRoutingDetailPage } from '../features/mail-routing/pages';
 import { Layout } from './Layout';
 
@@ -39,7 +39,7 @@ export const router = createBrowserRouter([
         path: 'documents',
         element: (
           <ProtectedRoute requiredPermission={{ feature: 'documents', operation: 'canRead' }}>
-            <GedDocumentListPage />
+            <DocumentListPage />
           </ProtectedRoute>
         ),
       },

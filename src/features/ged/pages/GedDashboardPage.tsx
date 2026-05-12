@@ -1,134 +1,158 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  RiMailLine, RiFileList2Line, RiArchiveDrawerLine,
+  RiPriceTag3Line, RiTeamLine, RiSettingsLine,
+  RiArrowRightLine,
+} from 'react-icons/ri';
 import { useMailRoutingInbox } from '../../mail-routing/hooks/useMailRouting';
+import { documentService } from '../../documents/services/documentService';
 
-/**
- * Dashboard principal de la plateforme GED
- */
 export const GedDashboardPage: React.FC = () => {
-  const { routings: inboxCount } = useMailRoutingInbox();
+  const { routings, loading: inboxLoading } = useMailRoutingInbox();
+  const [docStats, setDocStats] = useState({ total: 0, archived: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const dashboardCards = [
+  useEffect(() => {
+    let cancelled = false;
+    documentService.getAll()
+      .then((docs) => {
+        if (cancelled) return;
+        setDocStats({
+          total: docs.length,
+          archived: docs.filter((d) => (d as { status?: string }).status === 'archived').length,
+        });
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setStatsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const services = [
     {
-      title: '📮 Mail Routing',
-      description: 'Gérer les workflows de courrier',
-      count: inboxCount.length,
+      title: 'Courrier',
+      description: 'Workflows de courrier entrant/sortant',
       href: '/mail-routing/inbox',
-      color: 'bg-blue-50 border-blue-200',
-      icon: '📬',
+      icon: RiMailLine,
+      color: 'bg-blue-50 border-blue-200 hover:border-blue-400',
+      iconColor: 'text-blue-600 bg-blue-100',
+      badge: routings.length > 0 ? routings.length : null,
     },
     {
-      title: '📄 Mes Documents',
-      description: 'Consulter mes documents',
-      count: 0, // Will be fetched
+      title: 'Documents',
+      description: 'Gérer tous les documents',
       href: '/documents',
-      color: 'bg-green-50 border-green-200',
-      icon: '📑',
+      icon: RiFileList2Line,
+      color: 'bg-emerald-50 border-emerald-200 hover:border-emerald-400',
+      iconColor: 'text-emerald-600 bg-emerald-100',
+      badge: null,
     },
     {
-      title: '🏷️ Classification',
-      description: 'Gérer les catégories',
-      count: 0,
-      href: '/classification',
-      color: 'bg-purple-50 border-purple-200',
-      icon: '🏷️',
-    },
-    {
-      title: '📦 Archivage',
+      title: 'Archivage',
       description: 'Consulter les archives',
-      count: 0,
       href: '/archivage',
-      color: 'bg-orange-50 border-orange-200',
-      icon: '📦',
+      icon: RiArchiveDrawerLine,
+      color: 'bg-orange-50 border-orange-200 hover:border-orange-400',
+      iconColor: 'text-orange-600 bg-orange-100',
+      badge: null,
     },
     {
-      title: '👥 Utilisateurs',
-      description: 'Gérer utilisateurs & rôles',
-      count: 0,
-      href: '/admin/users',
-      color: 'bg-pink-50 border-pink-200',
-      icon: '👥',
+      title: 'Classification',
+      description: 'Badges et confidentialité',
+      href: '/classification',
+      icon: RiPriceTag3Line,
+      color: 'bg-violet-50 border-violet-200 hover:border-violet-400',
+      iconColor: 'text-violet-600 bg-violet-100',
+      badge: null,
     },
     {
-      title: '⚙️ Paramètres',
-      description: 'Configuration système',
-      count: 0,
-      href: '/admin/settings',
-      color: 'bg-gray-50 border-gray-200',
-      icon: '⚙️',
+      title: 'Utilisateurs',
+      description: 'Gestion des comptes & rôles',
+      href: '/users',
+      icon: RiTeamLine,
+      color: 'bg-pink-50 border-pink-200 hover:border-pink-400',
+      iconColor: 'text-pink-600 bg-pink-100',
+      badge: null,
+    },
+    {
+      title: 'Paramètres',
+      description: 'Rôles & permissions',
+      href: '/roles',
+      icon: RiSettingsLine,
+      color: 'bg-gray-50 border-gray-200 hover:border-gray-400',
+      iconColor: 'text-gray-600 bg-gray-100',
+      badge: null,
     },
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-gray-900">📁 GED Platform</h1>
-        <p className="text-lg text-gray-600">Gestion Électronique de Documents</p>
+    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      {/* Hero */}
+      <div className="arch-hero relative overflow-hidden rounded-3xl px-8 py-10 shadow-sm">
+        <h1 className="text-3xl font-bold text-white sm:text-4xl">GED Platform</h1>
+        <p className="mt-2 text-[#a8c8de]">Gestion Électronique de Documents</p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="arch-card rounded-lg p-4">
-          <p className="text-gray-600 text-sm">Documents en attente d'action</p>
-          <p className="text-3xl font-bold text-blue-600 mt-2">{inboxCount.length}</p>
-        </div>
-        <div className="arch-card rounded-lg p-4">
-          <p className="text-gray-600 text-sm">Documents archivés</p>
-          <p className="text-3xl font-bold text-gray-600 mt-2">0</p>
-        </div>
-        <div className="arch-card rounded-lg p-4">
-          <p className="text-gray-600 text-sm">Utilisateurs actifs</p>
-          <p className="text-3xl font-bold text-green-600 mt-2">0</p>
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {[
+          {
+            label: 'Documents',
+            value: statsLoading ? '…' : docStats.total,
+            color: 'text-emerald-600',
+          },
+          {
+            label: 'Courriers en attente',
+            value: inboxLoading ? '…' : routings.length,
+            color: 'text-blue-600',
+          },
+          {
+            label: 'Archivés',
+            value: statsLoading ? '…' : docStats.archived,
+            color: 'text-orange-600',
+          },
+          {
+            label: 'Actifs',
+            value: statsLoading ? '…' : docStats.total - docStats.archived,
+            color: 'text-violet-600',
+          },
+        ].map((stat) => (
+          <div key={stat.label} className="arch-card rounded-2xl p-5">
+            <p className="text-sm text-[#456882]">{stat.label}</p>
+            <p className={`mt-2 text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Main Services Grid */}
+      {/* Services grid */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Services</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {dashboardCards.map((card) => (
+        <h2 className="mb-4 text-lg font-semibold text-[#1B3C53]">Services</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((s) => (
             <Link
-              key={card.href}
-              to={card.href}
-              className={`arch-card rounded-lg p-6 border-2 hover:shadow-lg transition-shadow cursor-pointer ${card.color}`}
+              key={s.href}
+              to={s.href}
+              className={`arch-card group flex items-start gap-4 rounded-2xl border-2 p-5 transition-all duration-150 ${s.color}`}
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-2xl mb-1">{card.icon}</p>
-                  <h3 className="font-semibold text-gray-900">{card.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{card.description}</p>
-                </div>
-                {card.count > 0 && (
-                  <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                    {card.count}
-                  </div>
-                )}
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${s.iconColor}`}>
+                <s.icon className="h-5 w-5" />
               </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold text-[#1B3C53]">{s.title}</p>
+                  {s.badge !== null && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">
+                      {s.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-0.5 text-sm text-[#456882]">{s.description}</p>
+              </div>
+              <RiArrowRightLine className="h-4 w-4 shrink-0 text-[#7aaac4] transition-transform group-hover:translate-x-1" />
             </Link>
           ))}
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="arch-card rounded-lg p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Activité Récente</h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between border-b pb-3">
-            <p className="text-gray-700">Vous avez reçu un nouveau document</p>
-            <span className="text-xs text-gray-500">à l'instant</span>
-          </div>
-          <div className="flex items-center justify-between border-b pb-3">
-            <p className="text-gray-700">Workflow "Demande Remboursement" complété</p>
-            <span className="text-xs text-gray-500">il y a 2 heures</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-gray-700">5 documents archivés</p>
-            <span className="text-xs text-gray-500">hier</span>
-          </div>
         </div>
       </div>
     </div>
   );
 };
-
