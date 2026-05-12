@@ -371,6 +371,58 @@ export class DocumentsService {
     return { message: 'Pièce jointe supprimée.' };
   }
 
+  async archive(id: string, userId: string, role: Role, userName?: string) {
+    const doc = await this.prisma.document.findUnique({ where: { id } });
+    if (!doc) throw new NotFoundException('Document introuvable.');
+    if (role !== 'admin' && role !== 'manager' && doc.createdById !== userId) {
+      throw new ForbiddenException('Archivage non autorisé.');
+    }
+
+    const updated = await this.prisma.document.update({
+      where: { id },
+      data: { status: 'archived' as any },
+      include,
+    });
+
+    this.activityLog.log({
+      action: 'DOCUMENT_ARCHIVED',
+      entity: 'document',
+      entityId: id,
+      entityLabel: doc.title,
+      userId,
+      userName,
+      userRole: role,
+    });
+
+    return updated;
+  }
+
+  async unarchive(id: string, userId: string, role: Role, userName?: string) {
+    const doc = await this.prisma.document.findUnique({ where: { id } });
+    if (!doc) throw new NotFoundException('Document introuvable.');
+    if (role !== 'admin' && role !== 'manager' && doc.createdById !== userId) {
+      throw new ForbiddenException('Désarchivage non autorisé.');
+    }
+
+    const updated = await this.prisma.document.update({
+      where: { id },
+      data: { status: 'active' as any },
+      include,
+    });
+
+    this.activityLog.log({
+      action: 'DOCUMENT_UNARCHIVED',
+      entity: 'document',
+      entityId: id,
+      entityLabel: doc.title,
+      userId,
+      userName,
+      userRole: role,
+    });
+
+    return updated;
+  }
+
   async remove(id: string, userId: string, role: Role, userName?: string) {
     const doc = await this.prisma.document.findUnique({ where: { id } });
     if (!doc) throw new NotFoundException('Document introuvable.');

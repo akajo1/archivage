@@ -22,6 +22,8 @@ import {
   RiEyeLine,
   RiCloseLine,
   RiSendPlane2Line,
+  RiArchiveLine,
+  RiInboxUnarchiveLine,
 } from 'react-icons/ri';
 import { documentService } from '../services/documentService';
 import type { Document } from '../types/document.types';
@@ -192,6 +194,48 @@ export const DocumentDetailPage = ({
     }
   };
 
+  const handleArchive = async () => {
+    if (!resolvedId || !document) return;
+    const result = await Swal.fire({
+      title: 'Archiver ce document ?',
+      text: 'Le document sera déplacé dans les archives. Vous pourrez le désarchiver.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, archiver',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#234C6A',
+    });
+    if (!result.isConfirmed) return;
+    try {
+      const updated = await documentService.archive(resolvedId);
+      setDocument(updated);
+      void Swal.fire({ title: 'Archivé !', icon: 'success', timer: 1400, showConfirmButton: false });
+    } catch {
+      void Swal.fire({ title: 'Erreur', text: 'Impossible d\'archiver ce document.', icon: 'error' });
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (!resolvedId || !document) return;
+    const result = await Swal.fire({
+      title: 'Désarchiver ce document ?',
+      text: 'Le document sera remis dans la liste des documents actifs.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, désarchiver',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#456882',
+    });
+    if (!result.isConfirmed) return;
+    try {
+      const updated = await documentService.unarchive(resolvedId);
+      setDocument(updated);
+      void Swal.fire({ title: 'Désarchivé !', icon: 'success', timer: 1400, showConfirmButton: false });
+    } catch {
+      void Swal.fire({ title: 'Erreur', text: 'Impossible de désarchiver ce document.', icon: 'error' });
+    }
+  };
+
   return (
     <div className={embedded ? 'mx-auto max-w-4xl px-2 py-2' : 'mx-auto max-w-4xl px-4 py-8'}>
       {/* Breadcrumb + back */}
@@ -219,6 +263,11 @@ export const DocumentDetailPage = ({
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <BadgePill name={document.badge?.name as 'critique' | 'normal' | 'faible'} />
                 <ConfidentialityTag level={document.confidentiality?.level ?? 'public'} />
+                {isArchived && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 border border-amber-400/40 px-3 py-0.5 text-xs font-semibold text-amber-200">
+                    <RiArchiveLine className="h-3.5 w-3.5" /> Archivé
+                  </span>
+                )}
               </div>
             </div>
             {/* Export / action buttons */}
@@ -414,6 +463,22 @@ export const DocumentDetailPage = ({
                   size="md"
                   onClick={() => navigate(`/documents/${document.id}/edit`)}
                 />
+              )}
+              {canEdit && !isArchived && (
+                <button
+                  onClick={() => void handleArchive()}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100 transition"
+                >
+                  <RiArchiveLine className="h-4 w-4" /> Archiver
+                </button>
+              )}
+              {canEdit && isArchived && (
+                <button
+                  onClick={() => void handleUnarchive()}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#c4d4df] bg-[#edf4f8] px-3 py-2 text-sm font-medium text-[#456882] hover:bg-[#dbeaf3] transition"
+                >
+                  <RiInboxUnarchiveLine className="h-4 w-4" /> Désarchiver
+                </button>
               )}
               {canDelete && (
                 <IconButton

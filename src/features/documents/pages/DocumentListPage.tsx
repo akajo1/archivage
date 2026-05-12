@@ -143,6 +143,27 @@ export const DocumentListPage = () => {
      }
    };
 
+   const handleArchive = async (id: string) => {
+     const result = await Swal.fire({
+       title: 'Archiver ce document ?',
+       text: 'Le document sera déplacé dans les archives.',
+       icon: 'question',
+       showCancelButton: true,
+       confirmButtonText: 'Oui, archiver',
+       cancelButtonText: 'Annuler',
+       confirmButtonColor: '#234C6A',
+     });
+     if (!result.isConfirmed) return;
+     try {
+       await documentService.archive(id);
+       // Remove from active list since we're filtering exclude_archived
+       setAllDocuments((prev) => prev.filter((d) => d.id !== id));
+       void Swal.fire({ title: 'Archivé !', icon: 'success', timer: 1400, showConfirmButton: false });
+     } catch {
+       void Swal.fire({ title: 'Erreur', text: 'Impossible d\'archiver ce document.', icon: 'error' });
+     }
+   };
+
    const canCreate = canCreateFeature('documents');
    const canEdit = canEditFeature('documents');
    const canDelete = canDeleteFeature('documents');
@@ -323,6 +344,7 @@ export const DocumentListPage = () => {
              canDelete={canDelete}
              canEdit={canEdit}
              onOpenDetail={(id) => setDetailModalId(id)}
+             onArchive={canEdit ? handleArchive : undefined}
            />
        )}
 

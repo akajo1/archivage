@@ -4,6 +4,7 @@ import {
   RiDeleteBinLine,
   RiAttachment2,
   RiFileTextLine,
+  RiArchiveLine,
 } from 'react-icons/ri';
 import type { Document } from '../../../features/documents/types/document.types';
 import { BadgePill } from '../atoms/BadgePill';
@@ -17,6 +18,7 @@ interface DocumentListViewProps {
   canDelete?: boolean;
   canEdit?: boolean;
   onOpenDetail?: (id: string) => void;
+  onArchive?: (id: string) => void;
 }
 
 const formatDate = (iso: string) =>
@@ -28,6 +30,7 @@ export const DocumentListView = ({
   canDelete,
   canEdit,
   onOpenDetail,
+  onArchive,
 }: DocumentListViewProps) => {
   const navigate = useNavigate();
 
@@ -116,6 +119,14 @@ export const DocumentListView = ({
                      label="Modifier"
                      variant="success"
                      onClick={() => navigate(`/documents/${doc.id}/edit`)}
+                   />
+                 )}
+                  {canEdit && onArchive && doc.status !== 'archived' && (
+                   <IconButton
+                     icon={<RiArchiveLine className="h-3.5 w-3.5" />}
+                     label="Archiver"
+                     variant="default"
+                     onClick={() => onArchive(doc.id)}
                    />
                  )}
                   {canDelete && onDelete && (

@@ -95,4 +95,12 @@ export const documentService = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/documents/${id}`);
   },
+  archive: async (id: string): Promise<Document> => {
+    const { data } = await apiClient.patch<Document>(`/documents/${id}/archive`);
+    return normalizeDocument(data);
+  },
+  unarchive: async (id: string): Promise<Document> => {
+    const { data } = await apiClient.patch<Document>(`/documents/${id}/unarchive`);
+    return normalizeDocument(data);
+  },
 };

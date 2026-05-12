@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -119,5 +120,23 @@ export class DocumentsController {
     @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
   ) {
     return this.documentsService.remove(id, user.id, user.role, user.name);
+  }
+
+  @Patch(':id/archive')
+  @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
+  archive(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
+  ) {
+    return this.documentsService.archive(id, user.id, user.role, user.name);
+  }
+
+  @Patch(':id/unarchive')
+  @FeaturePermission({ feature: 'documents', operation: 'canEdit' })
+  unarchive(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: 'admin' | 'manager' | 'user'; name: string },
+  ) {
+    return this.documentsService.unarchive(id, user.id, user.role, user.name);
   }
 }
