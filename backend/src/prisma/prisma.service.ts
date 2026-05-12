@@ -1,9 +1,14 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
-  private readonly client = new PrismaClient();
+  private readonly client = new PrismaClient(
+    {
+      adapter: new PrismaMariaDb(process.env.DATABASE_URL ?? ''),
+    } as unknown as Prisma.PrismaClientOptions,
+  );
 
   get user() {
     return this.client.user;
