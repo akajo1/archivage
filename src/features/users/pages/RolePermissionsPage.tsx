@@ -27,6 +27,10 @@ import {
 const FEATURE_LABELS: Record<RoleFeatureKey, string> = {
   dashboard: 'Tableau de bord',
   documents: 'Documents',
+  mail_routing: 'Courrier (Mail Routing)',
+  archivage: 'Archivage',
+  classification: 'Classification',
+  search: 'Recherche avancee',
   users: 'Utilisateurs',
   roles: 'Roles',
   logs: 'Journaux & exports',

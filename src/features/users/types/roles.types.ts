@@ -4,6 +4,10 @@ import type { Confidentiality } from '../../confidentiality/types/confidentialit
 export const ROLE_FEATURE_KEYS = [
   'dashboard',
   'documents',
+  'mail_routing',
+  'archivage',
+  'classification',
+  'search',
   'users',
   'roles',
   'logs',

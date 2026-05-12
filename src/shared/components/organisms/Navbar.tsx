@@ -52,10 +52,10 @@ const navSections: NavSection[] = [
     label: 'GED',
     items: [
       { to: '/documents', label: 'Documents', Icon: RiFileList2Line, feature: 'documents', activeColor: 'text-[#5ecbaf]' },
-      { to: '/mail-routing/inbox', label: 'Courrier', Icon: RiMailLine, feature: 'documents', activeColor: 'text-[#60a5fa]' },
-      { to: '/archivage', label: 'Archivage', Icon: RiArchiveDrawerLine, feature: 'documents', activeColor: 'text-[#fb923c]' },
-      { to: '/classification', label: 'Classification', Icon: RiPriceTag3Line, feature: 'documents', activeColor: 'text-[#a78bfa]' },
-      { to: '/search', label: 'Recherche', Icon: RiSearchLine, feature: 'documents', activeColor: 'text-[#f472b6]' },
+      { to: '/mail-routing/inbox', label: 'Courrier', Icon: RiMailLine, feature: 'mail_routing', activeColor: 'text-[#60a5fa]' },
+      { to: '/archivage', label: 'Archivage', Icon: RiArchiveDrawerLine, feature: 'archivage', activeColor: 'text-[#fb923c]' },
+      { to: '/classification', label: 'Classification', Icon: RiPriceTag3Line, feature: 'classification', activeColor: 'text-[#a78bfa]' },
+      { to: '/search', label: 'Recherche', Icon: RiSearchLine, feature: 'search', activeColor: 'text-[#f472b6]' },
     ],
   },
   {

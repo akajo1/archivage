@@ -3,6 +3,10 @@ import { IsBoolean, IsIn, IsString } from 'class-validator';
 export const ROLE_FEATURES = [
   'dashboard',
   'documents',
+  'mail_routing',
+  'archivage',
+  'classification',
+  'search',
   'users',
   'roles',
   'logs',
