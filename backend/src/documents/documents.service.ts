@@ -80,6 +80,8 @@ export class DocumentsService {
       badge_id?: string;
       confidentiality_id?: string;
       search?: string;
+      status?: string;
+      exclude_archived?: boolean;
     },
   ) {
     const searchTerm = filters.search?.trim();
@@ -90,6 +92,14 @@ export class DocumentsService {
     }
 
     const accessRules = await this.getAccessRules(role);
+
+    // Build status filter
+    let statusFilter: object | undefined;
+    if (filters.status) {
+      statusFilter = { status: filters.status };
+    } else if (filters.exclude_archived) {
+      statusFilter = { status: { not: 'archived' } };
+    }
 
     return this.prisma.document.findMany({
       where: {
@@ -107,6 +117,7 @@ export class DocumentsService {
         ...(searchTerm
           ? { title: { contains: searchTerm } }
           : {}),
+        ...(statusFilter ?? {}),
       },
       include,
       orderBy: { createdAt: 'desc' },

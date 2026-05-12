@@ -73,6 +73,7 @@ export const DocumentListPage = () => {
       badge_id: searchParams.get('badge_id') || undefined,
       confidentiality_id: searchParams.get('confidentiality_id') || undefined,
       search: canSearch ? search : undefined,
+      exclude_archived: true, // Documents page only shows active (non-archived) documents
     };
   }, [searchParams, canSearch]);
 
@@ -192,7 +193,7 @@ export const DocumentListPage = () => {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              Documents archivés
+              Gestion des documents
             </h1>
             <p className="mt-1 text-sm text-[#a8c8de]">
               {loading ? '…' : `${documents.length} document(s)`}

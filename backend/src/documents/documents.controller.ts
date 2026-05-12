@@ -43,6 +43,8 @@ export class DocumentsController {
     @Query('badge_id') badge_id?: string,
     @Query('confidentiality_id') confidentiality_id?: string,
     @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('exclude_archived') exclude_archived?: string,
   ) {
     const normalizedSearch = search?.trim() || undefined;
 
@@ -50,6 +52,8 @@ export class DocumentsController {
       badge_id,
       confidentiality_id,
       search: normalizedSearch,
+      status,
+      exclude_archived: exclude_archived === 'true',
     });
   }
 

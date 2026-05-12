@@ -11,6 +11,15 @@ export interface DocumentAttachment {
   createdAt: string;
 }
 
+export type DocumentStatus =
+  | 'draft'
+  | 'received'
+  | 'in_review'
+  | 'validated'
+  | 'archived'
+  | 'courrier_prepared'
+  | 'courrier_sent';
+
 export interface Document {
   id: string;
   title: string;
@@ -18,6 +27,12 @@ export interface Document {
   description: string | null;
   content: string | null;
   fileUrl: string | null;
+  status: DocumentStatus;
+  documentType: string | null;
+  senderName: string | null;
+  senderDepartment: string | null;
+  receiptDate: string | null;
+  registrationNumber: string | null;
   createdAt: string;
   createdBy: User;
   badge: Badge;
@@ -42,4 +57,6 @@ export interface DocumentFilters {
   badge_id?: string;
   confidentiality_id?: string;
   search?: string;
+  status?: string;
+  exclude_archived?: boolean;
 }

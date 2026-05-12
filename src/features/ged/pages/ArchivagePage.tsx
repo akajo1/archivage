@@ -16,10 +16,9 @@ export const ArchivagePage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    documentService.getAll()
+    documentService.getAll({ status: 'archived' })
       .then((docs) => {
-        if (!cancelled)
-          setArchivedDocs(docs.filter((d) => (d as unknown as { status?: string }).status === 'archived'));
+        if (!cancelled) setArchivedDocs(docs);
       })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });

@@ -24,7 +24,19 @@ const normalizeDocument = (document: Document): Document => ({
 
 export const documentService = {
   getAll: async (filters?: DocumentFilters): Promise<Document[]> => {
-    const { data } = await apiClient.get<Document[]>('/documents', { params: filters });
+    // Build clean params: convert exclude_archived to a backend-understood param
+    const params: Record<string, string | undefined> = {
+      badge_id: filters?.badge_id,
+      confidentiality_id: filters?.confidentiality_id,
+      search: filters?.search,
+      status: filters?.status,
+      exclude_archived: filters?.exclude_archived ? 'true' : undefined,
+    };
+    // Remove undefined keys
+    for (const key of Object.keys(params)) {
+      if (params[key] === undefined) delete params[key];
+    }
+    const { data } = await apiClient.get<Document[]>('/documents', { params });
     return data.map(normalizeDocument);
   },
   getById: async (id: string): Promise<Document> => {
