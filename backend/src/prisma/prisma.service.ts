@@ -56,6 +56,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get mailAuditTrail() {
     return this.client.mailAuditTrail;
   }
+  get routingTemplate() {
+    return this.client.routingTemplate;
+  }
+  get routingTemplateStep() {
+    return this.client.routingTemplateStep;
+  }
 
   async ping() {
     await this.client.$queryRaw`SELECT 1`;

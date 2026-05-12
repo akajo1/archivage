@@ -12,7 +12,7 @@ import { RolePermissionsPage } from '../features/users/pages/RolePermissionsPage
 import { ChangePasswordPage } from '../features/users/pages/ChangePasswordPage';
 import { ActivityLogPage } from '../features/logs/pages/ActivityLogPage';
 import { GedDashboardPage, ArchivagePage, ClassificationPage, AdvancedSearchPage } from '../features/ged/pages';
-import { MailRoutingInboxPage, MailRoutingDetailPage } from '../features/mail-routing/pages';
+import { MailRoutingInboxPage, MailRoutingDetailPage, RoutingTemplateManagementPage } from '../features/mail-routing/pages';
 import { Layout } from './Layout';
 
 export const router = createBrowserRouter([
@@ -67,6 +67,16 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
+       // Routing Templates
+       {
+         path: 'mail-routing/templates',
+         element: (
+           <ProtectedRoute requiredPermission={{ feature: 'mail_routing', operation: 'canRead' }}>
+             <RoutingTemplateManagementPage />
+           </ProtectedRoute>
+         ),
+       },
 
       // Mail Routing / Courrier
       {

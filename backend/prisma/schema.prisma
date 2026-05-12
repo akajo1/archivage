@@ -244,23 +244,48 @@ model MailComment {
 }
 
 model MailAuditTrail {
-  id             String   @id @default(uuid())
-  routing        MailRouting @relation(fields: [routingId], references: [id], onDelete: Cascade)
-  routingId      String   @map("routing_id")
-  actor          User     @relation(fields: [actorId], references: [id])
-  actorId        String   @map("actor_id")
-  action         String
-  previousValues Json?    @map("previous_values")
-  newValues      Json?    @map("new_values")
-  ipAddress      String?  @map("ip_address")
-  userAgent      String?  @map("user_agent")
-  createdAt      DateTime @default(now()) @map("created_at")
+   id             String   @id @default(uuid())
+   routing        MailRouting @relation(fields: [routingId], references: [id], onDelete: Cascade)
+   routingId      String   @map("routing_id")
+   actor          User     @relation(fields: [actorId], references: [id])
+   actorId        String   @map("actor_id")
+   action         String
+   previousValues Json?    @map("previous_values")
+   newValues      Json?    @map("new_values")
+   ipAddress      String?  @map("ip_address")
+   userAgent      String?  @map("user_agent")
+   createdAt      DateTime @default(now()) @map("created_at")
 
-  @@index([routingId])
-  @@index([actorId])
-  @@index([action])
-  @@index([createdAt])
-  @@map("mail_audit_trails")
+   @@index([routingId])
+   @@index([actorId])
+   @@index([action])
+   @@index([createdAt])
+   @@map("mail_audit_trails")
+}
+
+model RoutingTemplate {
+   id          String                @id @default(uuid())
+   name        String
+   description String?               @db.Text
+   steps       RoutingTemplateStep[]
+   isDefault   Boolean               @default(false) @map("is_default")
+   createdAt   DateTime              @default(now()) @map("created_at")
+   updatedAt   DateTime              @updatedAt @map("updated_at")
+
+   @@index([isDefault])
+   @@map("routing_templates")
+}
+
+model RoutingTemplateStep {
+   id         String          @id @default(uuid())
+   template   RoutingTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+   templateId String          @map("template_id")
+   order      Int
+   role       ParticipantRole
+
+   @@unique([templateId, order])
+   @@index([templateId])
+   @@map("routing_template_steps")
 }
 
 model AppRole {

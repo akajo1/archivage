@@ -16,6 +16,7 @@ import {
   RiArchiveDrawerLine,
   RiPriceTag3Line,
   RiSearchLine,
+  RiLayoutGridLine,
 } from 'react-icons/ri';
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { authService } from '../../../features/auth/services/authService';
@@ -53,6 +54,7 @@ const navSections: NavSection[] = [
     items: [
       { to: '/documents', label: 'Documents', Icon: RiFileList2Line, feature: 'documents', activeColor: 'text-[#5ecbaf]' },
       { to: '/mail-routing/inbox', label: 'Courrier', Icon: RiMailLine, feature: 'mail_routing', activeColor: 'text-[#60a5fa]' },
+      { to: '/mail-routing/templates', label: 'Templates de circuit', Icon: RiLayoutGridLine, feature: 'mail_routing', activeColor: 'text-[#818cf8]' },
       { to: '/archivage', label: 'Archivage', Icon: RiArchiveDrawerLine, feature: 'archivage', activeColor: 'text-[#fb923c]' },
       { to: '/classification', label: 'Classification', Icon: RiPriceTag3Line, feature: 'classification', activeColor: 'text-[#a78bfa]' },
       { to: '/search', label: 'Recherche', Icon: RiSearchLine, feature: 'search', activeColor: 'text-[#f472b6]' },
